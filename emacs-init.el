@@ -1,71 +1,11 @@
 ;;;****************************************************************************
 ;;;
-;;;   GNU Emacs init file.
+;;;;   GNU Emacs init file.
 ;;;
-;;;    Modification history:
+;;;    [old] Modification history:
 ;;;
 ;;; started mod hist.  -- rgr, 8-Apr-94.
 ;;; . . .
-;;; modify-frame-parameters mouse & label hack.  -- rgr, 8-Nov-95.
-;;; disable ffap under X11.  -- rgr, 15-Nov-95.
-;;; install comment-region-lisp on C-x C-;.  -- rgr, 27-Nov-95.
-;;; claris-works vt102 hack.  -- rgr, 8-Dec-95.
-;;; general cleanup.  -- rgr, 11-Dec-95.
-;;; html-helper-mode hacking.  -- rgr, 25-Jan-96.
-;;; remove ctserv-request, html-helper-mode to default.el.  -- rgr, 30-Jan-96.
-;;; rgr-html-helper-mode-hook: new.  -- rgr, 31-Jan-96.
-;;; some hook cleanup, lisp indentation for emacs.  -- rgr, 8-Feb-96.
-;;; fill-patch and sentence-end hacks.  -- rgr, 11-Feb-96.
-;;; rgr-html-fill-paragraph.  -- rgr, 22-Feb-96.
-;;; move autoloads to separate ./rgr-autoloads.el file.  -- rgr, 4-Mar-96.
-;;; rgr-web-client-host init.  -- rgr, 14-Mar-96.
-;;; Discus 5.0 and site-start.el related cleanups.  -- rgr, 19-Mar-96.
-;;; 19.30 byte-compile-dynamic-docstrings, nuke fill-patch.  -- rgr, 21-Mar-96.
-;;; fix frame label to use "official" functions.
-;;; moved lots of stuff that wasn't add-hook or require to ./rgr-hacks.el file.
-;;;	-- rgr, 29-Mar-96.
-;;; add perl-mode-hook.  -- rgr, 13-Jun-96.
-;;; add rgr-command-history-hook.  -- rgr, 12-Aug-96.
-;;; (add-hook 'sh-mode-hook 'rgr-sh-mode-hook).  -- rgr, 16-Aug-96.
-;;; compilation-mode-hook.  -- rgr, 27-Nov-96.
-;;; installed abbrev-completion feature.  -- rgr, 29-Nov-96.
-;;; makefile-mode-hook, add abb-comp "su" kludge, save file.  -- rgr, 2-Dec-96.
-;;; rgr-install-weekly-completion-cycle feature.  -- rgr, 10-Dec-96.
-;;; clean up change history.  -- rgr, 17-Apr-97.
-;;; fix ffap version; emacs has reverted to 19.28.  -- rgr, 19-Jul-97.
-;;; (rgr-install-hacks) simplification.  -- rgr, 16-Sep-97.
-;;; set dired-listing-switches.  -- rgr, 19-Nov-97.
-;;; rgr-maybe-rename-buffer find-file-hooks entry.  -- rgr, 17-Dec-97.
-;;; ffap-other-window, version cleanup.  -- rgr, 15-Jan-98.
-;;; bury-buffer on C-c b (easy to typo?), no find-file-lisp.  -- rgr, 6-Feb-98.
-;;; setq rgr-web-client-host "mcclintock".  -- rgr, 5-Mar-98.
-;;; rgr-thread-after-save-hook: new.  -- rgr, 10-Mar-98.
-;;; rgr-web-client-host from "mcclintock" to "huxley".  -- rgr, 27-Apr-98.
-;;; rgr-abbrev-hash-name hack.  -- rgr, 5-Jun-98.
-;;; more rgr-abbrev-hash-name hacks.  -- rgr, 14-Oct-98.
-;;; better rgr-web-client-host init, flush dupl. ~/emacs.  -- rgr, 19-Oct-98.
-;;; fix dired-listing-switches for solaris.  -- rgr, 27-Oct-98.
-;;; move stuff into site-start.el, hacks files.  -- rgr, 28-Oct-98.
-;;; set rgr-web-client-host to sewall.  -- rgr, 4-Nov-98.
-;;; rgr-dired-rename-file-and-versions hack.  -- rgr, 2-Feb-99.
-;;; (require 'bmerc-efs), misc. cleanup.  -- rgr, 13-Feb-99.
-;;; netscape changed locations again.  -- rgr, 3-Mar-99.
-;;; completion cleanup.  -- rgr, 10-Mar-99.
-;;; rgr-thread-after-save-hook: hack autodsm group as well.  -- rgr, 22-Mar-99.
-;;; telnet-mode-hook, comint-mode-hook.  -- rgr, 24-Mar-99.
-;;; matlab-shell-mode-hook.  -- rgr, 25-Mar-99.
-;;; kludge rgr-web-client-name for acroread problem.  -- rgr, 29-Mar-99.
-;;; undo same.  -- rgr, 30-Mar-99.
-;;; move rgr-web-client-host again.  -- rgr, 1-Jul-99.
-;;; add rgr-html-fix-regexps hook.  -- rgr, 26-Jul-99.
-;;; fix html-mode-hook -- also run by html-helper-mode.  -- rgr, 13-Aug-99.
-;;; matlab-mode-hook.  -- rgr, 21-Sep-99.
-;;; moved matlab-mode-hook stuff to site-start.el file.  -- rgr, 21-Sep-99.
-;;; sql-mode setup.  -- rgr, 30-Sep-99.
-;;; add rgr-c-use-electric-dash-p.  -- rgr, 9-Nov-99.
-;;; don't try to run netscape on mcclintock from home!  -- rgr, 9-Dec-99.
-;;; rgr-thread-after-save-hook: no eql in 20.4.  -- rgr, 9-Dec-99.
-;;; rgr-ilisp-load-hook: made this work.  -- rgr, 22-Dec-99.
 ;;; added rgr-w3-load-hook.  -- rgr, 16-Jan-00.
 ;;; added rgr-vm-mail-mode-hook.  -- rgr, 19-Jan-00.
 ;;; set user-mail-address at home.  -- rgr, 24-Jan-00.
@@ -193,9 +133,9 @@
       (cond ((file-writable-p (expand-file-name "~/emacs/completions"))
 	      (expand-file-name "~/emacs/completions"))
 	    ((zerop (user-uid))
-	      ;; [turn this off when root, because emacs thinks it can write
-	      ;; anything in that case, but it can't when mounted via nfs, and
-	      ;; it's hard to check.  -- rgr, 12-Dec-02.]
+	      ;; [turn this off when root, because emacs thinks root can write
+	      ;; anything, but it can't always when via nfs, and it's a pain to
+	      ;; determine whether this is the case.  -- rgr, 12-Dec-02.]
 	      nil)
 	    ((file-writable-p rgr-emacs)
 	      rgr-emacs)))
