@@ -246,7 +246,7 @@ or missing, then all connection attempts are ignored.")
 	   "abuse@hinet.net")
 	  ;; from APNIC
 	  (("61.187.0.0 - 61.187.255.255")
-	   "abuse@ns.chinanet.cn.net")))
+	   "abuse@ns.chinanet.cn.net"))
   "Alist of (ip-subnet abuse-address &key extras), culled from NIC sites.
 This database is only necessary in those cases when the abuse address is
 not obvious from the subscriber's DNS name.  For that reason, this list
