@@ -22,6 +22,8 @@ rgr-hacks-compile-module (see below).")
 	'(;; [this comes first because it has some emacs version stuff.
 	  ;; -- rgr, 23-Apr-03.]
 	  "rgr-hacks"
+	  ;; [provides the rgr-update-autoloads command.  -- rgr, 26-Apr-03.]
+	  ("rgr-random-hacks" require (autoload chistory))
 	  "ange-ftp-hacks"
 	  "bagels"
 	  "c-hacks"
@@ -63,7 +65,6 @@ rgr-hacks-compile-module (see below).")
 	   require (ilisp-mouse))
 	  ("rgr-mouse" require (ilisp-mouse))
 	  "rgr-perl-hacks"
-	  "rgr-random-hacks"
 	  ;; [not finished.  -- rgr, 23-Apr-03.]
 	  ;; "rgr-rect-hacks"
 	  "rgr-rmail-hacks"

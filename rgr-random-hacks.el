@@ -14,10 +14,6 @@
 ;;; read-event returns (but see ./encode-key.el).  Use (e.g.) [?\C-\M-%] in
 ;;; define-key calls.
 ;;;
-;;;    To compile this without error, do the following:
-;;;
-;;;	(mapcar 'require '(autoload chistory))
-;;;
 ;;;    Modification history:
 ;;;
 ;;; rgr-update-autoloads: 19.31 updated.  -- rgr, 20-Jul-96.
@@ -37,7 +33,7 @@
 ;;;; Autoload-generating commands.
 
 (defvar rgr-hacks-public-autoloads
-	(expand-file-name "~rogers/emacs/rgr-public-hacks.el"))
+	(expand-file-name "rgr-public-hacks.el" rgr-emacs))
 (defvar rgr-hacks-public-files
 	'("bmerc-hacks.el"
 	  "rgr-html-hacks.el" "rgr-html-head.el" "rgr-html-nest.el"
@@ -99,10 +95,10 @@ forms there.")
 
 ;;;###autoload
 (defun rgr-update-autoloads ()
-  "Update the ~/emacs/rgr-hacks-autoloads.el file with the latest
-autoloads from this directory."
+  "Update the rgr-hacks-autoloads.el file with the latest autoloads
+from this directory."
   (interactive)
-  (rgr-update-directory-autoloads "~/emacs" "rgr-hacks-autoloads.el"))
+  (rgr-update-directory-autoloads rgr-emacs "rgr-hacks-autoloads.el"))
 
 ;;;###autoload
 (defun rgr-batch-update-autoloads ()
@@ -110,11 +106,8 @@ autoloads from this directory."
   (apply 'rgr-update-directory-autoloads command-line-args-left)
   (setq command-line-args-left nil))
 
-;; (expand-file-name "autoloads.el" (expand-file-name "~/emacs"))
-;; (rgr-update-directory-autoloads "~/emacs/discus")
-
-;;;###autoload
-(defun rgr-update-dist-autoloads ()
+;; [obsolete; was autoloaded.  -- rgr, 26-Apr-03.]
+'(defun rgr-update-dist-autoloads ()
   "Update the ~/emacs/dist/emacs/loaddefs.el file with the latest
 autoloads from this directory."
   (interactive)
@@ -259,12 +252,6 @@ if (e.g.) the pathname does not indicate a server."
   (interactive "P")
   (psa-status-internal
     (expand-file-name (if test-p "~psa/psa-test" "~psa/psa-request"))))
-
-;;;###autoload
-(defun ctserv-status ()
-  "Request the status of the `ctserv' server."
-  (interactive)
-  (ctserv-request "server-status; status-all"))
 
 ;;;; Other
 
