@@ -37,17 +37,40 @@ that many days."
 			   n-days-ago))))
 
 ;;;###autoload
+(defun rgr-vc-project-diff ()
+  "Diff for the 'project' rooted at the current directory non-interactively.
+This would be just a shorthand for the vc-diff command (\\[vc-diff])
+when asked to compare a working directory to the original CVS version
+\(e.g. 'C-u \\[vc-diff] \".\" RET RET RET'), but it also renames the
+output buffer from '*vc-diff*' to '*vc-project-diff*'.  This is so that
+the \\[rgr-cvs-insert-log-skeleton] command can use this output."
+  (interactive)
+  (vc-version-diff (expand-file-name ".") nil nil)
+  (save-excursion
+    (set-buffer "*vc-diff*")
+    (let ((old-buf (get-buffer "*vc-project-diff*")))
+      (and old-buf
+	   (kill-buffer old-buf)))
+    (rename-buffer "*vc-project-diff*")))
+
+;;;###autoload
 (defun rgr-cvs-insert-log-skeleton ()
-  "Insert a '* filename:' line for each 'Index: filename' line in shell output.
-This goes through the '*Shell Command Output*' buffer, which is assumed
-to be the output of 'cvs diff', inserting lines at the end of the
-current buffer, which is assumed to be something like a CVS log comment.
-Files that are being added or deleted are noted as such."
+  "Insert a '* filename:' line for each 'Index: filename' line in diff output.
+This goes through the '*vc-project-diff*' buffer (created by the
+\\[rgr-vc-project-diff] command), and inserts one line for each file at
+the end of the current buffer, which is assumed to be something like a
+CVS log comment.  If there is no '*vc-project-diff*' buffer but '*Shell
+Command Output*' exists, then we assume that contains the output of 'cvs
+diff', and use that instead.  Files that are being added or deleted are
+noted as such."
   (interactive)
   (let ((original-buffer (current-buffer))
 	(other-buffer
-	  (or (get-buffer "*Shell Command Output*")
-	      (error "Can't find '*Shell Command Output*' buffer.")))
+	  ;; don't look at "*vc-diff*" because that is often for just one file.
+	  (or (get-buffer "*vc-project-diff*")
+	      (get-buffer "*Shell Command Output*")
+	      (error "Can't find \"*vc-project-diff*\" or %S buffer."
+		     "*Shell Command Output*")))
 	(match-re (concat "^Index: \\([^ \t\n]*\\)$"
 			  "\\|^cvs \\(diff\\|server\\): \\([^ \t\n]*\\) "
 			  "\\(is a new entry\\|was removed\\)")))
@@ -90,7 +113,13 @@ Files that are being added or deleted are noted as such."
   (save-excursion
     (goto-char (point-min))
     (while (search-forward ":\n*" nil t)
-      (replace-match "," t t))))
+      (replace-match "," t t)
+      (end-of-line)
+      ;; see if we need to break the line.
+      (if auto-fill-function
+	  (funcall auto-fill-function))
+      ;; move back before the colon, so we can join this with the next line.
+      (forward-char -1))))
 
 ;;;###autoload
 (defun rgr-cvs-log-edit-hook ()
