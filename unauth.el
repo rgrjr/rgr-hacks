@@ -584,6 +584,16 @@ so it generally keeps time within a fraction of a second."))
 ;;;###autoload
 (defun rgr-unauthorized-connection ()
   (interactive)
+  ;; first, make sure we're in the right kind of buffer.
+  (while (not (eq major-mode 'vm-mode))
+    (cond ((string-match "^\\*mail-" (buffer-name))
+	    ;; [bug: this might loop forever.  -- rgr, 5-Oct-03.]
+	    (other-window 1))
+	  ((string-match "^\\*whois" (buffer-name))
+	    (bury-buffer))
+	  (t
+	    (switch-to-buffer "INBOX"))))
+  ;; now look for the next rejection line.
   (beginning-of-line)
   (or (looking-at "^ +From ")
       (re-search-forward "^ +From " nil t)
