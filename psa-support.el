@@ -17,8 +17,11 @@
 ;;;
 
 (eval-when-compile
-  (require 'rmail)
-  (require 'sendmail)
+  (require 'rmail))
+
+(defun psa-require-psa-server ()
+  ;; Done at run time so that we don't need psa-request available for things
+  ;; that don't have it.
   (let ((load-path (cons (expand-file-name "~psa/psa-test/bin") load-path)))
     (require 'psa-server)))
 
@@ -100,8 +103,7 @@ hope you find our server useful.
 Heuristicates the message body, and leaves you in mail mode, as via
 rmail-reply."
   (interactive)
-  (let ((load-path (cons (expand-file-name "~psa/psa-test/bin") load-path)))
-    (require 'psa-server))
+  (psa-require-psa-server)
   (cond ((eq major-mode 'rmail-mode)
 	 (rmail-reply t))
 	((eq major-mode 'rmail-summary-mode)
@@ -185,6 +187,7 @@ rmail-reply."
 the lost.htm page, install it at 'http://bmerc-www.bu.edu/psa/lost.htm',
 and bring this page up in a browser."
   (interactive)
+  (psa-require-psa-server)
   (let* ((web-dir "/usr/local/etc/httpd/htdocs/psa-new/")
 	 (web-lost-database (expand-file-name "lost.tbl" web-dir))
 	 (psa-lost-database (expand-file-name "~psa/lost.tbl")))
