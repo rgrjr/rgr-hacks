@@ -132,6 +132,9 @@ Data is sent to the remote host when RET is typed.
   (use-local-map ssh-mode-map)
   (run-hooks 'ssh-mode-hook))
 
+(defvar ssh-per-host-option-alist nil
+  "Alist of (host-regexp . extra-ssh-options).")
+
 ;;;###autoload
 (defun ssh (host)
   "Open a secure login connection to host named HOST (a string) via ssh.
@@ -142,8 +145,18 @@ Normally input is edited in Emacs and sent a line at a time."
 		       nil 'ssh-host-history)))
   (require 'comint)	;; [redundant?  -- rgr, 2-Mar-01.]
   (require 'shell)
-  (let ((name (concat "ssh-" host)))
-    (switch-to-buffer (make-comint name rgr-secure-shell-program nil "-X" host))
+  (let ((name (concat "ssh-" host)) (other-options nil))
+    ;; find any other options we should add.
+    (let ((tail ssh-per-host-option-alist))
+      (while tail
+	(let ((entry (car tail)))
+	  (if (string-match (car entry) host)
+	      (setq other-options (cdr entry)
+		    tail nil)
+	      (setq tail (cdr tail))))))
+    (switch-to-buffer (apply (function make-comint)
+			     name rgr-secure-shell-program nil "-X"
+			     (append other-options (list host))))
     (set-process-filter (get-process name) 'comint-output-filter)
     (ssh-mode)))
 
