@@ -358,6 +358,30 @@ exists, or the previous message."
     (or (equal (car (cdr tail)) new-entry)
 	(setcdr tail (cons new-entry (cdr tail))))))
 
+(defun vm-mime-reader-save-all-attachments (&optional directory)
+  "Offer to save each attachment into the default file in a specified
+directory."
+  (interactive (list (read-file-name "Directory to save attachments: "
+				     nil default-directory)))
+  (let ((last-e nil)
+	(n-saved 0)
+	(default-directory (or directory default-directory)))
+    (while (not (eobp))
+      (let ((e (vm-find-layout-extent-at-point)))
+	(cond ((and e (not (eq e last-e)))
+	       (let* ((layout (vm-extent-property e 'vm-mime-layout))
+		      (default-filename
+			(vm-mime-get-disposition-parameter layout "filename"))
+		      (file (expand-file-name
+			      (file-name-nondirectory default-filename))))
+		 (cond ((y-or-n-p (format "Save to %s? " file))
+			  (vm-mime-send-body-to-file layout nil file)
+			  (setq n-saved (1+ n-saved))))
+		 (setq last-e e)))))
+      (forward-line))
+    (message "Done; saved %d message%s."
+	     n-saved (if (= n-saved 1) "" "s"))))
+
 ;;; vm-mail-mode
 
 ;; vm-mail-mode is invoked by "m" in a vm buffer, or M-x vm-mail from anywhere.
