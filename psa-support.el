@@ -189,10 +189,15 @@ and bring this page up in a browser."
   (interactive)
   (psa-require-psa-server)
   (let* ((web-dir "/usr/local/etc/httpd/htdocs/psa-new/")
+	 (web-install-dir (expand-file-name "../psa" web-dir))
 	 (web-lost-database (expand-file-name "lost.tbl" web-dir))
 	 (psa-lost-database (expand-file-name "~psa/lost.tbl")))
     (switch-to-buffer (find-file-noselect web-lost-database))
-    (cond ((and (file-readable-p psa-lost-database)
+    (cond ((not (file-writable-p web-lost-database))
+	    (if (file-newer-than-file-p psa-lost-database web-lost-database)
+		(message "Not updating transactions from %s."
+			 psa-lost-database)))
+	  ((and (file-readable-p psa-lost-database)
 		(file-newer-than-file-p psa-lost-database web-lost-database))
 	    ;; If we're not on an Alpha, we should die immediately.
 	    (if (= (point-min) (point-max))
@@ -211,11 +216,19 @@ and bring this page up in a browser."
     (cond ((not (equal list-buffers-directory web-dir))
 	    (psa-comint-command (concat "cd " web-dir))
 	    (shell-cd web-dir)))
-    (psa-comint-command "make install-dir=../psa install-lost")
+    ;; check that we can write the web-install-dir.
+    (cond ((not (file-writable-p web-install-dir))
+	    (message "Can't write %S; just making lost.htm." web-install-dir)
+	    (psa-comint-command "make lost.htm"))
+	  (t
+	    (psa-comint-command
+	      (format "make install-dir='%s' install-lost" web-install-dir))))
     ;; back to lost.tbl in the first window.
     (other-window 1)
-    (cond (window-system
+    (cond ((and nil window-system)
 	    ;; bring up in a browser window.
+	    ;; [no, this doesn't work between Netscape 4.76 (on huxley) and
+	    ;; Mozilla 1.4 (at home).  -- rgr, 3-Jul-04.
 	    (require 'rgr-mouse)
 	    (rgr-find-url "http://bmerc-www.bu.edu/psa/lost.htm")
 	    (message "Done.  (You may need to click 'Reload'.)"))
