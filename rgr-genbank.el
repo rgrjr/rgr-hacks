@@ -11,12 +11,14 @@
 (defvar rgr-genbank-locus-regexp
         "\\(dbj\\|sp\\|gb\\|ref\\|emb\\|pir\\)|+\\([-_a-zA-Z0-9.]+\\)")
 
+;;;###autoload
 (defun rgr-genbank-find-locus (locus)
   "Prompts for a GenBank locus, and looks it up via the browse-url function."
   (interactive "sGenBank locus: ")
   (message "Finding %s" locus)
   (browse-url (concat rgr-genbank-base-url locus)))
 
+;;;###autoload
 (defun rgr-genbank-find-next-locus ()
   "Searches for the next GenBank locus, and looks it up via
 \\[rgr-genbank-find-locus].  This is optimized for use in blast output
