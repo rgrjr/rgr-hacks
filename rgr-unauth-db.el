@@ -107,6 +107,7 @@ or missing, then all connection attempts are ignored.")
 	   "abuse@comcastpc.com")
 	  (("61.0.0.0 - 61.255.255.255"
 	    "163.13.0.0 - 163.32.255.255"
+	    "166.111.0.0/16"
 	    "202.0.0.0 - 203.255.255.0"
 	    "210.0.0.0 - 211.255.255.255"
 	    "218.0.0.0/8"
@@ -246,7 +247,10 @@ not obvious from the subscriber's DNS name.  For that reason, this list
 tends to include a lot of foreign ISPs, since they seem not to implement
 reverse DNS for their subscribers.  Do not put small ISPs on this list;
 their abuse addresses are likely to change as they get gobbled up by the
-big guys.")
+big guys.
+
+   After updating this, be sure to (setq rgr-unauth-whois-results-cache nil)
+so that old queries are redone using the new database.")
 
 (defvar rgr-unauth-bucketized-abuse-addresses nil
   "Cache used to hold all of the above in a more easily digestible
