@@ -60,13 +60,6 @@ With a numeric arg, select the nth previous (defaults to 2)."
   (switch-to-buffer (or (rgr-nth-buffer (1- arg))
 			(error "Number out of range."))))
 
-;; [this is hardly used.  -- rgr, 20-Nov-98.]
-;; [and it causes compiler warnings; punt.  -- rgr, 15-Sep-99.]
-'(defun rgr-switch-to-ilisp-buffer ()
-  "Go to the ilisp buffer in the current window."
-  (interactive)
-  (switch-to-buffer (ilisp-buffer)))
-
 ;; [this was originally lisp-def-name out of the ilisp package, but i got tired
 ;; of requiring ilisp just to grab an elisp definition name.  could be
 ;; simplified on that account.  -- rgr, 15-Sep-99.]
