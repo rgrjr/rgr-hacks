@@ -51,10 +51,16 @@ rgr-hacks-compile-module (see below).")
 	  "rgr-lisp-hacks"
 	  "rgr-mail-hacks"
 	  "rgr-makefile-hacks"
-	  "rgr-mouse-19"
-	  "rgr-mouse-20"
-	  "rgr-mouse-21"
-	  "rgr-mouse"
+	  ("rgr-mouse-19"
+	   if (eq rgr-emacs-major-version 19)
+	   require (ilisp-mouse))
+	  ("rgr-mouse-20"
+	   if (eq rgr-emacs-major-version 20)
+	   require (ilisp-mouse))
+	  ("rgr-mouse-21"
+	   if (eq rgr-emacs-major-version 21)
+	   require (ilisp-mouse))
+	  ("rgr-mouse" require (ilisp-mouse))
 	  "rgr-perl-hacks"
 	  "rgr-random-hacks"
 	  ;; [not finished.  -- rgr, 23-Apr-03.]
@@ -88,17 +94,17 @@ pair of (file-stem . properties), where properties is a disembodied plist.")
 	  ((not (or force-p
 		    (not (file-exists-p binary-name))
 		    (file-newer-than-file-p source-name binary-name))))
+	  ((not (eval (rgr-hacks-getf options 'if t)))
+	    (setq skipped-p 'if)
+	    (message "File %S skipped because of 'if' test." source-name))
 	  ((let ((tail requirements))
 	     (while tail
-	       (let* ((feature (car tail))
-		      (ok-p (require feature nil t)))
-		 (if ok-p
-		     (setq tail (cdr tail))
-		     (setq skipped-p feature tail nil))))
+	       (if (require (car tail) nil t)
+		   (setq tail (cdr tail))
+		   (setq skipped-p (car tail) tail nil)))
 	     skipped-p)
 	    (message "File %S skipped because '%s' could not be loaded."
-		     source-name skipped-p)
-	    (setq must-load-p nil))
+		     source-name skipped-p))
 	  (t
 	    (setq compiled-p t need-to-load-p must-load-p)
 	    (if rgr-hacks-compile-self-debug-p
@@ -106,6 +112,8 @@ pair of (file-stem . properties), where properties is a disembodied plist.")
 		(byte-compile-file source-name))
 	    (setq rgr-hacks-compile-self-n-files-compiled
 		  (1+ rgr-hacks-compile-self-n-files-compiled))))
+    (if skipped-p
+	(setq must-load-p nil))
     (if (and must-load-p (not need-to-load-p))
 	;; Check for newer binary on disk.
 	(let ((entry (assoc name-stem rgr-hacks-compiled-modules)))
