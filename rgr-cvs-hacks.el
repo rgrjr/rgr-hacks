@@ -42,14 +42,14 @@ Files that are being added or deleted are noted as such."
 	  (or (get-buffer "*Shell Command Output*")
 	      (error "Can't find '*Shell Command Output*' buffer.")))
 	(match-re (concat "^Index: \\([^ \t\n]*\\)$"
-			  "\\|^cvs diff: \\([^ \t\n]*\\) "
+			  "\\|^cvs \\(diff\\|server\\): \\([^ \t\n]*\\) "
 			  "\\(is a new entry\\|was removed\\)")))
     (save-excursion
       (set-buffer other-buffer)
       (goto-char (point-min))
       (while (re-search-forward match-re nil t)
-	(let ((file-name (or (match-string 1) (match-string 2)))
-	      (extra (match-string 3)))
+	(let ((file-name (or (match-string 1) (match-string 3)))
+	      (extra (match-string 4)))
 	  (message "found %S" file-name)
 	  (save-excursion
 	    (set-buffer original-buffer)
