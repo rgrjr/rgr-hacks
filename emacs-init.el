@@ -190,13 +190,13 @@
 ;; [only save completions in rgr-emacs if we can write it!  -- rgr, 1-Apr-00.]
 ;; [now prefer to save in ~/emacs/completions instead.  -- rgr, 23-Apr-03.]
 (setq rgr-abbrev-completion-save-directory
-      (cond ((zerop (user-uid))
+      (cond ((file-writable-p (expand-file-name "~/emacs/completions"))
+	      (expand-file-name "~/emacs/completions"))
+	    ((zerop (user-uid))
 	      ;; [turn this off when root, because emacs thinks it can write
 	      ;; anything in that case, but it can't when mounted via nfs, and
 	      ;; it's hard to check.  -- rgr, 12-Dec-02.]
 	      nil)
-	    ((file-writable-p (expand-file-name "~/emacs/completions"))
-	      (expand-file-name "~/emacs/completions"))
 	    ((file-writable-p rgr-emacs)
 	      rgr-emacs)))
 (rgr-install-abbrev-completion)
