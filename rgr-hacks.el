@@ -638,6 +638,8 @@ M-x buffer-menu)."
 	  (setq byte-compile-compatibility t)
 	  ;; More emacs-19.30 compatibility.  -- rgr, 25-Mar-96.
 	  (setq byte-compile-dynamic-docstrings nil)))
+  ;; New rgr-fasta-goto-base command.
+  (global-set-key "\C-cgb" 'rgr-fasta-goto-base)
   ;; Re-enable random commands.
   (put 'narrow-to-region 'disabled nil)
   (put 'upcase-region 'disabled nil)

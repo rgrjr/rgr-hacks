@@ -236,6 +236,30 @@ if (e.g.) the pathname does not indicate a server."
   (psa-status-internal
     (expand-file-name (if test-p "~psa/psa-test" "~psa/psa-request"))))
 
+;;;;
+
+;;;###autoload
+(defun rgr-fasta-goto-base (base-number)
+  "Given that we are within a FASTA sequence, goto to the numbered base."
+  (interactive "NGoto FASTA base: ")
+  (setq base-number (prefix-numeric-value base-number))
+  (or (> base-number 0)
+      (error "Base number must be positive."))
+  (let ((pos nil))
+    (save-excursion
+      (or (re-search-backward "^>" nil t)
+	  (error "Can't find the start of a FASTA sequence."))
+      (forward-line)
+      (while (> base-number 1)
+	(skip-chars-forward "^>A-Za-z")
+	(if (eq (char-after) ?>)
+	    (error "No such base."))
+	(forward-char 1)
+	(setq base-number (1- base-number)))
+      (setq pos (point)))
+    (and pos
+	 (goto-char pos))))
+
 ;;;; Done.
 
 (provide 'rgr-random-hacks)
