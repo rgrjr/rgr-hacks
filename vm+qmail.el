@@ -346,7 +346,16 @@ Interactively prompts for a new return address."
       (v+q-insert-from-header new-return-address))
     ;; Customize send-mail-function for sendmail, since sendmail-send-it copies
     ;; the buffer contents into a scratch buffer.
-    (cond ((eq send-mail-function 'sendmail-send-it)
+    (cond ((not (eq send-mail-function 'sendmail-send-it))
+	    (error "Oops; can't set return address for the '%S' sender."
+		   send-mail-function))
+	  ((rgr-emacs-version-p 21)
+	    ;; emacs 21 supports this directly (but 21.2 requires a patch to
+	    ;; make it work when these are buffer-local).  -- rgr, 3-Jul-03.
+	    (set (make-local-variable 'mail-specify-envelope-from) t)
+	    (set (make-local-variable 'mail-envelope-from) new-return-address))
+	  (t
+	    ;; kludgery for version 20 and earlier.
 	    (make-local-variable 'buffer-user-mail-address)
 	    (setq buffer-user-mail-address new-return-address)
 	    ;; This would make the lambda-binding in v+q-sendmail-send-it fail
