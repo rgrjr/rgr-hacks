@@ -654,4 +654,37 @@ it found at least one entry, else nil."
 
 (provide 'rgr-unauth-db)
 
+;;; debugging
+
 ;; (rgr-unauth-find-previous-reports-for-ip "66.176.192.178")
+
+(defun rgr-unauth-entry-n-address-blocks (entry)
+  (let ((addresses (rgr-subnet-address entry)))
+    (if (stringp addresses) 1 (length addresses))))
+
+(defun rgr-unauth-count-address-blocks (&optional entry-list)
+  (let ((tail (or entry-list rgr-unauth-abuse-addresses))
+	(count 0))
+    (while tail
+      (setq count (+ count (rgr-unauth-entry-n-address-blocks (car tail))))
+      (setq tail (cdr tail)))
+    count))
+
+;; [186 as of now.  -- rgr, 21-Jul-02.]
+;; [down to 135, since we're relying more heavily on ARIN and friends.  -- rgr,
+;; 23-Aug-03.]
+;; (rgr-unauth-count-address-blocks)
+
+(defun rgr-unauth-summarize-buckets (buckets)
+  (let ((i 0) (total 0))
+    (while (< i 256)
+      (let* ((entries (aref buckets i))
+	     (n (length entries)))
+	(if entries
+	    (insert (format "%d -> %d entries\n" i n)))
+	(setq total (+ total n)))
+      (setq i (1+ i)))
+    (insert (format "Total: %s\n" total))
+    total))
+
+;; (rgr-unauth-summarize-buckets (cdr rgr-unauth-bucketized-abuse-addresses))

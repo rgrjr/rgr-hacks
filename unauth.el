@@ -79,6 +79,7 @@
 ;;; $Id$
 
 (require 'rgr-unauth-db)
+(require 'rgr-unauth-query)
 
 (defvar rgr-unauth-use-log-report-date-p nil
   "*If nil, include all unreported log events.  If non-nil, use only
@@ -212,99 +213,6 @@ start at most one emacs per day."
 	  (setq tail nil)
 	  (setq tail (cdr tail))))
     result))
-
-;;; Querying NIC whois servers.
-
-(defun rgr-unauth-query-arin-internal (netblk query-host &optional buffer)
-  ;; based on shell-command
-  (let* ((jpnic-p (equal query-host "whois.nic.ad.jp"))
-	 ;; decide how to decorate the query ("!" or "/e" or neither) so that
-	 ;; the server tells us what we want to know.
-	 (query (cond (jpnic-p
-			;; (concat netblk "/e")
-			netblk)
-		      ((string-match rgr-unauth-ip-address-regexp netblk)
-		        netblk)
-		      (t (concat "\\!" netblk))))
-	 (command (concat "whois -h " query-host " " query)))
-    (message "Querying for %s at %s..." netblk query-host)
-    (sit-for 0)
-    (save-excursion
-      (set-buffer (get-buffer-create (or buffer " arin tmp")))
-      (buffer-disable-undo)
-      (erase-buffer)
-      (insert "% " command "\n")
-      ;; (shell-command command buffer)
-      (call-process shell-file-name nil t nil
-		    shell-command-switch command)
-      (buffer-substring (point-min) (point-max)))))
-
-(defvar rgr-unauth-whois-servers
-	'(("whois.arin.net" "(\\(NET\\(BLK\\)?-[^ \t\n\)]+\\))")
-	  ("whois.ripe.net" "(\\(NETBLK-[^ \t\n\)]+\\))") ;; probably wrong
-	  ;; [apnic is more verbose, so re-querying is actually redundant for
-	  ;; our purposes.  -- rgr, 12-Dec-02.]
-	  ;; ("whois.apnic.net" "^netname *: +\\([^ \t\n]+\\)")
-	  ))
-
-(defun rgr-unauth-query-arin (host-ip &optional query-host)
-  ;; based on the shell-command fn.  fills and displays a buffer with output
-  ;; from the query host, and returns the buffer.
-  (let* ((query-host (or query-host "whois.arin.net"))
-	 (jpnic-p (equal query-host "whois.nic.ad.jp"))
-	 (buffer (get-buffer-create (concat "*" query-host "*")))
-	 (netblk-regexp (car (cdr (assoc query-host rgr-unauth-whois-servers))))
-	 (command (concat "whois -h " query-host " " host-ip
-			  ;; jpnic uses this idiosyncratic syntax to select
-			  ;; english-only output.  [not any longer, it apepars.
-			  ;; -- rgr, 31-May-03.]
-			  ;; (if jpnic-p "/e" "")
-			  ""))
-	 (netblks nil))
-    (shell-command command buffer)
-    (save-excursion
-      (save-window-excursion
-	(set-buffer buffer)
-	;; we assume that delegation to other name authorities for a given IP is
-	;; complete and unidirectional, e.g. always from ARIN => APNIC => JPNIC,
-	;; and never the other way.  So we only need to worry about remembering
-	;; the last query host.
-	(make-local-variable 'rgr-unauth-last-query-host)
-	(setq rgr-unauth-last-query-host query-host)
-	(goto-char (point-min))
-	(insert "% " command "\n")
-	;; now look for subordinate NETBLK entries that we haven't already seen.
-	(while (and netblk-regexp
-		    (re-search-forward netblk-regexp nil t))
-	  (let ((netblk (match-string 1)))
-	    (if (not (member netblk netblks))
-		(save-excursion
-		  (goto-char (point-max))
-		  (setq rgr-unauth-last-query-host
-			(cond ((string-match "^NETBLK-APNIC-" netblk)
-				"whois.apnic.net")
-			      ((string-match "^KRNIC" netblk)
-				"whois.nic.or.kr")
-			      ((string-match "^NET\\(BLK\\)?-RIPE-\\|-RIPE$"
-					     netblk)
-				"whois.ripe.net")
-			      (t
-				query-host)))
-		  (insert (rgr-unauth-query-arin-internal
-			    netblk rgr-unauth-last-query-host))
-		  (setq netblks (cons netblk netblks))))))
-	;; kludge to list technical contacts and "sub allocations", which aren't
-	;; inlined for queries to jpnic.
-	(while (and jpnic-p
-		    (re-search-forward
-		      (concat "\\[\\(Technical Contact\\|Sub Allocation\\)\\] +"
-			      "\\([^ \t\n]+\\)")
-		      nil t))
-	  (let ((handle (match-string 2)))
-	    (save-excursion
-	      (goto-char (point-max))
-	      (insert (rgr-unauth-query-arin-internal handle query-host)))))
-	buffer))))
 
 ;;; Generating the message.
 
@@ -892,35 +800,4 @@ so it generally keeps time within a fraction of a second."))
     (if data
 	(rgr-unauth-send-complaint data (rgr-unauth-scarf-report-date))
 	(error "No more rejected/denied connections."))))
-
-;;; debugging
-
-(defun rgr-unauth-entry-n-address-blocks (entry)
-  (let ((addresses (rgr-subnet-address entry)))
-    (if (stringp addresses) 1 (length addresses))))
-
-(defun rgr-unauth-count-address-blocks (&optional entry-list)
-  (let ((tail (or entry-list rgr-unauth-abuse-addresses))
-	(count 0))
-    (while tail
-      (setq count (+ count (rgr-unauth-entry-n-address-blocks (car tail))))
-      (setq tail (cdr tail)))
-    count))
-
-;; [186 as of now.  -- rgr, 21-Jul-02.]
-;; (rgr-unauth-count-address-blocks)
-
-(defun rgr-unauth-summarize-buckets (buckets)
-  (let ((i 0) (total 0))
-    (while (< i 256)
-      (let* ((entries (aref buckets i))
-	     (n (length entries)))
-	(if entries
-	    (insert (format "%d -> %d entries\n" i n)))
-	(setq total (+ total n)))
-      (setq i (1+ i)))
-    (insert (format "Total: %s\n" total))
-    total))
-
-;; (rgr-unauth-summarize-buckets (cdr rgr-unauth-bucketized-abuse-addresses))
 
