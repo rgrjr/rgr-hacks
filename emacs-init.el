@@ -187,12 +187,7 @@
 		'v+q-mbox-status)
 ;; also try f2, which is easier to type at MGI.  -- rgr, 16-Jan-03.
 (global-set-key [f2] 'v+q-mbox-status)
-(if (eq rgr-site 'home)
-    (setq mail-self-blind nil
-	  mail-default-headers (concat (and (boundp 'mail-default-headers)
-					    mail-default-headers)
-				       "BCC: rogers-x@rgrjr.dyndns.org\n"))
-    (setq mail-self-blind t))
+(setq mail-self-blind t)
 ;; Mailcrypt stuff.
 (setq mc-default-scheme 'mc-scheme-gpg)
 (setq mc-pgp-path "gpg")
