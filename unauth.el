@@ -180,19 +180,25 @@ start at most one emacs per day."
 	 (prev-end (set-marker (make-marker) (point)))
 	 (result nil))
     (goto-char start)
-    (let ((date (or last-reported-entry-date report-date)))
+    (let* ((date (or last-reported-entry-date report-date))
+	   (regexp (and date (concat "^" (regexp-quote date)))))
       ;; (message "[using regexp date %S]" date)
       (cond ((null date)
 	      ;; no report date, so use it all.
 	      )
-	    ((not (re-search-forward (concat "^" (regexp-quote date)) nil t))
-	      ;; hmm, this shouldn't happen, but just in case, leave it all in
-	      ;; so that the user can figure it out.
+	    ((not (re-search-forward regexp nil t))
+	      ;; this can happen when the last probe is several log files old.
+	      ;; in any case, leave it all in so that the user can figure it
+	      ;; out.
 	      (message "No date %S in log?" date)
 	      (sit-for 1))
 	    (last-reported-entry-date
-	      ;; we want to exclude anything we've already reported.
-	      (forward-line 1))
+	      ;; we want to exclude anything we've already reported.  assume
+	      ;; that if there are multiple lines matching this date, we've
+	      ;; reported them all.
+	      (beginning-of-line)
+	      (while (looking-at regexp)
+		(forward-line 1)))
 	    (t
 	      ;; this should be the "report-date", so include this line.
 	      (beginning-of-line)))
