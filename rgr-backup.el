@@ -30,11 +30,14 @@
     (let ((partition (match-string 1))
 	  level date size)
       (forward-line 1)
+      (and (looking-at "^  DUMP: WARNING: ")
+	   ;; creating a new /etc/dumpdates file.
+	   (forward-line 1))
       (and (looking-at " *DUMP: Date of this level \\([0-9]\\) dump: \\(.*\\)")
 	   (setq level (string-to-int (match-string 1))
 		 date (match-string 2)))
       (and (save-excursion
-	     (re-search-forward "tape blocks (\\([0-9.]+\\)MB) on " nil t))
+	     (re-search-forward "blocks (\\([0-9.]+\\)MB) on " nil t))
 	   (setq size (car (read-from-string (match-string 1)))))
       '(message "[got level %S date %S size %S for part %S]"
 	       level date size partition)
