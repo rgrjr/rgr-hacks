@@ -132,6 +132,16 @@ somebody might legitimately suppose I was also running an FTP server.")
 worth noticing.  This should really be 1, but I don't have that much
 time to kill.")
 
+(defvar rgr-unauth-evil-protocol-regexp
+	"^\\(ssh\\|22\\)/tcp$"
+  "Regexp that matches 'evil' protocols, ones for which a connection
+attempt is unambiguously malevolent.")
+
+(defvar rgr-unauth-minimum-evil-attempts 1
+  "Minimum number of 'evil' attempts (defined as matching
+rgr-unauth-evil-protocol-regexp) on a given day before an IP is worth
+noticing.")
+
 ;;; Utility functions.
 
 (defvar rgr-unauth-uid-date-prefix "")
@@ -580,15 +590,19 @@ so it generally keeps time within a fraction of a second."))
 (defun rgr-unauth-too-few-attempts-p (data)
   ;; Returns T iff this guy made less than the minimum number of non-benign
   ;; connection attempts.
-  (let ((total 0) (tail (nth 2 data)))
+  (let ((total 0) (evil-total 0) (tail (nth 2 data)))
     (while tail
       (let* ((pair (car tail))
 	     (proto (car pair)) (count (cdr pair)))
-	(cond ((string-match rgr-unauth-benign-protocol-regexp proto))
+	(cond ((string-match rgr-unauth-evil-protocol-regexp proto)
+		(setq total (+ count total))
+	        (setq evil-total (+ count evil-total)))
+	      ((string-match rgr-unauth-benign-protocol-regexp proto))
 	      (t
 	        (setq total (+ count total)))))
       (setq tail (cdr tail)))
-    (< total rgr-unauth-minimum-attempts)))
+    (and (< evil-total rgr-unauth-minimum-evil-attempts)
+	 (< total rgr-unauth-minimum-attempts))))
 
 (defun rgr-unauth-private-address-p (data)
   "Return non-nil if data is for a private address."
@@ -656,8 +670,8 @@ so it generally keeps time within a fraction of a second."))
 		        ;; (sit-for 1)
 			t)
 		      ((rgr-unauth-too-few-attempts-p data)
-			;; generate a message about attempts that were rejected
-			;; but are considered "benign."
+			;; generate a message about malicious attempts from a
+			;; host that were not enough to be worth reporting.
 			(message "Ignoring %s (too few)"
 				 (rgr-unauth-summarize-attempt-alist
 				   (nth 2 data)))
