@@ -12,7 +12,7 @@ sequentially, beginning with the first."
   (let ((index nil))
     (save-excursion
       (goto-char start)
-      (while (re-search-forward "^ +\\([0-9]+\\)\\. " end t)
+      (while (re-search-forward "^[ \t]+\\([0-9]+\\)\\. " end t)
 	(if index
 	    (replace-match (format "%d" (setq index (1+ index)))
 			   t t nil 1)
