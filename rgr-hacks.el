@@ -238,12 +238,16 @@ $PATH-oriented \"man\" implementation."
   (let ((path (getenv "MANPATH")))
     (if (not path)
 	(save-excursion
-	  (set-buffer (get-buffer-create " *manpath-temp*"))
-	  (call-process "manpath" nil t nil)
-	  (goto-char (point-min))
-	  (end-of-line)
-	  (setq path (buffer-substring (point-min) (point)))))
-    (if (and (file-directory-p new)
+	  (condition-case err
+	      (progn
+		(set-buffer (get-buffer-create " *manpath-temp*"))
+		(call-process "manpath" nil t nil)
+		(goto-char (point-min))
+		(end-of-line)
+		(setq path (buffer-substring (point-min) (point))))
+	    (file-error nil))))
+    (if (and path
+	     (file-directory-p new)
 	     (file-readable-p new)
 	     (not (string-match new path)))
 	(setenv "MANPATH" (concat new ":" path)))))
