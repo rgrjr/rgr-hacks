@@ -34,6 +34,7 @@
 ;;;	comint-watch-for-password-prompt works.  -- rgr, 2-Mar-01.
 ;;; rgr-shell-set-xauthority: new hack.  -- rgr, 5-Nov-02.
 ;;; better ssh-host-history behavior.  -- rgr, 15-Jan-03.
+;;; flush rgr-ssh-default-destination var.  -- rgr, 19-Apr-03.
 ;;;
 
 (require 'comint)
@@ -126,7 +127,6 @@ next (and subsequent) line if the current (previous) line ends in '\\'."
 		  "rogers@rgrjr.dyndns.org"
 		  "rogers@modulargenetics.dnsalias.com")
 	     "rogers@huxley.bu.edu"))
-(defvar rgr-ssh-default-destination "rogers@huxley.bu.edu")
 (defvar ssh-mode-map (if (eq rgr-emacs-flavor 'xemacs)
 			 ;; keymaps are not lists in xemacs.
 			 (copy-keymap comint-mode-map)
@@ -163,9 +163,7 @@ Normally input is edited in Emacs and sent a line at a time."
   (let ((name (concat "ssh-" host)))
     (switch-to-buffer (make-comint name rgr-secure-shell-program nil "-X" host))
     (set-process-filter (get-process name) 'comint-output-filter)
-    (ssh-mode)
-    ;; Remember where we went for the next time.
-    (setq rgr-ssh-default-destination host)))
+    (ssh-mode)))
 
 (defun rgr-shell-set-display ()
   "Insert a 'setenv' command that sets the DISPLAY variable.
