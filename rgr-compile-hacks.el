@@ -344,7 +344,11 @@ without asking any questions."
 
 ;;;###autoload
 (defun rgr-compilation-mode-hook ()
-  (mapcar (function (lambda (fn)
+  ;; [rgr-grep-annotate-current-buffer is getting to be a pain, as it insists on
+  ;; reading all of the files that were hit, and doesn't always work very well
+  ;; to begin with, and rgr-maybe-clean-c-compilation-buffer is moot, as I so
+  ;; rarely code in C any more.  -- rgr, 7-Aug-03.
+  '(mapcar (function (lambda (fn)
 	    (or (member fn compilation-finish-functions)
 		(setq compilation-finish-functions
 		      (cons fn compilation-finish-functions)))))
