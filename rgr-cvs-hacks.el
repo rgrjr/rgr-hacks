@@ -13,6 +13,21 @@
 
 (require 'vc)
 
+(defun rgr-find-more-recent-buffer (&rest buffers)
+  ;; buffers is a list of buffers, some of which may be nil.  if there is more
+  ;; than one non-nil buffer, pick the one that the user visited more recently.
+  ;; the order of buffers in the list is not significant.
+  (let ((best nil) (tail buffers))
+    (while tail
+      (let ((buffer (car tail)))
+	(cond ((null buffer))
+	      ((null best)
+	        (setq best buffer))
+	      ((member best (member buffer (buffer-list)))
+	        (setq best buffer)))
+	(setq tail (cdr tail))))
+    best))
+
 ;;;###autoload
 (defun rgr-cvs-recent-changes (&optional number-of-days)
   "Show a summary of 'cvs log' output for the last three days.  If you
@@ -63,21 +78,22 @@ the \\[rgr-cvs-insert-log-skeleton] command can use this output."
 ;;;###autoload
 (defun rgr-cvs-insert-log-skeleton ()
   "Insert a '* filename:' line for each 'Index: filename' line in diff output.
-This goes through the '*vc-project-diff*' buffer (created by the
-\\[rgr-vc-project-diff] command), and inserts one line for each file at
+This goes through a diff buffer and inserts one line for each file at
 the end of the current buffer, which is assumed to be something like a
-CVS log comment.  If there is no '*vc-project-diff*' buffer but '*Shell
-Command Output*' exists, then we assume that contains the output of 'cvs
-diff', and use that instead.  Files that are being added or deleted are
-noted as such."
+CVS log comment.  The diff buffer is the most recently visited one of
+'*vc-project-diff*' (created by the \\[rgr-vc-project-diff] command),
+'*VC-diff*' (created by the \\[vc-diff] command), or '*Shell Command
+Output*' (assumed to be the output of 'cvs diff'.)  Files that are being
+added or deleted are noted as such."
   (interactive)
   (let ((original-buffer (current-buffer))
 	(other-buffer
-	  ;; don't look at "*vc-diff*" because that is often for just one file.
-	  (or (get-buffer "*vc-project-diff*")
-	      (get-buffer "*Shell Command Output*")
-	      (error "Can't find \"*vc-project-diff*\" or %S buffer."
-		     "*Shell Command Output*")))
+	  (or (rgr-find-more-recent-buffer
+		(get-buffer "*vc-project-diff*")
+		(get-buffer "*Shell Command Output*")
+		(get-buffer "*VC-diff*"))
+	      (error "Can't find %S, %S, or %S buffer."
+		     "*VC-diff*" "*vc-project-diff*" "*Shell Command Output*")))
 	(match-re (concat "^Index: \\([^ \t\n]*\\)$"
 			  "\\|^cvs \\(diff\\|server\\): \\([^ \t\n]*\\) "
 			  "\\(is a new entry\\|was removed\\)")))
@@ -119,6 +135,34 @@ noted as such."
 	  (sit-for 2)
 	  nil)))
 
+(defun rgr-vc-current-comment-file ()
+  ;; Get the name of the current file comment, or nil if before it
+  (save-excursion
+    (or (bobp)
+	(forward-char -1))
+    (and (re-search-backward "^\\* +" nil t)
+	 (let ((start (match-end 0))
+	       (end (progn (goto-char (match-end 0))
+			   (skip-chars-forward "^,: \t\n")
+			   (point))))
+	   (expand-file-name (buffer-substring start end))))))
+
+(defun rgr-vc-find-file-comment (file-name)
+  ;; Get the name of the current file comment, or nil if before it
+  (let ((result nil))
+    (save-excursion
+      (goto-char (point-min))
+      (while (and (not result)
+		  (re-search-forward "^\\* +" nil t))
+	(let ((star (match-beginning 0))
+	      (start (match-end 0))
+	      (end (progn (goto-char (match-end 0))
+			  (skip-chars-forward "^,: \t\n")
+			  (point))))
+	  (if (equal (expand-file-name (buffer-substring start end)) file-name)
+	      (setq result star))))
+      result)))
+
 ;;;###autoload
 (defun rgr-diff-add-definition-comment (&optional other-file)
   "Find the definition name of the corresponding source line.
@@ -137,14 +181,24 @@ If the prefix arg is bigger than 8 (for example with \\[universal-argument] \\[u
 		 (set-buffer buf)
 		 (goto-char (+ pos (cdr src)))
 		 (rgr-mode-definition-name))))
-    (switch-to-buffer-other-window (find-file-noselect "comment.text"))
-    (if (bolp)
-	(or (bobp)
-	    (forward-char -1))
-	(end-of-line))
-    (insert "\n")
-    (if (eobp)
-	(forward-char -1))
+    (switch-to-buffer-other-window
+      (or (rgr-find-more-recent-buffer (get-buffer "*VC-log*")
+				       (get-file-buffer "comment.text"))
+	  (find-file-noselect "comment.text")))
+    (let ((current-comment-file (rgr-vc-current-comment-file))
+	  (changed-file (buffer-file-name buf))
+	  (comment-start nil))
+      (cond ((equal changed-file current-comment-file)
+	      ;; assume we're in the right place.
+	      )
+	    ((setq comment-start (rgr-vc-find-file-comment changed-file))
+	      '(error "Changed file %S but buffer %S."
+		     changed-file current-comment-file)
+	      (goto-char comment-start)
+	      (forward-line))
+	    (t
+	      ;; assume we should add a new entry here.
+	      (beginning-of-line))))
     (rgr-cvs-plus)
     (if name
 	(insert "(" name "):  "))))
