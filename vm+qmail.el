@@ -27,7 +27,8 @@
 ;;;	-- rgr, 24-Jul-02.
 ;;;
 
-(require 'vm)
+;; [disabled, so we can leave rmail-mbox-status here.  -- rgr, 13-May-03.]
+;; (require 'vm)
 
 (defvar v+q-base-return-address nil
   "This is the base 'user@host' string that should be augmented to
@@ -109,20 +110,11 @@ inboxes/maildirs (so be careful of . and ..!).")
 		     (read-char "Type any character to dismiss: "))))
 	  (bury-buffer buffer)))))
 
-;;;###autoload
-(defun v+q-mbox-status ()
-  "Summarize how many messages are waiting in all known mbox files and Maildir
-directories, controlled by the v+q-mbox-directory and v+q-mbox-regexp variables.
-Messages are reported regardless of whether the box or directory appears as an
-inbox in the vm-spool-files list.  Doesn't handle POP or IMAP drops."
-  (interactive)
-  ;; vm-session-initialization is necessary to ensure that ~/.vm is loaded
-  ;; properly.  -- rgr, 11-Feb-01.
-  (vm-session-initialization)
+(defun v+q-mbox-status-internal (inbox-list)
   (let ((result nil)
-	(directory-tail (if (listp v+q-mbox-directory)
-			    v+q-mbox-directory
-			    (list v+q-mbox-directory))))
+	(directory-tail (if (listp inbox-list)
+			    inbox-list
+			    (list inbox-list))))
     (while directory-tail
       (let* ((entry (car directory-tail))
 	     (directory (if (consp entry) (car entry) entry))
@@ -160,6 +152,27 @@ inbox in the vm-spool-files list.  Doesn't handle POP or IMAP drops."
     (if result
 	(v+q-display-message (concat result "."))
 	(message "No messages"))))
+
+;;;###autoload
+(defun v+q-mbox-status ()
+  "Summarize how many messages are waiting in all known mbox files and Maildir
+directories, controlled by the v+q-mbox-directory and v+q-mbox-regexp variables.
+Messages are reported regardless of whether the box or directory appears as an
+inbox in the vm-spool-files list.  Doesn't handle POP or IMAP drops."
+  (interactive)
+  ;; vm-session-initialization is necessary to ensure that ~/.vm is loaded
+  ;; properly.  -- rgr, 11-Feb-01.
+  (vm-session-initialization)
+  (v+q-mbox-status-internal v+q-mbox-directory))
+
+;;;###autoload
+(defun rmail-mbox-status ()
+  "Summarize how many messages are waiting in all known mbox files and Maildir
+directories, controlled by the v+q-mbox-directory and v+q-mbox-regexp variables.
+Messages are reported regardless of whether the box or directory appears as an
+inbox in the vm-spool-files list.  Doesn't handle POP or IMAP drops."
+  (interactive)
+  (v+q-mbox-status-internal rmail-primary-inbox-list))
 
 ;;; Munging return addresses.
 
