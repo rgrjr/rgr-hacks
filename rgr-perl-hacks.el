@@ -201,9 +201,9 @@ for perl syntax]."
 Prompts for the name of a perl function; the default is a name extracted
 from the next near point.  The \"man perlfunc\" documentation page is
 then shown in another window, scrolled down to the start of the
-specified function.  If the documentation can't be found, the window is
-positioned at the start of the functional descriptions, to make it
-easier to search the page manually."
+specified function.  If the documentation can't be found, the other
+window is positioned at the start of the functional descriptions and
+left selected, to make it easier to search the page manually."
   (interactive
     (list (rgr-perl-prompt-for-name "Find documentation for perl function")))
   (let ((regexp (concat rgr-perl-function-documentation-prefix
@@ -223,7 +223,8 @@ easier to search the page manually."
 
 ;;;###autoload
 (defun rgr-perl-quick-documentation ()
-  "Only works for builtins documented in the perlfunc man page."
+  "Find the documentation for builtins functions on the perlfunc man page.
+See the rgr-perl-show-documentation command."
   (interactive)
   (rgr-perl-show-documentation (rgr-perl-get-name-around-point)))
 
@@ -233,9 +234,10 @@ easier to search the page manually."
 Prompts for the name of a perl function; the default is a name extracted
 from the next near point.  If only one variant of the function is
 documented, then that line is shown in the message area at the bottom of
-the frame.  If multiple variants are shown (or if the function is not
-documented on the perlfunc man page), then the documentation page is
-shown in another window, as by the rgr-perl-show-documentation command."
+the frame.  If multiple variants are shown, then the documentation page
+is shown in another window, as by the rgr-perl-show-documentation
+command, except that if the function is not documented, a message is
+printed and nothing is shown."
   (interactive (list (rgr-perl-prompt-for-name "Show arguments for")))
   (let* ((regexp (concat rgr-perl-function-documentation-prefix
 			 (regexp-quote name)
