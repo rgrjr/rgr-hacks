@@ -83,7 +83,8 @@
   (require 'rgr-mouse)
   (rgr-install-mouse-commands)
   (rgr-install-frame-properties)
-  (rgr-install-x11-font)
+  ;; [no, this is better done via X11 resources.  -- rgr, 27-May-03.]
+  '(rgr-install-x11-font)
   ;; [this puts the props on the old frame.  -- rgr, 19-Oct-98.]
   ;; (add-hook 'after-make-frame-hook 'bmerc-install-frame-properties)
   (cond ((rgr-emacs-version-p 19 30)
