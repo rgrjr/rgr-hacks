@@ -517,7 +517,7 @@ directory."
 	    (if (yes-or-no-p
 		  (format "Attach %s to message %s? "
 			  files-description
-			  (buffer-file-name (car vm-dired-mail-buffers))))
+			  (buffer-name (car vm-dired-mail-buffers))))
 		(vm-dired-attach-files-to-message files
 						  (car vm-dired-mail-buffers))
 		(error "Aborted.")))
