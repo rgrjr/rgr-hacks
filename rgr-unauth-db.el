@@ -135,7 +135,9 @@
 	  ;; by ARIN.  -- rgr, 2-Mar-03.
 	  (("200.0.0.0 - 200.61.255.255"
 	    "200.62.64.0 - 200.255.255.255") nil :whois "whois.lacnic.net")
-	  ("200.128.0.0 - 200.255.255.255" nil :whois "whois.registro.br")
+	  (("200.96.0.0/13"
+	    "200.128.0.0 - 200.255.255.255")
+	   nil :whois "whois.registro.br")
 	  ;; ("204.200.0.0 - 204.203.255.255" "abuse@verio.net")
 	  (("66.12.0.0 - 66.14.255.255")
 	   ;; ARIN reports this as belonging to GTE, but a comment says to use
