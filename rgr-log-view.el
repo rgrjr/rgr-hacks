@@ -69,6 +69,9 @@ rgr, 4-Sep-03.]"
 
 ;;;###autoload
 (defun rgr-log-view-mode-hook ()
+  ;; [don't understand why i seem to need this only at home . . .  -- rgr,
+  ;; 16-Feb-05.]
+  (setq buffer-read-only nil)
   (define-key log-view-mode-map "=" 'rgr-log-view-diff))
 
 (provide 'rgr-log-view)
