@@ -432,24 +432,39 @@ keys at all."
     (and (re-search-forward regexp nil t)
 	 (match-string 1))))
 
+(defun vm-maildir-date-string (date)
+  ;; Returns the Discus date as a string, in "Day Mon dd hh:mm:ss yyyy" format.
+  ;; All fields are fixed width, so the string returned is always 24 characters
+  ;; long.
+  (let* ((days (car date))
+	 (seconds (cdr date))
+	 (day days) (year 0) (leap-year-p nil) (year-length 365) (ndays 0)
+	 (month-tail discus-month-lengths))
+    ;; Get the year right, decrementing day.
+    (while (>= day year-length)
+      (setq day (- day year-length))
+      (setq year (1+ year))
+      (setq leap-year-p (zerop (% year 4)))
+      (setq year-length (if leap-year-p 366 365)))
+    ;; Now get the month right.
+    (while (and month-tail
+		(>= day
+		    (setq ndays (+ (cdr (car month-tail))
+				   (if (and leap-year-p
+					    (eq (car (car month-tail)) 'Feb))
+				       1 0)))))
+      (setq day (- day ndays))
+      (setq month-tail (cdr month-tail)))
+    (concat (symbol-name (car (car month-tail))) " " (format "%2d" (1+ day)) " "
+	    (discus-print-time seconds) " " (format "%d" (+ 1900 year)))))
+
 (defun vm-maildir-file-date (file)
-  ;; Return the file date in the format used for mbox files, which is the same
-  ;; as that returned by current-time-string, e.g. "Mon May 8 00:22:28 2000".
-  ;; We have to handle the leading zero on the day specially.  If your "date"
-  ;; command doesn't handle the "-r" option, replace this function by something
-  ;; that just returns nil.
-  (let ((buffer (get-buffer-create "*vm-maildir-date*")))
-    (unwind-protect
-	 (save-excursion
-	   (set-buffer buffer)
-	   (call-process "date" nil t nil
-			 "-r" file "+%a %b %d %T %Y")
-	   (let ((string (buffer-substring (point-min) (1- (point-max)))))
-	     ;; Now we have to deal with possible leading zeros in the day.
-	     (if (eq (aref string 8) ?0)
-		 (aset string 8 ?\ ))
-	     string))
-      (kill-buffer buffer))))
+  (condition-case error
+      (progn (require 'discus-unix-date)
+	     (let ((date (nth 5 (file-attributes file))))
+	       (and date
+		    (vm-maildir-date-string (discus-convert-unix-date date)))))
+    (error nil)))
 
 (defun vm-maildir-insert-message (file)
   (insert-file-contents file)
