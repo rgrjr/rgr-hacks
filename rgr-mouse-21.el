@@ -119,19 +119,19 @@ and does not change the current buffer."
 		(setq start (point)))
 	      (t
 		;; Find the current s-exp.
-		(rgr-with-lisp-syntax
-		 (cond ((looking-at "[ \t\n]")
-			 (skip-chars-forward " \t\n"))
-		       ((looking-at "\\sw\\|\\s_")
-			 ;; doesn't work; wrong interpretation of "word."
-			 ;; (the other is bogus, though).  -- rgr, 4-Apr-94.
-			 ;; (re-search-backward "\\b")
-			 (skip-chars-backward "^([\" \t\n")))
-		 (setq start (point))
-		 (setq inserted-string-word-start-p (looking-at "\\<"))
-		 (forward-sexp 1)
-		 (setq inserted-string-word-end-p (looking-at "\\>"))
-		 (setq end (point)))))))
+		(with-lisp-syntax
+		  (cond ((looking-at "[ \t\n]")
+			  (skip-chars-forward " \t\n"))
+			((looking-at "\\sw\\|\\s_")
+			  ;; doesn't work; wrong interpretation of "word."
+			  ;; (the other is bogus, though).  -- rgr, 4-Apr-94.
+			  ;; (re-search-backward "\\b")
+			  (skip-chars-backward "^([\" \t\n")))
+		  (setq start (point))
+		  (setq inserted-string-word-start-p (looking-at "\\<"))
+		  (forward-sexp 1)
+		  (setq inserted-string-word-end-p (looking-at "\\>"))
+		  (setq end (point)))))))
     ;; If we got something, stick it in the current buffer at point.
     (if from-buffer
 	(let ((start-point (point))
