@@ -712,11 +712,8 @@ M-x buffer-menu)."
 			(if (eq rgr-emacs-flavor 'fsf)
 			    'emacs
 			    rgr-emacs-flavor)
-			(if (equal version "20.7")
-			    ;; don't show the standard version.  [new.  -- rgr,
-			    ;; 16-Dec-98.]  [standard version is now 20.4.  --
-			    ;; rgr, 20-Dec-99.]  [upgraded to 20.7.  -- rgr,
-			    ;; 23-Jun-00.]
+			(if (equal version "21.2")
+			    ;; don't show the standard version.
 			    ""
 			    ;; add spacing.
 			    (concat version " "))
