@@ -63,8 +63,9 @@ rgr-hacks-compile-module (see below).")
 	   require (ilisp-mouse))
 	  ("rgr-mouse" use (ilisp-mouse tex-mode) require (browse-url))
 	  "rgr-perl-hacks"
-	  ;; [not finished.  -- rgr, 23-Apr-03.]
-	  ;; "rgr-rect-hacks"
+	  "rgr-rect-hacks"
+	  "rgr-genbank"
+	  "rgr-log-view"
 	  "rgr-rmail-hacks"
 	  "rgr-shell-hacks"
 	  ;; [should try to remove this dependency.  -- rgr, 26-Apr-03.]
