@@ -11,6 +11,7 @@
 
 ;;;###autoload
 (defun rgr-pir-mode-hook ()
+  (setq pir-blink-matching-block nil)	;; this is buggy.
   (modify-syntax-entry ?_ "_" pir-mode-syntax-table))
 
 (provide 'rgr-pir-hacks)
