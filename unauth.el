@@ -258,16 +258,21 @@ start at most one emacs per day."
 	  (sit-for 2)))))
 
 (defun rgr-unauth-insert-local-host-ip ()
-  (insert
-    (save-excursion
+  ;; [the name is a misnomer; this fn no longer inserts.  -- rgr, 5-Aug-04.]
+  (save-excursion
+    (let ((regexp (concat "inet addr:\\(" rgr-hacks-dotted-quad-regexp "\\)"))
+	  (result nil))
       (set-buffer (get-buffer-create " *host-ip*"))
       (erase-buffer)
-      (apply (function call-process) "/sbin/ifconfig" nil t nil
-	     '("eth0"))
+      (apply (function call-process) "/sbin/ifconfig" nil t nil)
       (goto-char (point-min))
-      (if (re-search-forward rgr-hacks-dotted-quad-regexp nil t)
-	  (match-string 0)
-	  "[ip unknown]"))))
+      (while (and (not result)
+		  (re-search-forward regexp nil t))
+	(let ((match (match-string 1)))
+	  (if (string-match "^192\\.168\\." match)
+	      nil
+	      (setq result match))))
+      (or result "[ip unknown]"))))
 
 (defun rgr-unauth-previous-month-log-file-name ()
   ;; Log files are of the format "/var/log/messages.200207.log".  We compute the
@@ -393,9 +398,7 @@ start at most one emacs per day."
 	  ;; cheating for our ISP.
 	  (insert "h009027bdf26f.ne.client2.attbi.com")
 	  (insert (system-name)))
-      (insert " (")
-      (rgr-unauth-insert-local-host-ip)
-      (insert ").  ")
+      (insert " (" (rgr-unauth-insert-local-host-ip) ").  ")
       (let* ((zone (current-time-zone))
 	     (hrs (/ (car zone) 3600))
 	     (mins (/ (mod (car zone) 3600) 60)))
