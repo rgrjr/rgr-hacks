@@ -214,6 +214,7 @@ or missing, then all connection attempts are ignored.")
 	    "218.232.0.0 - 218.233.255.255"
 	    "218.234.0.0 - 218.239.255.255"
 	    "218.144.0.0 - 218.159.255.255"
+	    "219.248.0.0 - 219.255.255.255"
 	    "220.64.0.0 - 220.71.255.255"
 	    "220.72.0.0 - 220.87.255.255"
 	    "220.88.0.0 - 220.95.255.255")
@@ -338,6 +339,39 @@ rgr-unauth-bucketize-address-blocks to rebuild it when needed.")
 	    (list ip ip)))
 	(t
 	  (error "%S is not a valid IP subnet specification" subnet))))
+
+(defun rgr-unauth-canonicalize-ip-address (address)
+  ;; Really, we only check to make sure that there are the right number of
+  (let ((rev-octets nil)
+	(next 0))
+    (while (string-match "[0-9]+\\(\.\\|$\\)" address next)
+      (setq rev-octets (cons (match-string 0 address) rev-octets))
+      (setq next (match-end 0)))
+    (if (< next (length address))
+	(error "%S is not a valid IP address." address))
+    (let ((len (length rev-octets)))
+      (while (< len 4)
+	(setq rev-octets (cons ".0" rev-octets))
+	(setq len (1+ len))))
+    (apply (function concat) (nreverse rev-octets))))
+
+(defun rgr-unauth-canonicalize-subnet (subnet)
+  ;; Given a string, returns another string that fixes some common infelicities
+  (cond ((string-match "/[0-9]+$" subnet)
+	  (let ((ip (substring subnet 0 (match-beginning 0)))
+		(bits (substring subnet (match-beginning 0))))
+	    (concat (rgr-unauth-canonicalize-ip-address ip) bits)))
+	((string-match " *- *" subnet)
+	  ;; Double bounds.  [Extract both addresses before parsing them, lest
+	  ;; rgr-unauth-parse-ip-address reset match data.  -- rgr, 24-Dec-00.]
+	  (let ((addr1 (substring subnet 0 (match-beginning 0)))
+		(addr2 (substring subnet (match-end 0))))
+	    (concat (rgr-unauth-canonicalize-ip-address addr1)
+		    " - "
+		    (rgr-unauth-canonicalize-ip-address addr2))))
+	(t
+	  ;; we'll assume this is an address that stands for itself.
+	  (rgr-unauth-canonicalize-ip-address subnet))))
 
 (defun rgr-unauth-subnet-match-tail-p (mask-bits subnet-tail addr-tail)
   (cond ((zerop mask-bits)

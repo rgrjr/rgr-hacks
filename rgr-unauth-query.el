@@ -270,10 +270,11 @@ entry in either case."
     (cond ((null entry)
 	    (setq entry
 		  (rgr-unauth-query-whois-server-internal host-ip whois-server))
-	    (setq rgr-unauth-whois-results-cache
-		  (cons (cons (rgr-unauth-parse-ip-subnet (car (cdr entry)))
-			      entry)
-			rgr-unauth-whois-results-cache))))
+	    (let ((subnet (rgr-unauth-canonicalize-subnet (car (cdr entry)))))
+	      (setcar (cdr entry) subnet)
+	      (setq rgr-unauth-whois-results-cache
+		    (cons (cons (rgr-unauth-parse-ip-subnet subnet) entry)
+			  rgr-unauth-whois-results-cache)))))
     entry))
 
 (defun rgr-unauth-present-query-results (host-ip source &optional netrange
