@@ -109,6 +109,7 @@ This is made buffer-local to the *whois.ripe.net* buffer.")
 
 (defvar rgr-unauth-benign-protocol-regexp
         (concat "^\\(ftp\\|21\\|ms-sql-[sm]\\|143[34]\\|epmap\\|135\\|8080"
+		"\\|443\\|901\\|57"
 		"\\|6346\\|1214\\|445\\|microsoft-ds\\|17300\\)/tcp$"
 		"\\|^\\(epmap\\|135\\|ms-sql-[sm]\\|143[34]\\)/udp$")
   ;; 1433 is for the Microsoft SQL Server; see the "Spida" worm advisory on the
@@ -118,7 +119,9 @@ This is made buffer-local to the *whois.ripe.net* buffer.")
   ;; service; there seems to be a new worm propagating.  -- rgr, 18-Dec-02.]
   ;; [don't really know what 17300 is, but it's probably another damn microsoft
   ;; thing.  -- rgr, 15-May-03.]  [add 8080/tcp, since crawlers seem to be
-  ;; hitting it.  -- rgr, 13-Dec-03.]
+  ;; hitting it.  -- rgr, 13-Dec-03.]  [add 901/tcp because there are too many
+  ;; of these, and 443/tcp (https) because I'm tired of it.  also flush 57,
+  ;; because it only seems to be associated with 1433.  -- rgr, 18-Dec-03.]
   "Regexp that matches protocol names (e.g. 'ftp/tcp') for which we
 should never complain even when somebody attempts to connect.  For
 instance, FTP connections are benign, because I do run a Web server, so
