@@ -225,6 +225,8 @@
 (add-hook 'text-mode-hook 'rgr-text-mode-hook)
 (add-hook 'c-mode-hook 'rgr-c-mode-hook)
 (setq rgr-c-use-electric-dash-p t)
+(setq grep-find-command
+      "find . -type f | grep -Ev '~$|/TAGS$|/CVS/' | xargs -e grep -n -e ")
 (add-hook 'compilation-mode-hook 'rgr-compilation-mode-hook)
 (add-hook 'makefile-mode-hook 'rgr-makefile-mode-hook)
 (add-hook 'perl-mode-hook 'rgr-perl-mode-hook)
