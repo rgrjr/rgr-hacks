@@ -26,3 +26,9 @@
 (rgr-html-define-server "rgrjr.dyndns.org"
 			"\\(^rgrjr\\.dyndns\\.org\\|rgrjr\\.com\\)$"
   :root-directory '("/usr/local/aolserver/servers/rgrjr/pages"))
+
+;; MGI intranet server.  [not really right, but good enough to get "C-c h f"
+;; working.  -- rgr, 8-Jun-04.
+(rgr-html-define-server "alexandria" "^alexandria$"
+  :root-directory '("/srv/www/htdocs"
+		    "/home/rogers/shared/public_html"))
