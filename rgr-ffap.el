@@ -11,7 +11,9 @@
 	  ("\\.xls$" "gnumeric")
 	  ;; ("\\.csv$" "gnumeric")	;; [doesn't work.  -- rgr, 18-Feb-04.]
 	  ("\\.doc$" "abiword")
-	  ("\\.pdf$" "acroread")))
+	  ("\\.pdf$" "acroread")
+	  ;; image extensions.
+	  ("\\.\\(png\\|jpe?g\\|gif\\)$" "gimp")))
 
 ;;;###autoload
 (defun rgr-ffap-file-finder (file-name &optional wildcards)
