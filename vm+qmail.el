@@ -117,6 +117,9 @@ inboxes/maildirs (so be careful of . and ..!).")
 	(directory-tail (if (listp inbox-list)
 			    inbox-list
 			    (list inbox-list))))
+    ;; [this forestalls a "Loading..." message if vm is autoloaded (7.15).  --
+    ;; rgr, 24-May-04.]
+    (require 'vm-undo)
     (while directory-tail
       (let* ((entry (car directory-tail))
 	     (directory (if (consp entry) (car entry) entry))
