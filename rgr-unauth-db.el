@@ -42,6 +42,8 @@
 ;;; rgr-unauth-scarf-msg-entry: include date, new log file.  -- rgr, 11-Apr-03.
 ;;; yet another nic.ad.jp netblock.  -- rgr, 12-Apr-03.
 ;;; rgr-unauth-find-previous-reports-for-ip: use  new fmt.  -- rgr, 15-Apr-03.
+;;; REMOVE "abuse@bellsouth.net" in favor of ARIN lookup.  -- rgr, 24-Apr-03.
+;;; another nic.ad.jp netblock.  -- rgr, 25-Apr-03.
 ;;;
 
 (defvar rgr-unauth-report-log-file (expand-file-name "~/mail/abuse-log.tbl")
@@ -84,9 +86,7 @@
 	  ;; [obsolete.  -- rgr, 9-Feb-03.]
 	  ;; ("66.12.0.0 - 66.13.255.255" "abuse@gte.net")
 	  ("66.19.0.0/16" "security@starnetinc.com")
-	  (("66.20.0.0 - 66.21.255.255"
-	    "207.203.0.0/16")
-	   "abuse@bellsouth.net")
+	  ;; (("66.20.0.0 - 66.21.255.255" "207.203.0.0/16") "abuse@bellsouth.net")
 	  ;; [arin now reports this as belonging to uu.net, but with a new abuse
 	  ;; address.  better to let arin sort it out.  -- rgr, 23-Jan-03.]
 	  ;; ("65.192.0.0 - 65.221.255.255" "abuse@uu.net")
@@ -123,7 +123,8 @@
 	    "210.248.0.0 - 210.255.255.255"
 	    "211.120.0.0 - 211.135.255.255"
 	    "218.40.0.0 - 218.47.255.255"
-	    "219.96.0.0 - 219.127.255.255")
+	    "219.96.0.0 - 219.127.255.255"
+	    "220.96.0.0 - 220.99.255.255")
 	   nil :whois "whois.nic.ad.jp")
 	  ;; LACNIC is nominally "200.0.0.0/8" (of which whois.registro.br gets
 	  ;; the top half), but there appears to be a gap at 200.62.0.0 -
