@@ -311,11 +311,16 @@ start at most one emacs per day."
 
 ;;; Generating the message.
 
-(defvar rgr-unauth-protocol-and-ports-regexp
+(defvar rgr-unauth-ipchains-protocol-and-ports-regexp
         (let* ((digits "\\([0-9]+\\)")
 	       (ip-address-colon-port (concat "\\([0-9.]+\\):" digits)))
 	  (concat "PROTO=" digits " " ip-address-colon-port " "
 		  ip-address-colon-port " "))
+  "Matched substrings are (protocol source-ip source-port dest-ip dest-port).")
+
+(defvar rgr-unauth-iptables-protocol-and-ports-regexp
+        (let ((digits "\\([0-9]+\\)"))
+	  (concat "PROTO=\\([0-9A-Z]+\\) SPT=" digits " DPT=" digits " "))
   "Matched substrings are (protocol source-ip source-port dest-ip dest-port).")
 
 (defun rgr-unauth-extract-previous-attempts (&optional last-reported-entry-date
@@ -342,21 +347,28 @@ start at most one emacs per day."
 	    (t
 	      ;; this should be the "report-date", so include this line.
 	      (beginning-of-line)))
-      (set-marker prev-end (point))
-      ;; (message "Set prev-end to %S" prev-end) (sit-for 2)
-      )
+      (set-marker prev-end (point)))
     ;; Now operate on lines between start & prev-end.
     (goto-char start)
+    ;(message "Operating on lines between %S and prev-end %S" (point) prev-end)
+    ;(sit-for 2)
     (while (< (point) prev-end)
       (let ((detail-start (point))
 	    (detail-end (save-excursion
 			  (forward-line 1)
 			  (point)))
 	    (date (buffer-substring (point) (+ (point) 15))))
-	(cond ((re-search-forward rgr-unauth-protocol-and-ports-regexp
+	(cond ((re-search-forward rgr-unauth-ipchains-protocol-and-ports-regexp
 				  detail-end t)
 		(let ((proto (string-to-int (match-string 1)))
 		      (dest-port (string-to-int (match-string 5))))
+		  (setq result (cons (list date proto dest-port) result)))
+	        ;; make the next line come to us.
+	        (delete-region detail-start detail-end))
+	      ((re-search-forward rgr-unauth-iptables-protocol-and-ports-regexp
+				  detail-end t)
+		(let ((proto (match-string 1))
+		      (dest-port (string-to-int (match-string 3))))
 		  (setq result (cons (list date proto dest-port) result)))
 	        ;; make the next line come to us.
 	        (delete-region detail-start detail-end))
@@ -491,9 +503,10 @@ start at most one emacs per day."
 	      (let* ((attempt (car tail))
 		     (date (car attempt)) (protocol (car (cdr attempt)))
 		     (dest-port (car (cdr (cdr attempt))))
-		     (proto-name (cond ((= protocol 6) "tcp")
-				       ((= protocol 17) "udp")
-				       (t (format "proto%d" protocol)))))
+		     (proto-name (cond ((stringp protocol) protocol)
+				       ((= protocol 6) "TCP")
+				       ((= protocol 17) "UDP")
+				       (t (format "PROTO%d" protocol)))))
 		(insert "on " (substring date 0 6)
 			" at " (substring date 7)
 			" to " (format "%d" dest-port) "/" proto-name
@@ -862,7 +875,7 @@ so it generally keeps time within a fraction of a second."))
 					  strings)))
 			    (setq tail (cdr tail)))
 			  (message "Ignoring %s" (apply 'concat strings))
-			  (sit-for 1)
+			  ;; (sit-for 1)
 			  t))))
       ;; loop for effect.
       )
