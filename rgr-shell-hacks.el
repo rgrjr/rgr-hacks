@@ -135,14 +135,7 @@ Data is sent to the remote host when RET is typed.
 (defvar ssh-per-host-option-alist nil
   "Alist of (host-regexp . extra-ssh-options).")
 
-;;;###autoload
-(defun ssh (host)
-  "Open a secure login connection to host named HOST (a string) via ssh.
-Communication with HOST is recorded in a buffer `*ssh-HOST*'.
-Normally input is edited in Emacs and sent a line at a time."
-  (interactive
-    (list (read-string "Open ssh connection to host or user@host: "
-		       nil 'ssh-host-history)))
+(defun rgr-ssh-start-session-internal (host &optional command-args)
   (require 'comint)	;; [redundant?  -- rgr, 2-Mar-01.]
   (require 'shell)
   (let ((name (concat "ssh-" host)) (other-options nil))
@@ -156,9 +149,32 @@ Normally input is edited in Emacs and sent a line at a time."
 	      (setq tail (cdr tail))))))
     (switch-to-buffer (apply (function make-comint)
 			     name rgr-secure-shell-program nil "-X"
-			     (append other-options (list host))))
+			     (append other-options (list host) command-args)))
     (set-process-filter (get-process name) 'comint-output-filter)
     (ssh-mode)))
+
+;;;###autoload
+(defun ssh (host)
+  "Open a secure login connection to host named HOST (a string) via ssh.
+Communication with HOST is recorded in a buffer `*ssh-HOST*'.
+Normally input is edited in Emacs and sent a line at a time."
+  (interactive
+    (list (read-string "Open ssh connection to host or user@host: "
+		       nil 'ssh-host-history)))
+  (rgr-ssh-start-session-internal host))
+
+;;;###autoload
+(defun ssh-emacs (host)
+  "Open a secure login connection to host named HOST (a string) via ssh.
+Communication with HOST is recorded in a buffer `*ssh-HOST*'."
+  (interactive
+    (list (read-string "Open emacs session via ssh on host or user@host: "
+		       nil 'ssh-host-history)))
+  (rgr-ssh-start-session-internal host '("emacs"))
+  ;; this timeout needs to be long enough for a password dialog (which happens
+  ;; in the process filter, so it doesn't force the end of the sit-for).
+  (sit-for 10)
+  (bury-buffer))
 
 (defun rgr-shell-set-display ()
   "Insert a 'setenv' command that sets the DISPLAY variable.
