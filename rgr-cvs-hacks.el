@@ -28,6 +28,25 @@
 	(setq tail (cdr tail))))
     best))
 
+(defun rgr-comment-buffers (&optional buffer-directory)
+  (let ((tail (buffer-list))
+	(dir (or buffer-directory default-directory))
+	(result nil))
+    (while tail
+      (let ((buffer (car tail)))
+	(save-excursion
+	  (set-buffer buffer)
+	  ;; (message "[dir %S default %S]" dir default-directory)
+	  (if (and (eq major-mode 'text-mode)
+		   (string-match "^comment" (buffer-name))
+		   (equal default-directory
+			  (substring dir 0 (length default-directory))))
+	      (setq result (cons buffer result))))
+	(setq tail (cdr tail))))
+    (nreverse result)))
+
+;; (rgr-comment-buffers)
+ 
 ;;;###autoload
 (defun rgr-cvs-recent-changes (&optional number-of-days)
   "Show a summary of 'cvs log' output for the last three days.  If you
@@ -155,15 +174,16 @@ by the \\[vc-diff] command), or '*Shell Command Output*' (assumed to be
 the output of 'cvs diff'.)  Files that are being added or deleted are
 noted as such."
   (interactive)
-  (let ((comment-buffer (current-buffer))
-	(commented-files (rgr-vc-all-comment-files))
-	(other-buffer
-	  (or (rgr-find-more-recent-buffer
-		(get-buffer "*vc-project-diff*")
-		(get-buffer "*Shell Command Output*")
-		(get-buffer "*VC-diff*"))
-	      (error "Can't find %S, %S, or %S buffer." "*VC-diff*"
-		     "*vc-project-diff*" "*Shell Command Output*"))))
+  (let* ((comment-buffer (current-buffer))
+	 (commented-files (rgr-vc-all-comment-files))
+	 (extra-files (append commented-files nil))
+	 (other-buffer
+	   (or (rgr-find-more-recent-buffer
+		 (get-buffer "*vc-project-diff*")
+		 (get-buffer "*Shell Command Output*")
+		 (get-buffer "*VC-diff*"))
+	       (error "Can't find %S, %S, or %S buffer." "*VC-diff*"
+		      "*vc-project-diff*" "*Shell Command Output*"))))
     (save-excursion
       (set-buffer other-buffer)
       (goto-char (point-min))
@@ -172,6 +192,7 @@ noted as such."
 	       (full-file-name (expand-file-name file-name))
 	       (extra (match-string 4)))
 	  ;; (message "found %S" file-name)
+	  (setq extra-files (delete full-file-name extra-files))
 	  (or (member full-file-name commented-files)
 	      (save-excursion
 		(set-buffer comment-buffer)
@@ -183,6 +204,13 @@ noted as such."
 			":\n")
 		(setq commented-files
 		      (cons full-file-name commented-files)))))))
+    (let ((tail extra-files) (n (length extra-files)))
+      (while tail
+	(message "%S does not appear in the diff." (car tail))
+	(sit-for 1)
+	(setq tail (cdr tail)))
+      (if (> n 1)
+	  (message "Total of %d extra files." n)))
     ;; move point to start adding comments, but not if already someplace useful.
     (if (bobp)
 	(forward-line 1))
@@ -280,8 +308,11 @@ If the prefix arg is bigger than 8 (for example with \\[universal-argument] \\[u
 		 (goto-char (+ pos (cdr src)))
 		 (rgr-mode-definition-name))))
     (switch-to-buffer-other-window
-      (or (rgr-find-more-recent-buffer (get-buffer "*VC-log*")
-				       (get-file-buffer "comment.text"))
+      ;; [need a better theory for how to identify the right comment buffer.  --
+      ;; rgr, 25-Feb-05.]
+      (or (apply (function rgr-find-more-recent-buffer)
+		 (get-buffer "*VC-log*")
+		 (rgr-comment-buffers))
 	  (find-file-noselect "comment.text")))
     (let ((current-comment-files (rgr-vc-current-comment-files))
 	  (changed-file (buffer-file-name buf))
