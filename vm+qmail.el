@@ -160,6 +160,7 @@ directories, controlled by the v+q-mbox-directory and v+q-mbox-regexp variables.
 Messages are reported regardless of whether the box or directory appears as an
 inbox in the vm-spool-files list.  Doesn't handle POP or IMAP drops."
   (interactive)
+  (require 'vm)
   ;; vm-session-initialization is necessary to ensure that ~/.vm is loaded
   ;; properly.  -- rgr, 11-Feb-01.
   (vm-session-initialization)
@@ -167,11 +168,10 @@ inbox in the vm-spool-files list.  Doesn't handle POP or IMAP drops."
 
 ;;;###autoload
 (defun rmail-mbox-status ()
-  "Summarize how many messages are waiting in all known mbox files and Maildir
-directories, controlled by the v+q-mbox-directory and v+q-mbox-regexp variables.
-Messages are reported regardless of whether the box or directory appears as an
-inbox in the vm-spool-files list.  Doesn't handle POP or IMAP drops."
+  "Summarize how many messages are waiting in all known mbox files,
+controlled by the rmail-primary-inbox-list variable."
   (interactive)
+  (require 'rmail)
   (v+q-mbox-status-internal rmail-primary-inbox-list))
 
 ;;; Munging return addresses.
