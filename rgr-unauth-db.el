@@ -106,6 +106,7 @@ or missing, then all connection attempts are ignored.")
 	    "68.80.0.0 - 68.87.255.255")
 	   "abuse@comcastpc.com")
 	  (("61.0.0.0 - 61.255.255.255"
+	    "163.13.0.0 - 163.32.255.255"
 	    "202.0.0.0 - 203.255.255.0"
 	    "210.0.0.0 - 211.255.255.255"
 	    "218.0.0.0/8"
@@ -214,7 +215,8 @@ or missing, then all connection attempts are ignored.")
 	    "218.234.0.0 - 218.239.255.255"
 	    "218.144.0.0 - 218.159.255.255"
 	    "220.64.0.0 - 220.71.255.255"
-	    "220.72.0.0 - 220.87.255.255")
+	    "220.72.0.0 - 220.87.255.255"
+	    "220.88.0.0 - 220.95.255.255")
 	   nil :whois "whois.nic.or.kr")
 	  ((;; [apparently at least partly out-of-date.  -- rgr, 28-Jan-03.]
 	    ;; "211.200.0.0 - 211.215.255.255"
@@ -236,88 +238,7 @@ or missing, then all connection attempts are ignored.")
 	    "211.20.0.0 - 211.23.255.255"
 	    "211.72.0.0 - 211.72.255.255"
 	    "211.75.0.0 - 211.75.255.255")
-	   "abuse@hinet.net")
-	  ;; chinanet blocks
-	  ((;; province unknown/unrecorded
-	    "202.96.128.0 - 202.96.191.255"
-	    "202.103.128.0 - 202.103.255.255"
-	    "202.104.0.0 - 202.105.255.255"
-	    ;; "CHINANET Anhui province network"
-	    "61.132.128.0 - 61.132.255.255"
-	    ;; "CHINANET Beijing province network"
-	    "202.106.0.0 - 202.106.255.255"
-	    "202.108.0.0 - 202.108.255.255"
-	    ;; "CHINANET Guangdong province network"
-	    "61.140.0.0 - 61.143.255.255"
-	    "61.144.0.0 - 61.144.255.255"
-	    "61.145.0.0/16"
-	    "218.19.0.0 - 218.20.255.255"
-	    ;; "CHINANET Guangxi province network"
-	    "218.21.64.0 - 218.21.127.255"
-	    ;; "CHINANET Guizhou province network"
-	    "218.86.128.0 - 218.86.255.255"
-	    "219.141.0.0 - 219.141.127.255"
-	    ;; "CHINANET Hebei province network"
-	    "61.182.0.0 - 61.182.255.255"
-	    ;; "CHINANET heilongjiang province network"
-	    "61.138.0.0 - 61.138.63.255"
-	    "218.7.0.0 - 218.10.255.255"
-	    ;; [61.144.0.0/16 belongs to gdnmc.guangzhou.gd.cn, which puts this
-	    ;; whole block in doubt.  -- rgr, 13-Jul-01.]
-	    ;; "61.140.0.0 - 61.146.255.255"
-	    "218.13.0.0 - 218.18.255.255"
-	    ;; "CHINANET henan province network"
-	    "61.52.0.0 - 61.54.255.255"
-	    ;; "CHINANET Hunan province network"
-	    "61.187.0.0 - 61.187.255.255"
-	    ;; "CHINANET Jiangsu province network"
-	    "61.132.0.0 - 61.132.127.255"
-	    ;; "CHINANET Jilin province network"
-	    "202.98.0.0 - 202.98.31.255"
-	    ;; "CHINANET liaoning province network"
-	    "218.24.0.0 - 218.25.255.255"
-	    ;; "CHINANET Jiangsu province network"
-	    ;; [see below.  -- rgr, 23-Aug-02.]
-	    ;; "CHINANET Jiangxi province network"
-	    "202.101.192.0 - 202.101.255.255"
-	    ;; Hunan province network
-	    "202.103.64.0 - 202.103.127.255"
-	    ;; Shanghai province
-	    "61.129.0.0 - 61.129.255.255"
-	    "61.151.0.0 - 61.152.255.255"
-	    "61.165.0.0 - 61.165.255.255"
-	    "61.169.0.0 - 61.173.255.255"
-	    "202.109.0.0 - 202.109.127.255"
-	    "202.96.192.0 - 202.96.255.255"
-	    "218.1.0.0 - 218.1.255.255"
-	    ;; "CHINANET Shanxi(SX) province network"
-	    "61.185.0.0/16"
-	    "202.97.128.0 - 202.97.159.255"
-	    "202.99.192.0 - 202.99.223.255"
-	    ;; "CHINANET Sichuan province network"
-	    "61.139.0.0 - 61.139.127.255"
-	    "61.157.0.0 - 61.157.255.255"
-	    "61.188.0.0 - 61.188.255.255"
-	    "202.98.96.0 - 202.98.159.255"
-	    "218.6.128.0 - 218.6.255.255"
-	    "218.88.0.0 - 218.89.255.255"
-	    ;; "CHINANET Yunnan province network"
-	    "61.159.192.0 - 61.159.255.255"
-	    "61.166.0.0 - 61.166.255.255"
-	    ;; "CNINFONET Xingjiang province network"
-	    "61.128.96.0 - 61.128.127.255"
-	    ;; "CHINANET Zhejiang province network"
-	    "218.71.0.0 - 218.75.127.255")
-	   "abuse@ns.chinanet.cn.net")
-	  ;; chinanet variations.
-	  ((;; "CHINANET liaoning province network"
-	    "218.24.0.0 - 218.25.255.255")
-	   "abuse@online.ln.cn")
-	  ((;; "CHINANET Jiangsu province network"
-	    "61.177.0.0 - 61.177.255.255"
-	    "202.102.0.0 - 202.102.127.255"
-	    )
-	   "abuse@jsinfo.net"))
+	   "abuse@hinet.net"))
   "Alist of (ip-subnet abuse-address &key extras), culled from NIC sites.
 This database is only necessary in those cases when the abuse address is
 not obvious from the subscriber's DNS name.  For that reason, this list
