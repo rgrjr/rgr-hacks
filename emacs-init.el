@@ -203,6 +203,8 @@
      (setq mc-gpg-user-id "Bob Rogers (main 2003) <rogers@rgrjr.dyndns.org>"))
 (setq mc-pgp-keydir (expand-file-name "~/.gnupg"))
 (setq mc-passwd-timeout 600)	;; ten minutes.
+;; TMDA stuff.  -- rgr, 18-May-04.
+(setq tmda-default-whitelist (expand-file-name "~/.tmda/accepted"))
 
 (cond ((eq rgr-site 'home)
 	(add-hook 'write-file-hooks 'rgr-mac-before-save-hook))
@@ -293,7 +295,7 @@
     ;; /usr/sbin/redirect.pl hacks to make it work.  -- rgr, 29-Feb-04.
     (setq ssh-per-host-option-alist
 	  '(("modulargenetics\\.dnsalias\\.com$"
-	     "-L" "9123:rdbms:3306" "-L" "8081:alexandria:80"))))
+	     "-L" "9123:carthage:3306" "-L" "8081:alexandria:80"))))
 
 ;; cvs hacks.  -- rgr, 6-Aug-04.
 (define-key text-mode-map "\C-c+" 'rgr-cvs-plus)
