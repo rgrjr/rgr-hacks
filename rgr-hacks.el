@@ -609,6 +609,8 @@ M-x buffer-menu)."
 ;;;###autoload
 (defun rgr-install-global-editing-hacks ()
   ;; Intended for .emacs calling.
+  (global-set-key "\C-cgl" 'goto-line)
+  (global-set-key "\C-cgc" 'goto-char)
   ;; Patch fill to be smarter about sentences.  -- rgr, 11-Feb-96.  [This has
   ;; been implemented as part of version 19.30, though I'm still gonna need
   ;; fill-patch functionality for HTML fill.  -- rgr, 21-Mar-96.]
