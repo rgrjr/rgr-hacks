@@ -171,8 +171,8 @@
 ;; 17-Dec-00.
 (global-set-key "\C-c\M-." 'rgr-elisp-find-tag-for-emacs-key)
 
-;; We want to ignore these extensions regardless of whether we are actually
-;; running any lisps.
+;; We want to ignore these extensions during completion regardless of whether we
+;; are actually running the relevant programs.
 (setq completion-ignored-extensions
       (append '(;; ACL (and as modified).
 		".fasl" ".aw86f" ".al86f"
@@ -183,8 +183,12 @@
 		;; CLISP
 		".fas" ".lib"
 		;; LispWorks?
-		".afasl")
+		".afasl"
+		;; Parrot.
+		".pbc")
 	      completion-ignored-extensions))
+;; Speaking of which, let's add a hook for Parrot.
+(add-hook 'pir-mode-hook 'rgr-pir-mode-hook)
 
 (add-hook 'rmail-mode-hook 'rgr-rmail-mode-hook)
 (add-hook 'mail-mode-hook 'rgr-mail-mode-hook)
