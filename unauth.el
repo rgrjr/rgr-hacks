@@ -243,7 +243,7 @@ start at most one emacs per day."
 	  (sit-for 2)))))
 
 (defun rgr-unauth-insert-local-host-ip ()
-    (insert
+  (insert
     (save-excursion
       (set-buffer (get-buffer-create " *host-ip*"))
       (erase-buffer)
