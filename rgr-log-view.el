@@ -55,10 +55,11 @@ rgr, 4-Sep-03.]"
 	   (other-tag
 	     (if current-prefix-arg
 		 default-tag
-		 (read-string (format "Compare %S tag %s to (default %S): "
-				      file current-tag default-tag)
-			      nil nil default-tag))))
-      (list file current-tag other-tag)))
+		 (read-string
+		   (format "Compare %S tag %s to earlier version (default %S): "
+			   file current-tag default-tag)
+		   nil nil default-tag))))
+      (list file other-tag current-tag)))
   (and (string-equal (upcase first-tag) "HEAD")
        (setq first-tag "HEAD"))
   (and (string-equal (upcase other-tag) "HEAD")
