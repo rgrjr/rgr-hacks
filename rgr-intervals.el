@@ -417,7 +417,7 @@ tweaked so as not to disturb the indentation of the rest of the line."
 	      (if (> secs secs-per-day)
 		  (setq days (+ days (floor secs secs-per-day))
 			secs (mod secs secs-per-day)))
-	      (insert (if (plusp days)
+	      (insert (if (> days 0)
 			  (format "%d-" days)
 			  "")
 		      (discus-print-time secs)))))))

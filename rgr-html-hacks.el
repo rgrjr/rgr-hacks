@@ -233,7 +233,7 @@ return it as a symbol (after converting to lower case)."
 				      ;; 30-Mar-98.]
 				      (progn (skip-chars-forward "-a-zA-Z0-9.")
 					     (point)))))
-	     (name (if (plusp (length name-string))
+	     (name (if (> (length name-string) 0)
 		       (intern name-string)
 		       (error "Zero-length attribute name.")))
 	     (value t) (next-char nil))
