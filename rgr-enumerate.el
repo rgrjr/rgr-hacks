@@ -24,17 +24,23 @@ sequentially, beginning with the first."
 The paragraphs are numbered from 1; if you wish to change this, use the
 \\[rgr-renumber-region-paragraphs] command afterwards."
   (interactive "r")
-  (let ((index 0))
-    (save-excursion
+  (save-excursion
+    (let ((index 0)
+	  (end-of-sentence-re
+	    (concat "\\([.?!][]\"')}]*\\)\\($\\| $\\|\t\\|  \\)\\([ \t\n]*\\)"
+		    ;; this prevents us from numbering an empty sentence at the
+		    ;; end of the region.
+		    "\\([^ \t\n]\\)"))
+	  (end (set-marker (make-marker) end)))
       (goto-char start)
       (if (looking-at "^  +")
 	  (replace-match (format "\n   %d.  " (setq index (1+ index)))))
-      (while (re-search-forward
-	       "\\([.?!][]\"')}]*\\)\\($\\| $\\|\t\\|  \\)\\([ \t\n]*\\)"
-	       end t)
+      (while (re-search-forward end-of-sentence-re end t)
 	(replace-match (concat (match-string 1)
 			       (format "\n\n   %d.  "
-				       (setq index (1+ index)))))
+				       (setq index (1+ index)))
+			       (match-string 4))
+		       t t)
 	(save-excursion
 	  (backward-paragraph 2)
 	  (fill-paragraph nil))))))
