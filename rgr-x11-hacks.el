@@ -1,11 +1,10 @@
 ;;;; Playing with frames under X11.
 ;;;
-;;;    Modification history:
+;;; [created.  -- rgr, 20-Aug-01.]
 ;;;
-;;; created.  -- rgr, 20-Aug-01.
-;;;
+;;; $Id$
 
-(defvar rgr-interesting-frame-heights '(58 43 28))
+(defvar rgr-interesting-frame-heights '(58 37 28))
 (defvar rgr-x11-preferred-font-name
 	"-adobe-courier-medium-r-normal--*-180-*-m-*-iso8859-15"
   "*Font name pattern that matches what we want to install by default.")
