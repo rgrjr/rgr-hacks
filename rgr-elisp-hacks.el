@@ -116,9 +116,13 @@ A Lisp code line is one that is nonblank and not entirely a comment."
 			;; the htdocs tree will only be available on the alphas,
 			;; but rgr-make-tags-table-list will figure this out.
 			;; -- rgr, 4-Nov-98.
-			"/usr/local/etc/httpd/htdocs/needle-doc/new")
+			"/usr/local/etc/httpd/htdocs/needle-doc/new"
+			;; these are two alternative names for the same place.
+			(expand-file-name "~/projects/oligo")
+			(expand-file-name "~/projects/modgen/oligo"))
 		  load-path
-		  (list (expand-file-name "~thread/code/ctserv/bin")
+		  (list "/usr/lib/perl5/site_perl/5.6.1/Bio"
+			;; (expand-file-name "~thread/code/ctserv/bin")
 			(expand-file-name "~psa/psa-test/bin"))))))
 
 (defun rgr-make-tag-table-alist-internal ()
