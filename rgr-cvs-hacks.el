@@ -20,7 +20,7 @@ give a C-u, it shows the last week's worth; if C-u C-u, then the last
 month (30 days, actually).  Any other numeric argument shows the log for
 that many days."
   (interactive "P")
-  (require 'discus)
+  (require 'time-date)		;; part of gnus
   (let* ((number-of-days
 	   (cond ((integerp number-of-days) number-of-days)
 		 ((not number-of-days) 3)
@@ -32,11 +32,14 @@ that many days."
 		   30)
 		 ((consp number-of-days) (car number-of-days))
 		 (t (error "got number-of-days %S" number-of-days))))
-	 (today (car (discus-parse-date (current-time-string))))
-	 (n-days-ago (discus-print-date (cons (- today number-of-days) nil))))
-    ;; (error "Date '%s'." n-days-ago)
+	 (n-days-ago (subtract-time (current-time)
+				    (seconds-to-time
+				      (* number-of-days 24 60 60))))
+	 (n-days-ago-string
+	   (format-time-string "%Y-%m-%d %H:%M" n-days-ago)))
+    ;; (error "Date '%s'." n-days-ago-string)
     (shell-command (format "cvs -q log -d '>%s' | cvs-chrono-log.pl"
-			   n-days-ago))))
+			   n-days-ago-string))))
 
 ;;;###autoload
 (defun rgr-vc-project-diff ()
@@ -47,6 +50,8 @@ when asked to compare a working directory to the original CVS version
 output buffer from '*vc-diff*' to '*vc-project-diff*'.  This is so that
 the \\[rgr-cvs-insert-log-skeleton] command can use this output."
   (interactive)
+  ;; need an explicit require, because vc-version-diff is not autoloaded.
+  (require 'vc)
   (vc-version-diff (expand-file-name ".") nil nil)
   (save-excursion
     (set-buffer "*vc-diff*")
@@ -100,19 +105,66 @@ noted as such."
     (or (eobp)
 	(forward-line 1))))
 
+(defun rgr-mode-definition-name ()
+  ;; Total kludge.
+  (cond ((eq major-mode 'emacs-lisp-mode)
+	  (save-excursion
+	    (if (not (looking-at "^("))
+		(beginning-of-defun))
+	    (rgr-lisp-def-name t)))
+	((eq major-mode 'perl-mode)
+	  (rgr-perl-definition-name))
+	(t
+	  (message "Can't find definitions for %S mode." major-mode)
+	  (sit-for 2)
+	  nil)))
+
+;;;###autoload
+(defun rgr-diff-add-definition-comment (&optional other-file)
+  "Find the definition name of the corresponding source line.
+`diff-jump-to-old-file' (or its opposite if the OTHER-FILE prefix arg
+is given) determines whether to jump to the old or the new file.
+If the prefix arg is bigger than 8 (for example with \\[universal-argument] \\[universal-argument])
+  then `diff-jump-to-old-file' is also set, for the next invocations."
+  (interactive "P")
+  (let* ((rev (not (save-excursion (beginning-of-line) (looking-at "[-<]"))))
+	 ;; this is a list of (buf line-offset pos src dst &optional switched).
+	 (loc (diff-find-source-location other-file rev))
+	 (buf (car loc))
+	 (pos (nth 2 loc))
+	 (src (nth 3 loc))
+	 (name (save-excursion
+		 (set-buffer buf)
+		 (goto-char (+ pos (cdr src)))
+		 (rgr-mode-definition-name))))
+    (switch-to-buffer-other-window (find-file-noselect "comment.text"))
+    (if (bolp)
+	(or (bobp)
+	    (forward-char -1))
+	(end-of-line))
+    (insert "\n")
+    (if (eobp)
+	(forward-char -1))
+    (rgr-cvs-plus)
+    (if name
+	(insert "(" name "):  "))))
+
 ;;;###autoload
 (defun rgr-cvs-plus ()
-  "Insert a '  + ' at the beginning of the current line."
+  "Insert a '  + ' at point, starting a new line if not at BOL."
   (interactive)
-  (cond ((not (bolp))
-	  (save-excursion
-	    (beginning-of-line)
-	    (rgr-cvs-plus)))
-	(t
-	  (cond ((looking-at "^ *\\* ")
-		  (insert "\n")
-		  (forward-line -1)))
-	  (insert "   + "))))
+  (cond ((and (eolp) (bolp))
+	  ;; empty line, no adjustment needed.
+	  )
+	((and (bolp) (looking-at "^[ \t]*[*+]"))
+	  ;; beginning of non-empty line with stuff already on it; move it to
+	  ;; the next line.
+	  (insert "\n")
+	  (forward-char -1))
+	((not (bolp))
+	  ;; in the middle or end of a non-empty line
+	  (insert "\n")))
+  (insert "   + "))
 
 (defun rgr-cvs-join-consecutive-file-headings ()
   "Join consecutive '* foo:' lines with a comma."
@@ -151,5 +203,9 @@ noted as such."
 ;;;###autoload
 (defun rgr-change-log-edit-hook ()
   (define-key change-log-mode-map "\C-c+" 'rgr-change-log-insert-plus))
+
+;;;###autoload
+(defun rgr-diff-mode-hook ()
+  (define-key diff-mode-map "\C-c!" 'rgr-diff-add-definition-comment))
 
 (provide 'rgr-cvs-hacks)
