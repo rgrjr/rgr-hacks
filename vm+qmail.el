@@ -506,6 +506,7 @@ keys at all."
 		   (mapcar (function delete-file) new-mail))))
       (kill-buffer buffer))))
 
+;;;###autoload
 (defun vm-maildir-move-mail (source destination)
   ;; based on the vm-spool-move-mail function.  -- rgr, 22-Apr-00.
   (let ((handler (and (fboundp 'find-file-name-handler)
