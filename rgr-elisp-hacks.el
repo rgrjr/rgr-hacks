@@ -111,24 +111,36 @@ A Lisp code line is one that is nonblank and not entirely a comment."
 
 (defun rgr-make-tags-table-list-internal ()
   ;; FSF emacs version.
-  (setq tags-table-list
-	(rgr-make-tags-table-list
-	  (append (list (expand-file-name "~thread/code/stat")
-			;; the htdocs tree will only be available on the alphas,
-			;; but rgr-make-tags-table-list will figure this out.
-			;; -- rgr, 4-Nov-98.
-			"/usr/local/etc/httpd/htdocs/needle-doc/new"
-			;; these are two alternative names for the same place.
-			(expand-file-name "~/projects/mgi/oligo")
-			(expand-file-name "/shared/mgi/oligo")
-			;; and this needs to come after.
-			(expand-file-name "~/projects/database/code"))
-		  load-path
-		  (list (expand-file-name "~psa/psa-test/bin")
-			;; [this works for SuSE 9.0.  -- rgr, 28-Jan-05.]
-			"/usr/lib/perl5/site_perl/5.8.1/Bio"
-			;; [this is for SuSE 8.1.  -- rgr, 15-Jun-04.]
-			"/usr/lib/perl5/site_perl/5.6.1/Bio")))))
+  (setq tags-table-set-list
+	(list
+	  (rgr-make-tags-table-list
+	    (append (list "/shared/mgi/oligo" "~/projects/mgi/oligo"
+			  ;; [this works for SuSE 9.0.  -- rgr, 28-Jan-05.]
+			  "/usr/lib/perl5/site_perl/5.8.1/Bio"
+			  ;; [this is for SuSE 8.1.  -- rgr, 15-Jun-04.]
+			  "/usr/lib/perl5/site_perl/5.6.1/Bio"
+			  ;; and this needs to come after.
+			  "~/projects/database/code")
+		    load-path
+		    ;; BMERC stuff.
+		    (list "~psa/psa-test/bin"
+			  ;; [way old.  -- rgr, 10-Feb-05.]
+			  ;; "~thread/code/stat"
+			  ;; this will only be available on the alphas, but
+			  ;; rgr-make-tags-table-list will figure this out.  --
+			  ;; rgr, 4-Nov-98.
+			  "/usr/local/etc/httpd/htdocs/needle-doc/new")))))
+  (let ((oligo-web (expand-file-name "~/projects/oligo")))
+    ;; these directories contain just the essentials for oligo tools web
+    ;; development.  if they exist, add them as a second (separate) set.  --
+    ;; rgr, 10-Feb-05.
+    (if (file-directory-p oligo-web)
+	(setq tags-table-set-list
+	      (append tags-table-set-list
+		      (list (rgr-make-tags-table-list
+			      (list oligo-web
+				    "/usr/lib/perl5/site_perl/5.8.1/Bio"
+				    load-path))))))))
 
 (defun rgr-make-tag-table-alist-internal ()
   ;; xemacs version, still in development.  note the change of variable name and
