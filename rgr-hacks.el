@@ -85,7 +85,10 @@
 				  canonical-host))
 		(etc (substring display (match-beginning 0)))
 		(client (getenv "SSH_CLIENT")))
-	   (setenv "DISPLAY" (concat display-host etc))
+	   ;; Re-export $DISPLAY, but not if "su", since that may interfere with
+	   ;; xauth permissions.  -- rgr, 25-Sep-03.
+	   (if (equal (user-real-login-name) (user-login-name))
+	       (setenv "DISPLAY" (concat display-host etc)))
 	   (or (and client
 		    ;; [this seems to have gone away with OpenSSH 3.4, if not
 		    ;; earlier.  -- rgr, 12-May-03.]
