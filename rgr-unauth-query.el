@@ -110,6 +110,8 @@ rgr-unauth-scarf-whois-data fn for details.  -- rgr, 29-Dec-02.")
   (let* ((query-host (or query-host "whois.arin.net"))
 	 (jpnic-p (equal query-host "whois.nic.ad.jp"))
 	 (buffer (get-buffer-create (concat "*" query-host "*")))
+	 ;; This forces shell-command to show the thing in a window of its own.
+	 (resize-mini-windows nil)
 	 (netblk-regexp (car (cdr (assoc query-host rgr-unauth-whois-servers))))
 	 (command (concat "whois"
 			  (if query-host
