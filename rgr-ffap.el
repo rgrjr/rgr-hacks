@@ -11,6 +11,7 @@
 	  ("\\.xls$" "OOo-calc")
 	  ("\\.xls$" "gnumeric")
 	  ;; ("\\.csv$" "gnumeric")	;; [doesn't work.  -- rgr, 18-Feb-04.]
+	  ("\\.ppt$" "OOo-impress")
 	  ("\\.doc$" "abiword")
 	  ("\\.pdf$" "acroread")
 	  ;; image extensions.
