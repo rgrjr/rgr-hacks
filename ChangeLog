@@ -1,6 +1,85 @@
+2003-09-01  Bob Rogers  <rogers@rgrjr.dyndns.org>
+
+	* rgr-unauth-query.el: rgr-unauth-query-whois-server-cached must
+	allow for entries without subnets.
+
 2003-08-23  Bob Rogers  <rogers@rgrjr.dyndns.org>
 
 	* rgr-unauth-query.el: New source file, query results are now
 	cached.  So far, there is no provision for flushing the cache; you
 	must set rgr-unauth-whois-results-cache to nil manually.
 
+	* ChangeLog: added significant changes made since importing into
+	CVS.
+	
+2003-08-09  Bob Rogers  <rogers@rgrjr.dyndns.org>
+
+	* ffap-local-url-patch.el:  New patch to unquote '%' escapes in
+	local URLs for find-file-at-point.
+	
+2003-08-07  Bob Rogers  <rogers@rgrjr.dyndns.org>
+
+	* Allow root to use a ~/emacs/completions directory.
+
+2003-07-29  Bob Rogers  <rogers@rgrjr.dyndns.org>
+
+	* rgr-intervals.el:  Bug fix: total-secs in
+	rgr-compute-region-interval can be negative.
+
+2003-07-12  Bob Rogers  <rogers@rgrjr.dyndns.org>
+
+	* rgr-shell-hacks.el: Catch "Enter password" prompt, used by
+	cvs/ssh.
+	* emacs-init.el: Turn off the splash graphic.
+
+2003-07-03  Bob Rogers  <rogers@rgrjr.dyndns.org>
+
+	* Use emacs 21.2+ mail-envelope-from feature for
+	v+q-set-return-address.  This requires the current CVS version of
+	sendmail.el to work.
+
+2003-06-13  Bob Rogers  <rogers@rgrjr.dyndns.org>
+
+	* Generalize rgr-date-lines-today -> rgr-date-lines.
+
+2003-05-31  Bob Rogers  <rogers@rgrjr.dyndns.org>
+
+	* unauth.el: Clean up JPNIC handling, make "previous attempt"
+	summaries optional.
+
+2003-05-29  Bob Rogers  <rogers@rgrjr.dyndns.org>
+
+	* unauth.el: Added support for removing previously-reported
+	iptables log entries, also made less verbose.
+
+2003-05-23  Bob Rogers  <rogers@rgrjr.dyndns.org>
+
+	* rgr-vm-hacks.el: New vm-mime-reader-save-all-attachments
+	command.
+
+2003-05-12  Bob Rogers  <rogers@rgrjr.dyndns.org>
+
+	* unauth.el: In rgr-unauth-insert-stuff, allow for the fact that
+	old reported incidents may not appear in the current set of log
+	files.
+	* unauth.el: Update for SuSE 8.1 whois, which doesn't understand
+	'@' in query, add more ignored protocols.
+
+2003-04-30  Bob Rogers  <rogers@rgrjr.dyndns.org>
+
+	* rgr-perl-hacks.el: Add documentation, revise hookage for
+	publication to the boston-pm@mail.pm.org list.
+
+2003-04-23  Bob Rogers  <rogers@rgrjr.dyndns.org>
+
+	* rgr-abbrev-completion.el: Better rgr-abbrev-completion-save-file
+	and rgr-abbrev-completion-save-directory inits (now prefers
+	~/emacs/completions/ dir), make rgr-install-abbrev-completion a
+	command.
+	* emacs-init.el: Clean up emacs-init.el completion init.
+
+2003-04-19  Bob Rogers  <rogers@rgrjr.dyndns.org>
+
+	* Initial import of rogers/emacs/rgr-hacks code into CVS.  For
+	earlier changes, see the "Modification history" paragraph at the
+	start of each source file.
