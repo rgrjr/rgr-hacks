@@ -676,6 +676,20 @@ M-x buffer-menu)."
 (defun rgr-install-ffap ()
   (require 'ffap)
   (require 'ffap-local-url-patch)
+  ;; this disables attempts to use "foo.pl" as a file server in poland.  -- rgr,
+  ;; 21-Oct-03.
+  (setq ffap-machine-p-known 'reject)
+  (setq ffap-machine-p-unknown 'reject)
+  ;; this disables use and generation of "news:" and "mailto:" urls.
+  (setq ffap-foo-at-bar-prefix nil)
+  (setq ffap-url-regexp
+	(concat "\\`\\("
+		"file:"			; no host ok
+		"\\|"
+		"\\(ftp\\|https?\\|telnet\\|gopher\\|www\\|wais\\)://"
+					; needs host
+		"\\)."			; require one more character
+		))
   ;; [enable this if you want "C-u C-x C-f" to invoke the regular find-file
   ;; command and "C-u C-x C-f" to use the extra ffap features.  -- rgr,
   ;; 9-Aug-03.]
