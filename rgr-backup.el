@@ -17,7 +17,7 @@
 				    (goto-char (match-end 0))
 				    (- (current-column) 3)))
 		(<= level other-level))
-      (message "[other-level %s]" other-level)
+      ;; (message "[other-level %s]" other-level)
       (if (equal (match-string 1) "*")
 	  (replace-match "." t t nil 1))
       (forward-line -1))))
@@ -36,7 +36,7 @@
       (and (save-excursion
 	     (re-search-forward "tape blocks (\\([0-9.]+\\)MB) on " nil t))
 	   (setq size (car (read-from-string (match-string 1)))))
-      (message "[got level %S date %S size %S for part %S]"
+      '(message "[got level %S date %S size %S for part %S]"
 	       level date size partition)
       (save-excursion
 	(set-buffer (find-file-noselect rgr-backup-log-file-name))
