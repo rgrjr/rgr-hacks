@@ -30,6 +30,8 @@
 ;; [disabled, so we can leave rmail-mbox-status here.  -- rgr, 13-May-03.]
 ;; (require 'vm)
 
+(require 'message)
+
 (defvar v+q-base-return-address nil
   "This is the base 'user@host' string that should be augmented to
 'user-list@host' for replies to mailing list 'list'.  If nil (the
@@ -270,6 +272,7 @@ controlled by the rmail-primary-inbox-list variable."
   ;; encoding.  -- rgr, 20-Apr-00.
   (let ((fullname (or v+q-user-full-name (user-full-name)))
 	(quote-fullname nil))
+    (message-remove-header "from")
     (if (string-match "[\200-\377]" fullname)
 	(setq fullname (mail-quote-printable fullname t)
 	      quote-fullname t))
@@ -346,12 +349,16 @@ Interactively prompts for a new return address."
       (v+q-insert-from-header new-return-address))
     ;; Customize send-mail-function for sendmail, since sendmail-send-it copies
     ;; the buffer contents into a scratch buffer.
-    (cond ((not (eq send-mail-function 'sendmail-send-it))
+    (cond ((not (member send-mail-function
+			'(v+q-sendmail-send-it sendmail-send-it)))
+	    ;; The send-mail-function will already be v+q-sendmail-send-it if
+	    ;; the user does it again (i.e. change of mind).
 	    (error "Oops; can't set return address for the '%S' sender."
 		   send-mail-function))
 	  ((rgr-emacs-version-p 21 3)
-	    ;; emacs 21 supports this directly (but 21.2 requires a patch to
-	    ;; make it work when these are buffer-local).  -- rgr, 3-Jul-03.
+	    ;; emacs 21 supports this directly (but 21.2 and 21.3 require a
+	    ;; patch to make it work when these are buffer-local).  -- rgr,
+	    ;; 3-Jul-03.
 	    (set (make-local-variable 'mail-specify-envelope-from) t)
 	    (set (make-local-variable 'mail-envelope-from) new-return-address))
 	  (t
