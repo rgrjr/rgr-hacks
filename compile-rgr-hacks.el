@@ -55,15 +55,13 @@ rgr-hacks-compile-module (see below).")
 	  "rgr-mail-hacks"
 	  "rgr-makefile-hacks"
 	  ("rgr-mouse-19"
-	   if (eq rgr-emacs-major-version 19)
+	   if (member rgr-emacs-major-version '(19 20))
 	   require (ilisp-mouse))
-	  ("rgr-mouse-20"
-	   if (eq rgr-emacs-major-version 20)
-	   require (ilisp-mouse))
+	  ("rgr-mouse-20" if (eq rgr-emacs-major-version 20))
 	  ("rgr-mouse-21"
 	   if (eq rgr-emacs-major-version 21)
 	   require (ilisp-mouse))
-	  ("rgr-mouse" require (ilisp-mouse))
+	  ("rgr-mouse" use (ilisp-mouse tex-mode) require (browse-url))
 	  "rgr-perl-hacks"
 	  ;; [not finished.  -- rgr, 23-Apr-03.]
 	  ;; "rgr-rect-hacks"

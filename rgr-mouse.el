@@ -36,10 +36,6 @@
 ;;;
 ;;;*****************************************************************************
 ;;;
-;;;    To compile this without error, do the following:
-;;;
-;;; (mapcar 'require '(tex-mode browse-url))
-;;;
 ;;; To do:
 ;;;
 ;;;    1.  Make rgr-mouse-mark-text-down highlight during the drag.
@@ -99,12 +95,14 @@
 ;; be loaded.  -- rgr, 22-Apr-03.]
 (condition-case () (require 'ilisp-mouse)
   (error nil))
+(require 'browse-url)
 
 ;;;; Variables
 
-(defvar rgr-web-client-name "/usr/bin/netscape"
-  "*Name of WWW client to use for finding URL's.  Note that if you also use
-rgr-web-client-host, then this should be a full pathname.")
+(defvar rgr-web-client-name browse-url-netscape-program
+  "*Name of WWW client to use for finding URL's.  Note that if you also
+set rgr-web-client-host, then this may need to be the full pathname on
+the client host.")
 
 (defvar rgr-web-client-host nil
   "*If non-nil, the host on which we should run the client via rsh.")
@@ -210,7 +208,7 @@ additional customizations.")
   ;; from the browse-url-netscape function.  -- rgr, 25-Mar-98.]
   (let* ((netscape-command (format "openURL(%s%s)"
 				   url (if new-window-p ",new-window" "")))
-	 (result (apply 'call-process "netscape" nil nil nil
+	 (result (apply 'call-process browse-url-netscape-program nil nil nil
 			(append browse-url-netscape-arguments
 				(if new-window-p '("-noraise"))
 				(list "-remote" netscape-command)))))
