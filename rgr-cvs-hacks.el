@@ -123,13 +123,17 @@ added or deleted are noted as such."
 
 (defun rgr-mode-definition-name ()
   ;; Total kludge.
-  (cond ((eq major-mode 'emacs-lisp-mode)
+  (cond ((member major-mode '(emacs-lisp-mode lisp-mode))
 	  (save-excursion
 	    (if (not (looking-at "^("))
 		(beginning-of-defun))
 	    (rgr-lisp-def-name t)))
 	((eq major-mode 'perl-mode)
 	  (rgr-perl-definition-name))
+	((eq major-mode 'pir-mode)
+	  (save-excursion
+	    (and (re-search-backward "^\\.sub[ \t]+\\([^ \t\n]+\\)" nil t)
+		 (match-string 1))))
 	(t
 	  (message "Can't find definitions for %S mode." major-mode)
 	  (sit-for 2)
