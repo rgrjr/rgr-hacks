@@ -101,4 +101,39 @@ Reverts the dired buffer."
 		  ;; this is for the "newest" version.
 		  new-name))))))))
 
+;;; Newer stuff.
+
+(defun dired-do-flush-spaces-internal (op-symbol file-creator operation arg
+				       &optional marker-char op1
+				       how-to)
+  ;; based on dired-do-create-files
+  (let ((fn-list (dired-get-marked-files nil arg)))
+    (dired-create-files
+      file-creator operation fn-list
+      (function (lambda (from)
+	(let ((directory (file-name-directory from))
+	      (file-name (file-name-nondirectory from)))
+	  (while (string-match " " file-name)
+	    (setq file-name (replace-match "-" t t file-name)))
+	  (expand-file-name file-name directory))))
+      marker-char)))
+
+;;;###autoload
+(defun dired-do-flush-spaces (&optional arg)
+  "Rename current file or all marked (or next ARG) files changing SPC to '-'."
+  (interactive "P")
+  (dired-do-flush-spaces-internal
+    'flush-spaces (function dired-rename-file)
+    "Remove spaces from" arg dired-keep-marker-rename))
+
+;;; Tail ends.
+
+;;;###autoload
+(defun rgr-dired-load-hook ()
+  ;; new hack  -- rgr, 2-Feb-99.
+  (define-key dired-mode-map "\C-cr" 'rgr-dired-rename-file-and-versions)
+  ;; some still newer hacks.  -- rgr, 13-Sep-04.
+  (define-key dired-mode-map "\C-c " 'dired-do-flush-spaces)
+  (define-key dired-mode-map "\C-ca" 'vm-dired-attach-file))
+
 (provide 'rgr-dired)

@@ -383,6 +383,100 @@ directory."
     (message "Done; saved %d message%s."
 	     n-saved (if (= n-saved 1) "" "s"))))
 
+;;; Attaching files from dired.
+
+(defun vm-dired-attach-files-to-message (files message-buffer)
+  ;; this duplicates much of the vm-mime-attach-file interactive dialog in order
+  ;; to ask about MIME type, etc., for each file.
+  (save-excursion
+    (set-buffer message-buffer)
+    (let ((tail files))
+      (while tail
+	(let* ((file (car tail))
+	       (abbrev (abbreviate-file-name file))
+	       (default-type (or (vm-mime-default-type-from-filename file)
+				 "application/octet-stream"))
+	       (user-type (completing-read
+			    (format "Content type for %s (default %s): "
+				    abbrev default-type)
+			    vm-mime-type-completion-alist))
+	       (type (if (> (length user-type) 0)
+			 user-type
+			 default-type))
+	       (charset nil) (description nil))
+	  (if (vm-mime-types-match "text" type)
+	      (let ((cs (completing-read
+			  "Character set for %s (default US-ASCII): "
+			  abbrev vm-mime-charset-completion-alist)))
+		(if (> (length cs) 0)
+		    (setq charset cs))))
+	  (setq description
+		(read-string (format "One line description for %s: "
+				     abbrev)))
+	  (vm-mime-attach-file file type charset description))
+	(setq tail (cdr tail))))))
+
+;;;###autoload
+(defun vm-dired-attach-file ()
+  "Attach current or all marked files in dired to a vm-mail message."
+  (interactive)
+  (let* ((files (dired-get-marked-files))
+	 (files-description (if (cdr files)
+				(format "%d files" (length files))
+				(abbreviate-file-name (car files))))
+	 (vm-dired-buffers (buffer-list))
+	 (vm-dired-mail-buffers nil)
+	 (chosen-buffer nil))
+    ;; find mail buffers.
+    (save-excursion
+      (while vm-dired-buffers
+	(set-buffer (car vm-dired-buffers))
+	(if (eq major-mode 'mail-mode)
+	    (setq vm-dired-mail-buffers (cons (car vm-dired-buffers)
+					      vm-dired-mail-buffers)))
+	(setq vm-dired-buffers (cdr vm-dired-buffers))))
+    ;; do validation before asking the user anything.
+    (if (null vm-dired-mail-buffers)
+	(error "No mail buffers; start composing a message first."))
+    (if (null vm-send-using-mime)
+	(error "MIME attachments disabled in vm, %s"
+	       "set vm-send-using-mime non-nil to enable."))
+    (let ((tail files))
+      (while tail
+	(let ((file (car tail)))
+	  (if (file-directory-p file)
+	      (error "%s is a directory, cannot attach" file))
+	  (if (not (file-exists-p file))
+	      (error "No such file: %s" file))
+	  (if (not (file-readable-p file))
+	      (error "You don't have permission to read %s" file)))
+	(setq tail (cdr tail))))
+    (cond ((null (cdr vm-dired-mail-buffers))
+	    (if (yes-or-no-p
+		  (format "Attach %s to message %s? "
+			  files-description
+			  (buffer-file-name (car vm-dired-mail-buffers))))
+		(vm-dired-attach-files-to-message files
+						  (car vm-dired-mail-buffers))
+		(error "Aborted.")))
+	  (t
+	    (let* ((choice
+		     ;; [this sucks; we should select from mail buffers, and use
+		     ;; the most recent unsent one as the default.  -- rgr,
+		     ;; 13-Sep-04.]
+		     (read-buffer
+		       (format "Attach %s to message (default %s)? "
+			       files-description
+			       (buffer-name (car vm-dired-mail-buffers))
+			       nil t)))
+		   (chosen-buffer
+		     (if (equal choice "")
+			 (car vm-dired-mail-buffers)
+			 (get-buffer choice))))
+	      (if (not (member chosen-buffer vm-dired-mail-buffers))
+		  (error "%S is not a mail buffer." chosen-buffer))
+	      (vm-dired-attach-files-to-message files chosen-buffer))))))
+
 ;;; vm-mail-mode
 
 ;; vm-mail-mode is invoked by "m" in a vm buffer, or M-x vm-mail from anywhere.

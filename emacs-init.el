@@ -142,10 +142,7 @@
 		   (rgr-emacs-version-p 21 2)))
 	  "-al"
 	  "-alg"))
-;; new hack  -- rgr, 2-Feb-99.
-(defun rgr-dired-mode-hook ()
-  (define-key dired-mode-map "\C-cr" 'rgr-dired-rename-file-and-versions))
-(add-hook 'dired-load-hook 'rgr-dired-mode-hook)
+(add-hook 'dired-load-hook 'rgr-dired-load-hook)
 
 ;; Newer feature (ported from Lispm implementation).  -- rgr, 29-Nov-96.
 ;; [only save completions in rgr-emacs if we can write it!  -- rgr, 1-Apr-00.]
@@ -297,6 +294,10 @@
     (setq ssh-per-host-option-alist
 	  '(("modulargenetics\\.dnsalias\\.com$"
 	     "-L" "9123:rdbms:3306" "-L" "8081:alexandria:80"))))
+
+;; cvs hacks.  -- rgr, 6-Aug-04.
+(define-key text-mode-map "\C-c+" 'rgr-cvs-plus)
+(add-hook 'log-edit-mode-hook 'rgr-cvs-log-edit-hook)
 
 ;; Change TERM=emacs into something that Tru64 "man" can deal with.  It refuses
 ;; to run if it can't recognize the terminal type, which is broken; it should
