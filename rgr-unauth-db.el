@@ -107,6 +107,7 @@ or missing, then all connection attempts are ignored.")
 	   "abuse@comcastpc.com")
 	  (("61.0.0.0 - 61.255.255.255"
 	    "163.13.0.0 - 163.32.255.255"
+	    "165.246.0.0/16"
 	    "166.111.0.0/16"
 	    "202.0.0.0 - 203.255.255.0"
 	    "210.0.0.0 - 211.255.255.255"
@@ -146,7 +147,8 @@ or missing, then all connection attempts are ignored.")
 	    "219.96.0.0 - 219.127.255.255"
 	    "219.160.0.0 - 219.165.255.255"
 	    "219.166.0.0 - 219.167.255.255"
-	    "220.96.0.0 - 220.99.255.255")
+	    "220.96.0.0 - 220.99.255.255"
+	    "220.208.0.0 - 220.223.255.255")
 	   nil :whois "whois.nic.ad.jp")
 	  ;; LACNIC is nominally "200.0.0.0/8" (of which whois.registro.br gets
 	  ;; the top half), but there appears to be a gap at 200.62.0.0 -
@@ -218,7 +220,8 @@ or missing, then all connection attempts are ignored.")
 	    "219.248.0.0 - 219.255.255.255"
 	    "220.64.0.0 - 220.71.255.255"
 	    "220.72.0.0 - 220.87.255.255"
-	    "220.88.0.0 - 220.95.255.255")
+	    "220.88.0.0 - 220.95.255.255"
+	    "220.116.0.0 - 220.127.255.255")
 	   nil :whois "whois.nic.or.kr")
 	  ((;; [apparently at least partly out-of-date.  -- rgr, 28-Jan-03.]
 	    ;; "211.200.0.0 - 211.215.255.255"
