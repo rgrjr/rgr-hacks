@@ -8,6 +8,7 @@
 
 (defvar rgr-ffap-file-to-application-map
 	'(("\\.gnumeric$" "gnumeric")
+	  ("\\.xls$" "OOo-calc")
 	  ("\\.xls$" "gnumeric")
 	  ;; ("\\.csv$" "gnumeric")	;; [doesn't work.  -- rgr, 18-Feb-04.]
 	  ("\\.doc$" "abiword")
