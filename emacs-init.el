@@ -135,7 +135,8 @@
 
 ;; Turn off the tool-bar when working remotely, because it can be very slow over
 ;; ssh.  -- rgr, 5-May-03.
-(cond ((getenv "SSH_CLIENT")
+(cond ((or (getenv "SSH_CLIENT")
+	   (getenv "SSH_TTY"))
         (and (display-graphic-p)
 	     (tool-bar-mode -1))
         (and (fboundp 'x-show-tip)
