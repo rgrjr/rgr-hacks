@@ -140,9 +140,10 @@
 (setq zmacs-regions nil)
 
 ;; Turn off the tool-bar when working remotely, because it can be very slow over
-;; ssh.  -- rgr, 5-May-03.
-(cond ((or (getenv "SSH_CLIENT")
-	   (getenv "SSH_TTY"))
+;; ssh.  -- rgr, 5-May-03.  [actually, it's just as useless locally.  -- rgr,
+;; 12-May-03.]
+(cond ((and window-system
+	    (fboundp 'display-graphic-p))
         (and (display-graphic-p)
 	     (tool-bar-mode -1))
         (and (fboundp 'x-show-tip)
