@@ -6,8 +6,14 @@
 
 (defvar rgr-interesting-frame-heights '(58 37 28))
 (defvar rgr-x11-preferred-font-name
-	"-adobe-courier-medium-r-normal--*-180-*-m-*-iso8859-15"
-  "*Font name pattern that matches what we want to install by default.")
+	;; "-adobe-courier-medium-r-normal--*-180-*-m-*-iso8859-15"
+	"-adobe-courier-medium-r-normal--*-120-*-m-*-iso8859-15"
+  "*Font name pattern that matches what we want to install by default.
+This particular value look good on 1024x768 on the tube at work.  This
+variable is used by (rgr-install-x11-font), but it is better to use X11
+resources, as those are set up per-display; given the possibility of SSH
+tunneling, it's not easy to determine on which physical display an emacs
+frame actually appears.")
 
 (defun rgr-window-frame (&optional window)
   ;; If given no args, this effectively returns the "current" frame, i.e. the
