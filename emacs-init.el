@@ -201,6 +201,10 @@
 (rgr-define-lisp-mode-commands lisp-interaction-mode-map)
 (rgr-common-lisp-indentation)
 
+(add-hook 'log-view-mode-hook
+	  (function (lambda ()
+	    (require 'rgr-log-view)
+	    (define-key log-view-mode-map "=" 'rgr-log-view-diff))))
 (add-hook 'ilisp-mode-hook 'rgr-ilisp-mode-hook)
 (add-hook 'lisp-mode-hook 'rgr-lisp-mode-hook)
 ;; [doing cmulisp seems to undo this.  -- rgr, 5-Apr-94.]  [actually, i think i
