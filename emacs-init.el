@@ -103,22 +103,24 @@
 
 (defvar rgr-emacs (expand-file-name
 		    ;; use explicit user id so su works.
-		    "~rogers/emacs"))
-;; this is done now by site-start.el (the system init).  -- rgr, 19-Oct-98.
+		    "~rogers/emacs/rgr-hacks"))
 (or (member rgr-emacs load-path)
     (setq load-path (cons rgr-emacs load-path)))
 (load (expand-file-name "rgr-hacks-autoloads.el" rgr-emacs))
 ;; For Discus.
-(let ((discus (expand-file-name "discus" rgr-emacs)))
-  (or (member discus load-path)
-      (setq load-path (cons discus load-path))))
-(load (expand-file-name "discus/loaddefs.el" rgr-emacs))
+(let* ((discus (expand-file-name "../discus" rgr-emacs))
+       (loaddefs (expand-file-name "loaddefs.el" discus)))
+  (cond ((file-readable-p loaddefs)
+	  (or (member discus load-path)
+	      (setq load-path (cons discus load-path)))
+	  (load loaddefs)
+	  t)))
 
 (setq rgr-space-means-execute-and-exit t)
 (setq signature-login-name "rgr")
 (rgr-install-hacks)
 
-;; don't enable transient-mark-mode (seems to be on by default in the SuSe 20.7
+;; disable transient-mark-mode (seems to be on by default in the SuSE 20.7
 ;; version).  -- rgr, 27-Jun-01.
 (setq transient-mark-mode nil)
 ;; turn off annoying "Scanning buffer for index" messages under ilisp.  -- rgr,
