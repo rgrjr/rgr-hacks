@@ -9,46 +9,10 @@
 ;;; (But colon-double-space is a free reference in 19.27 and prior.)  [and must
 ;;; do (require 't-mouse) under linux.  -- rgr, 9-Dec-99.]
 ;;;
-;;;    Modification history:
+;;;    [old] Modification history:
 ;;;
 ;;; started history.  -- rgr, 2-Mar-94.
 ;;; . . .
-;;; mail stuff -> ./rgr-mail-hacks.el, random inits.  -- rgr, 29-Mar-96.
-;;; rgr-install-window-system-hacks: fix no-windows bug.  -- rgr, 5-Apr-96.
-;;; rgr-install-x11-hacks: move para hacking here.  -- rgr, 5-Apr-96.
-;;; rgr-install-global-editing-hacks: kludge solaris 19.28.  -- rgr, 11-Apr-96.
-;;; rgr-auto-fill-mode: auto-fill without adaptive-fill-mode.  -- rgr, 6-Jun-96.
-;;; rgr-add-to-modification-history-internal: generalized.  -- rgr, 13-Aug-96.
-;;; rgr-sh-mode-hook: new.  -- rgr, 28-Aug-96.
-;;; f9 -> rgr-recompile, shell stuff to rgr-shell-hacks.el.  -- rgr, 30-Aug-96.
-;;; rgr-clean-exposure-transcript: new hack.  -- rgr, 3-Sep-96.
-;;; bind rgr-insert-symbol-abbreviation to f4.  -- rgr, 28-Nov-96.
-;;; rgr-add-to-modification-history-internal: C kludgery.  -- rgr, 12-Dec-96.
-;;; rgr-install-global-editing-hacks: Flush shift-DEL.  -- rgr, 18-Dec-96.
-;;; shell -> rgr-find-shell throughout.  -- rgr, 17-Apr-97.
-;;; rgr-install-hacks: new fn, reorg for window vs. term.  -- rgr, 16-Sep-97.
-;;; rgr-install-x11-hacks: new rgr-subordinate-emacs-p var.  -- rgr, 4-Nov-97.
-;;; rgr-rename-buffer & related hacks.  -- rgr, 17-Dec-97.
-;;; rgr-install-function-keys: make f5 mean delete.  -- rgr, 15-Mar-98.
-;;; rgr-install-x11-hacks and rgr-install-window-system-hacks: no fancy chars
-;;;	(e.g "[?\M-\C- ]") in 19.28.  -- rgr, 21-Jul-98.
-;;; clean up rgr-install-x11-hacks kruft.  -- rgr, 19-Oct-98.
-;;; move terminal setups to rgr-term-setup.el file.  -- rgr, 28-Oct-98.
-;;; rgr-install-function-keys: always do rgr-invoke-rmail.  -- rgr, 18-Nov-98.
-;;; moved a bunch of stuff to the rgr-lisp-hacks.el file.  -- rgr, 20-Nov-98.
-;;; don't show the standard emacs version in frame label.  -- rgr, 16-Dec-98.
-;;; rgr-hacks-public-files: added bmerc-hacks.el.  -- rgr, 22-Jan-99.
-;;; publish rgr-html-tags.el, fix rgr-emacs-version-p.  -- rgr, 12-Feb-99.
-;;; rgr-install-global-editing-hacks: allow for emacs 20.  -- rgr, 17-Feb-99.
-;;; rgr-comment-region-lisp instead of comment-region-lisp, bind this globally
-;;;	to "\C-c;".  -- rgr, 7-Sep-99.
-;;; split dired stuff out to rgr-dired.el, cleanup.  -- rgr, 10-Sep-99.
-;;; added autoload tags, split out rgr-random-hacks.el, misc bootcamp cleanup
-;;;	of bindings & inits.  -- rgr, 3-Oct-99.
-;;; rgr-do-auto-fill: bind indent-line-function in 20.3.  -- rgr, 25-Nov-99.
-;;; rgr-install-hacks: use t-mouse under linux if no X11.  -- rgr, 27-Nov-99.
-;;; kp-f1 & kp-f4 in rgr-install-function-keys, rgr-install-global-hacks global
-;;;	C-c SPC bindings.  -- rgr, 8-Dec-99.
 ;;; rgr-subordinate-emacs-p: use EMACS instead of TERM.  -- rgr, 1-May-00.
 ;;; rgr-subordinate-emacs-p: oops; be cleverer about ssh.  -- rgr, 4-Jan-01.
 ;;; rgr-parent-dir-and-file-name: remove unix dependence.  -- rgr, 11-Jan-01.
@@ -70,6 +34,7 @@
 ;;; rgr-install-function-keys: lose rgr-toggle-frame-height.  -- rgr, 7-Apr-03.
 ;;; rgr-next-possibility -> ilisp-next-possibility rename.  -- rgr, 19-Apr-03.
 ;;;
+;;; $Id$
 
 ;;;; Variables.
 
@@ -672,6 +637,10 @@ M-x buffer-menu)."
 (defun rgr-install-global-hacks ()
   ;; Called by rgr-install-hacks to install commands that are truly global, for
   ;; both window systems and terminal emulators.
+  (rgr-install-ffap)
+  (rgr-install-miscellaneous-global-hacks))
+
+(defun rgr-install-miscellaneous-global-hacks ()
   (global-set-key "\C-cs" 'rgr-insert-signature)
   (global-set-key "\C-x\C-x" 'rgr-exchange-point-and-mark)
   (cond ((not (eq rgr-emacs-flavor 'lucid))
@@ -694,14 +663,25 @@ M-x buffer-menu)."
   (global-set-key "\C-x " 'rgr-set-mark-command)
   ;; The standard version doesn't deal with quoted strings . . .
   (global-set-key "\C-\M-u" 'rgr-backward-up-list)
-  ;; Put these somewhere generally available.
-  (global-set-key "\C-x\M-\C-f" 'find-file-at-point)
-  (global-set-key "\C-x4\M-\C-f" 'ffap-other-window)
   ;; Give *helpful* unique buffer names to scores of makefile files.  -- rgr,
   ;; 17-Dec-97.
   (add-hook 'find-file-hooks 'rgr-maybe-rename-buffer)
   ;; And make buffers go away on command.  -- rgr, 6-Feb-98.
   (global-set-key "\C-cb" 'bury-buffer))
+
+(defun rgr-install-ffap ()
+  (require 'ffap)
+  (require 'ffap-local-url-patch)
+  ;; [enable this if you want "C-u C-x C-f" to invoke the regular find-file
+  ;; command and "C-u C-x C-f" to use the extra ffap features.  -- rgr,
+  ;; 9-Aug-03.]
+  ;; (setq ffap-require-prefix t)
+  (global-set-key "\C-x\C-f" 'find-file-at-point)
+  (global-set-key "\C-x4\C-f" 'ffap-other-window)
+  ;; Put these somewhere generally available.  [kept for backward compatibility.
+  ;; -- rgr, 9-Aug-03.]
+  (global-set-key "\C-x\M-\C-f" 'find-file-at-point)
+  (global-set-key "\C-x4\M-\C-f" 'ffap-other-window))
  
 ;;;###autoload
 (defun rgr-install-function-keys ()
