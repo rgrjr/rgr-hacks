@@ -94,6 +94,9 @@ those log events generated since the start of the report period.")
 (defvar rgr-unauth-email-return-address "rogers-abuse2@rgrjr.dyndns.org"
   "*Sender address to use for probe reports.")
 
+(defvar rgr-unauth-enumerate-previous-attempts-p nil
+  "*Whether to list previous attempts in gory detail.")
+
 (defvar rgr-unauth-last-query-host nil
   "String naming the last server queried for POCs, e.g. \"whois.ripe.net\".
 This is made buffer-local to the *whois.ripe.net* buffer.")
@@ -221,12 +224,12 @@ start at most one emacs per day."
 
 (defun rgr-unauth-query-arin-internal (netblk query-host &optional buffer)
   ;; based on shell-command
-  (let* ((jpnic-p nil
-		  ;; (equal query-host "whois.nic.ad.jp")
-		  )
+  (let* ((jpnic-p (equal query-host "whois.nic.ad.jp"))
 	 ;; decide how to decorate the query ("!" or "/e" or neither) so that
 	 ;; the server tells us what we want to know.
-	 (query (cond (jpnic-p (concat netblk "/e"))
+	 (query (cond (jpnic-p
+			;; (concat netblk "/e")
+			netblk)
 		      ((string-match rgr-unauth-ip-address-regexp netblk)
 		        netblk)
 		      (t (concat "\\!" netblk))))
@@ -255,14 +258,15 @@ start at most one emacs per day."
   ;; based on the shell-command fn.  fills and displays a buffer with output
   ;; from the query host, and returns the buffer.
   (let* ((query-host (or query-host "whois.arin.net"))
-	 (jpnic-p nil ;; (equal query-host "whois.nic.ad.jp")
-		  )
+	 (jpnic-p (equal query-host "whois.nic.ad.jp"))
 	 (buffer (get-buffer-create (concat "*" query-host "*")))
 	 (netblk-regexp (car (cdr (assoc query-host rgr-unauth-whois-servers))))
 	 (command (concat "whois -h " query-host " " host-ip
 			  ;; jpnic uses this idiosyncratic syntax to select
-			  ;; english-only output.
-			  (if jpnic-p "/e" "")))
+			  ;; english-only output.  [not any longer, it apepars.
+			  ;; -- rgr, 31-May-03.]
+			  ;; (if jpnic-p "/e" "")
+			  ""))
 	 (netblks nil))
     (shell-command command buffer)
     (save-excursion
@@ -490,7 +494,8 @@ start at most one emacs per day."
       ;; Insert boilerplate characterizing previous attempts.
       (if previous-reports
 	  (let ((n-previous (length previous-attempts))
-		(tail previous-attempts))
+		(tail (and rgr-unauth-enumerate-previous-attempts-p
+			   previous-attempts)))
 	    (insert "\nThis is in addition to "
 		    (cond ((= n-previous 0)
 			   ;; this happens when the last reported attempt
@@ -507,7 +512,7 @@ start at most one emacs per day."
 				       ((= protocol 6) "TCP")
 				       ((= protocol 17) "UDP")
 				       (t (format "PROTO%d" protocol)))))
-		(insert "on " (substring date 0 6)
+		(insert " on " (substring date 0 6)
 			" at " (substring date 7)
 			" to " (format "%d" dest-port) "/" proto-name
 			", ")
