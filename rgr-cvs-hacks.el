@@ -11,6 +11,8 @@
 ;;;
 ;;; $Id$
 
+(require 'vc)
+
 ;;;###autoload
 (defun rgr-cvs-recent-changes (&optional number-of-days)
   "Show a summary of 'cvs log' output for the last three days.  If you
