@@ -119,7 +119,7 @@ A Lisp code line is one that is nonblank and not entirely a comment."
 			;; -- rgr, 4-Nov-98.
 			"/usr/local/etc/httpd/htdocs/needle-doc/new"
 			;; these are two alternative names for the same place.
-			(expand-file-name "~/projects/oligo")
+			(expand-file-name "~/projects/oligo-new")
 			(expand-file-name "~/projects/modgen/oligo"))
 		  load-path
 		  (list "/usr/lib/perl5/site_perl/5.6.1/Bio"
