@@ -260,7 +260,8 @@ exists, or the previous message."
 	   (kill-buffer temp-buf)))))
 
 (defun rgr-message-dow-string (message)
-  (require 'time-date)
+  (require 'time-date)		;; for time-to-days
+  (require 'mail-parse)		;; for mail-header-parse-date
   (let* ((date-header (vm-get-header-contents message "Date:"))
 	 (date (mail-header-parse-date date-header))
 	 (yesterday-p (= (1+ (time-to-days date))
