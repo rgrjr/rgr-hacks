@@ -76,6 +76,67 @@ the \\[rgr-cvs-insert-log-skeleton] command can use this output."
     (rename-buffer "*vc-project-diff*")))
 
 ;;;###autoload
+(defun rgr-vc-commit-with-comments ()
+  ;; Based on log-edit-done and vc-next-action-dired fns.  -- rgr, 15-Feb-05.
+  "Do the next logical version control operation (as by \\[vc-next-action]) on
+the files named in the current buffer, using its contents as the log comment.
+Only those files mentioned explicitly in the buffer in style of the
+\\[rgr-cvs-insert-log-skeleton] command will be included."
+  (interactive)
+  (require 'vc)
+  (require 'log-edit)
+  (let ((was-saved-p (not (buffer-modified-p)))
+	(files-to-commit (or (rgr-vc-all-comment-files)
+			     (error "Can't find any comment files in %s."
+				    (current-buffer)))))
+    ;; Get rid of trailing empty lines
+    (goto-char (point-max))
+    (skip-syntax-backward " ")
+    (when (equal (char-after) ?\n) (forward-char 1))
+    (delete-region (point) (point-max))
+    ;; Check for final newline
+    (if (and (> (point-max) (point-min))
+	     (/= (char-before (point-max)) ?\n)
+	     (or (eq log-edit-require-final-newline t)
+		 (and log-edit-require-final-newline
+		      (y-or-n-p
+		       (format "Buffer %s does not end in newline.  Add one? "
+			       (buffer-name))))))
+	(save-excursion
+	  (goto-char (point-max))
+	  (insert ?\n)))
+    (if (and (buffer-modified-p)
+	     (or was-saved-p
+		 (y-or-n-p (format "Save %s? " (buffer-name)))))
+	(save-buffer))
+    ;; (error "Going to commit %S with %S" files-to-commit (current-buffer))
+    (let ((comment (buffer-string)))
+      (when (or (ring-empty-p vc-comment-ring)
+		(not (equal comment (ring-ref vc-comment-ring 0))))
+	(ring-insert vc-comment-ring comment))
+      (if (let ((win (get-buffer-window log-edit-files-buf)))
+	    (unwind-protect
+		 (or (not log-edit-confirm)
+		     ;; (and (eq log-edit-confirm 'changed)
+		     ;;      (equal files-to-commit log-edit-initial-files))
+		     (let ((log-edit-listfun
+			    (function (lambda () files-to-commit))))
+		       (log-edit-show-files)
+		       (y-or-n-p (format "Commit these %d files? "
+					 (length files-to-commit)))))
+	      (or win
+		  (log-edit-hide-buf))))
+	  ;; yes!
+	  (while files-to-commit
+	    (let ((file (car files-to-commit)))
+	      (message "Processing %s..." file)
+	      (vc-next-action-on-file file nil comment)
+	      (message "Processing %s...done" file))
+	    (setq files-to-commit (cdr files-to-commit)))
+	  ;; no.
+	  (message "Oh, well!  Later maybe?")))))
+
+;;;###autoload
 (defun rgr-cvs-insert-log-skeleton ()
   "Insert a '* filename:' line for each 'Index: filename' line in diff output.
 This goes through a diff buffer and inserts one line for each file at
@@ -139,17 +200,44 @@ added or deleted are noted as such."
 	  (sit-for 2)
 	  nil)))
 
-(defun rgr-vc-current-comment-file ()
-  ;; Get the name of the current file comment, or nil if before it
+(defun rgr-vc-comment-file-names ()
+  ;; Return the comment file names at point, skipping past them.
+  (let ((result nil) (give-up-p nil))
+    (skip-chars-forward "* \t\n")
+    (while (not (or give-up-p (eobp) (looking-at ":")))
+      (let ((start (point))
+	    (end (progn (skip-chars-forward "^,:() \t\n")
+			(point))))
+	(cond ((= start end)
+		(setq give-up-p t))
+	      (t
+		(setq result (cons (expand-file-name
+				     (buffer-substring start end))
+				   result))))
+	(skip-chars-forward ", \t\n")
+	(while (looking-at "(")
+	  (forward-sexp 1)
+	  (skip-chars-forward ", \t\n"))))
+    (and (looking-at ":[ \t]*")
+	 (goto-char (match-end 0)))
+    (nreverse result)))
+
+(defun rgr-vc-current-comment-files ()
+  ;; Get the name of the files in the current file comment, or nil if before it.
   (save-excursion
     (or (bobp)
 	(forward-char -1))
     (and (re-search-backward "^\\* +" nil t)
-	 (let ((start (match-end 0))
-	       (end (progn (goto-char (match-end 0))
-			   (skip-chars-forward "^,: \t\n")
-			   (point))))
-	   (expand-file-name (buffer-substring start end))))))
+	 (rgr-vc-comment-file-names))))
+
+(defun rgr-vc-all-comment-files ()
+  ;; Get the name of all files commented in this buffer.
+  (save-excursion
+    (goto-char (point-min))
+    (let ((result nil))
+    (while (re-search-forward "^\\* +" nil t)
+      (setq result (nconc result (rgr-vc-comment-file-names))))
+    result)))
 
 (defun rgr-vc-find-file-comment (file-name)
   ;; Get the name of the current file comment, or nil if before it
@@ -189,15 +277,15 @@ If the prefix arg is bigger than 8 (for example with \\[universal-argument] \\[u
       (or (rgr-find-more-recent-buffer (get-buffer "*VC-log*")
 				       (get-file-buffer "comment.text"))
 	  (find-file-noselect "comment.text")))
-    (let ((current-comment-file (rgr-vc-current-comment-file))
+    (let ((current-comment-files (rgr-vc-current-comment-files))
 	  (changed-file (buffer-file-name buf))
 	  (comment-start nil))
-      (cond ((equal changed-file current-comment-file)
+      (cond ((member changed-file current-comment-files)
 	      ;; assume we're in the right place.
 	      )
 	    ((setq comment-start (rgr-vc-find-file-comment changed-file))
-	      '(error "Changed file %S but buffer %S."
-		     changed-file current-comment-file)
+	      '(error "Changed file %S but buffer is at files %S."
+		     changed-file current-comment-files)
 	      (goto-char comment-start)
 	      (forward-line))
 	    (t
@@ -261,9 +349,5 @@ If the prefix arg is bigger than 8 (for example with \\[universal-argument] \\[u
 ;;;###autoload
 (defun rgr-change-log-edit-hook ()
   (define-key change-log-mode-map "\C-c+" 'rgr-change-log-insert-plus))
-
-;;;###autoload
-(defun rgr-diff-mode-hook ()
-  (define-key diff-mode-map "\C-c!" 'rgr-diff-add-definition-comment))
 
 (provide 'rgr-cvs-hacks)

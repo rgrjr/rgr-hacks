@@ -1208,7 +1208,7 @@ rgr-html-define-commands as a load hook instead.  -- rgr, 14-Oct-97."
   (and (eq rgr-site 'home)
        (setq tempo-template-html-skeleton rgr-html-helper-new-buffer-template))
   ;; Because I don't need this bound to something that inserts "<hr>".
-  (define-key html-helper-mode-map "\C-c=" 'discus-quick-source-compare)
+  (define-key html-helper-mode-map "\C-c=" 'rgr-quick-source-compare)
   ;; And much prefer the default C-M-f and C-M-b bindings.
   (define-key html-helper-mode-map "\M-\C-f" 'forward-sexp)
   (define-key html-helper-mode-map "\M-\C-b" 'backward-sexp)

@@ -47,8 +47,8 @@
 (or (member rgr-emacs load-path)
     (setq load-path (cons rgr-emacs load-path)))
 (load (expand-file-name "rgr-hacks-autoloads.el" rgr-emacs))
-;; For Discus.
-(let* ((discus (expand-file-name "../discus" rgr-emacs))
+;; For Discus.  [disabled.  -- rgr, 15-Feb-05.]
+'(let* ((discus (expand-file-name "../discus" rgr-emacs))
        (loaddefs (expand-file-name "loaddefs.el" discus)))
   (cond ((file-readable-p loaddefs)
 	  (or (member discus load-path)
@@ -223,10 +223,9 @@
 (rgr-define-lisp-mode-commands lisp-interaction-mode-map)
 (rgr-common-lisp-indentation)
 
-(add-hook 'log-view-mode-hook
-	  (function (lambda ()
-	    (require 'rgr-log-view)
-	    (define-key log-view-mode-map "=" 'rgr-log-view-diff))))
+(add-hook 'diff-mode-hook 'rgr-diff-mode-hook)
+(global-set-key "\C-c=" 'rgr-quick-source-compare)
+(add-hook 'log-view-mode-hook 'rgr-log-view-mode-hook)
 (add-hook 'ilisp-mode-hook 'rgr-ilisp-mode-hook)
 (add-hook 'lisp-mode-hook 'rgr-lisp-mode-hook)
 ;; [doing cmulisp seems to undo this.  -- rgr, 5-Apr-94.]  [actually, i think i

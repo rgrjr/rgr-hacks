@@ -2,10 +2,8 @@
 ;;;
 ;;; Put the following in your ~/.emacs file:
 ;;;
-;;;	(add-hook 'log-view-mode-hook
-;;;		  (function (lambda ()
-;;;		    (require 'rgr-log-view)
-;;;		    (define-key log-view-mode-map "=" 'rgr-log-view-diff))))
+;;;	(autoload 'rgr-log-view-mode-hook "rgr-log-view" nil t)
+;;;	(add-hook 'log-view-mode-hook 'rgr-log-view-mode-hook)
 ;;;
 ;;; [created.  -- rgr, 24-Jul-03.]
 ;;;
@@ -13,6 +11,7 @@
 
 (require 'log-view)
 
+;;;###autoload
 (defun rgr-log-view-diff (file first-tag &optional other-tag)
   "Offer to compare the current revision to any other tag for this file.
 The default is the next older revision, which shows the changes that were
@@ -67,6 +66,10 @@ rgr, 4-Sep-03.]"
   '(message "log view: %S"
     (list 'file file 'first-tag first-tag 'other-tag other-tag))
   (vc-version-diff file first-tag other-tag))
+
+;;;###autoload
+(defun rgr-log-view-mode-hook ()
+  (define-key log-view-mode-map "=" 'rgr-log-view-diff))
 
 (provide 'rgr-log-view)
 
