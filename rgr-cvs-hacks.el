@@ -2,6 +2,13 @@
 ;;;
 ;;; [created.  -- rgr, 4-Dec-03.]
 ;;;
+;;; Put
+;;;
+;;;	(define-key text-mode-map "\C-c+" 'rgr-cvs-plus)
+;;;	(add-hook 'log-edit-mode-hook 'rgr-cvs-log-edit-hook)
+;;;
+;;; somewhere in your .emacs to use this.
+;;;
 ;;; $Id$
 
 ;;;###autoload
@@ -63,6 +70,7 @@ Files that are being added or deleted are noted as such."
     (or (eobp)
 	(forward-line 1))))
 
+;;;###autoload
 (defun rgr-cvs-plus ()
   "Insert a '  + ' at the beginning of the current line."
   (interactive)
@@ -76,6 +84,16 @@ Files that are being added or deleted are noted as such."
 		  (forward-line -1)))
 	  (insert "   + "))))
 
-(define-key text-mode-map "\C-c+" 'rgr-cvs-plus)
+(defun rgr-cvs-join-consecutive-file-headings ()
+  "Join consecutive '* foo:' lines with a comma."
+  (interactive)
+  (save-excursion
+    (goto-char (point-min))
+    (while (search-forward ":\n*" nil t)
+      (replace-match "," t t))))
+
+;;;###autoload
+(defun rgr-cvs-log-edit-hook ()
+  (define-key log-edit-mode-map "\C-c+" 'rgr-cvs-plus))
 
 (provide 'rgr-cvs-hacks)
