@@ -111,12 +111,11 @@ rgr-unauth-scarf-whois-data fn for details.  -- rgr, 29-Dec-02.")
 	 (jpnic-p (equal query-host "whois.nic.ad.jp"))
 	 (buffer (get-buffer-create (concat "*" query-host "*")))
 	 (netblk-regexp (car (cdr (assoc query-host rgr-unauth-whois-servers))))
-	 (command (concat "whois -h " query-host " " host-ip
-			  ;; jpnic uses this idiosyncratic syntax to select
-			  ;; english-only output.  [not any longer, it apepars.
-			  ;; -- rgr, 31-May-03.]
-			  ;; (if jpnic-p "/e" "")
-			  ""))
+	 (command (concat "whois"
+			  (if query-host
+			      (concat " -h " query-host " ")
+			      " ")
+			  host-ip))
 	 (netblks nil))
     (shell-command command buffer)
     (save-excursion
@@ -265,17 +264,23 @@ Otherwise, queries the appropriate server(s), and parses and caches the
 results.  Returns a list of (last-query-host . whois-fields) in the
 format prescribed by the appropriate rgr-unauth-whois-server-regexps
 entry in either case."
-  (let* ((ip (rgr-unauth-parse-ip-address host-ip))
-	 (entry (rgr-unauth-query-find-cached-entry ip)))
-    (cond ((null entry)
-	    (setq entry
-		  (rgr-unauth-query-whois-server-internal host-ip whois-server))
-	    (let ((subnet (rgr-unauth-canonicalize-subnet (car (cdr entry)))))
-	      (setcar (cdr entry) subnet)
-	      (setq rgr-unauth-whois-results-cache
-		    (cons (cons (rgr-unauth-parse-ip-subnet subnet) entry)
-			  rgr-unauth-whois-results-cache)))))
-    entry))
+  (let ((ip (rgr-unauth-parse-ip-address host-ip)))
+    (or (rgr-unauth-query-find-cached-entry ip)
+	(let* ((new-entry
+		 (rgr-unauth-query-whois-server-internal host-ip whois-server))
+	       (raw-subnet (car (cdr new-entry))))
+	  (if raw-subnet
+	      ;; Cache whatever we've found according to its subnet.  [doing
+	      ;; (rgr-unauth-query-whois-server-internal "211.220.194.210"
+	      ;; "whois.nic.or.kr") returns an entry without a subnet.  -- rgr,
+	      ;; 1-Sep-03.]
+	      (let* ((subnet (rgr-unauth-canonicalize-subnet raw-subnet))
+		     (parsed-subnet (rgr-unauth-parse-ip-subnet subnet)))
+		(setcar (cdr new-entry) subnet)
+		(setq rgr-unauth-whois-results-cache
+		      (cons (cons parsed-subnet new-entry)
+			    rgr-unauth-whois-results-cache))))
+	  new-entry))))
 
 (defun rgr-unauth-present-query-results (host-ip source &optional netrange
 						 addresses abuse-poc)
