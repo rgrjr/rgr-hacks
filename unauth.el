@@ -5,7 +5,7 @@
 ;;; composed, and you will be left in mail mode to touch up and send the
 ;;; message.  Repeat for each offending host.
 ;;;
-;;;    Modification history:
+;;;    [old] Modification history:
 ;;;
 ;;; created.  -- rgr, 6-Jun-00.
 ;;; major rewrite.  -- rgr, 30-Jul-00.
@@ -83,6 +83,7 @@
 ;;;	regexp; the field is not always omitted if blank.  -- rgr, 12-Apr-03.
 ;;; starting to use the log to hack followup reports.  -- rgr, 15-Apr-03.
 ;;;
+;;; $Id$
 
 (require 'rgr-unauth-db)
 
@@ -169,10 +170,10 @@ rgr-unauth-scarf-whois-data fn for details.  -- rgr, 29-Dec-02.")
 		  identifier ")"))
   "Regexp that recognizes the protocol/attempt count/disposition line.")
 
-(defvar rgr-unauth-benign-protocol-regexp 
-        (concat "^\\(ftp\\|143[34]\\|ms-sql-[sm]\\|epmap"
+(defvar rgr-unauth-benign-protocol-regexp
+        (concat "^\\(ftp\\|21\\|ms-sql-[sm]\\|143[34]\\|epmap\\|135"
 		"\\|6346\\|1214\\|445\\|microsoft-ds\\|17300\\)/tcp$"
-		"\\|^\\(epmap\\|ms-sql-m\\)/udp$")
+		"\\|^\\(epmap\\|135\\|ms-sql-[sm]\\|143[34]\\)/udp$")
   ;; 1433 is for the Microsoft SQL Server; see the "Spida" worm advisory on the
   ;; http://www.iss.net/security_center/alerts/advise118.php page.  I no longer
   ;; report these.  And 6346 is gnutella, and 1214 is KaZaA, both of which are
