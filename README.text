@@ -1,0 +1,14 @@
+   Random emacs tools and hacks.  Some of these get installed into the
+common /source/local/share/emacs/site-lisp/ directory for public use.  See
+the source files for more information.
+
+   emacs itself is built in the /source/local/emacs/ tree (see
+/source/local/emacs/README.text), and various packages are installed in
+/usr/local/share/emacs/ (see
+/source/local/share/emacs/README.local.text).
+
+   I've written some extra user documentation at
+http://bmerc-www.bu.edu/needle-doc/emacs/, which is mirrored at
+http://rgrjr.dyndns.org/emacs/ on my home site.  [The home site is more
+up-to-date now.  -- rgr, 1-Jun-01.]
+
