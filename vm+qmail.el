@@ -349,7 +349,7 @@ Interactively prompts for a new return address."
     (cond ((not (eq send-mail-function 'sendmail-send-it))
 	    (error "Oops; can't set return address for the '%S' sender."
 		   send-mail-function))
-	  ((rgr-emacs-version-p 21)
+	  ((rgr-emacs-version-p 21 3)
 	    ;; emacs 21 supports this directly (but 21.2 requires a patch to
 	    ;; make it work when these are buffer-local).  -- rgr, 3-Jul-03.
 	    (set (make-local-variable 'mail-specify-envelope-from) t)
