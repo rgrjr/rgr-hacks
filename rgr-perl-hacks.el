@@ -145,7 +145,7 @@ somewhat system-dependent.")
       buffer)))
 
 (defun rgr-perl-get-name-around-point ()
-  (let ((identifier-chars "a-zA-Z0-9_&"))
+  (let ((identifier-chars "a-zA-Z0-9_&:"))
     (save-excursion
       ;; This may not move us anywhere, but at least it ensures that we are next
       ;; to an identifier.
@@ -166,7 +166,8 @@ somewhat system-dependent.")
 
 ;;;###autoload
 (defun rgr-perl-show-documentation (name)
-  (interactive "sFind documentation for perl function: ")
+  (interactive
+    (list (rgr-perl-prompt-for-name "Find documentation for perl function")))
   (let ((regexp (concat rgr-perl-function-documentation-prefix
 			(regexp-quote name)
 			" "))
@@ -226,13 +227,25 @@ somewhat system-dependent.")
 
 ;;; perldoc interface.
 
+(defun rgr-perl-prompt-for-name (prompt-string-start)
+  (let* ((default (rgr-perl-get-name-around-point))
+	 (result (read-string
+		  (format "%s%s: "
+			  prompt-string-start
+			  (if default
+			      (concat " (default '" default "')")
+			      ""))
+		  nil nil default)))
+    result))
+
 (defvar rgr-perldoc-program "perldoc")
 (defvar rgr-perldoc-args "")
 
 ;;;###autoload
 (defun rgr-perldoc (name)
   "Find perldoc documentation, e.g. for a perl module."
-  (interactive "sFind perldoc documentation for: ")
+  (interactive
+    (list (rgr-perl-prompt-for-name "Find perlpod documentation for")))
   ;; Need to require this first, since if man autoloads while we have these
   ;; variables bound, they will be left unbound after we're done, to the
   ;; detriment of M-x man.  -- rgr, 20-Jun-00.
