@@ -63,7 +63,9 @@
 	  ("168.103.43.201" nil "^22/TCP")
 	  ;; See http://www.just4youx.net/scanning.html
 	  ("80.253.125.28 - 80.253.125.32" nil
-	   "^\\(3128\\|6588\\|8080\\|1[01]80\\)/TCP"))
+	   "^\\(3128\\|6588\\|8080\\|1[01]80\\)/TCP")
+	  ;; According to DOD-CERT, all of these are spoofed.
+	  ("21.0.0.0/8" nil))
   "Alist of (subnet parsed-subnet port-re) for host IP ranges for which
 we want to some or all connection attempts, as controlled by port-re.
 parsed-subnet should always be specified as nil.  If the port-re is nil
@@ -95,13 +97,7 @@ or missing, then all connection attempts are ignored.")
 	    "207.12.0.0 - 207.15.255.255"
 	    "208.0.0.0 - 208.35.255.255")
 	   "abuse@sprint.net")
-	  ;; [obsolete.  -- rgr, 9-Feb-03.]
-	  ;; ("66.12.0.0 - 66.13.255.255" "abuse@gte.net")
 	  ("66.19.0.0/16" "security@starnetinc.com")
-	  ;; (("66.20.0.0 - 66.21.255.255" "207.203.0.0/16") "abuse@bellsouth.net")
-	  ;; [arin now reports this as belonging to uu.net, but with a new abuse
-	  ;; address.  better to let arin sort it out.  -- rgr, 23-Jan-03.]
-	  ;; ("65.192.0.0 - 65.221.255.255" "abuse@uu.net")
 	  ("66.168.0.0 - 66.169.255.255" "abuse@chartercom.com")
 	  (("68.32.0.0 - 68.63.255.255"
 	    "68.80.0.0 - 68.87.255.255")
@@ -154,7 +150,6 @@ or missing, then all connection attempts are ignored.")
 	  (("200.96.0.0/13"
 	    "200.128.0.0 - 200.255.255.255")
 	   nil :whois "whois.registro.br")
-	  ;; ("204.200.0.0 - 204.203.255.255" "abuse@verio.net")
 	  (("66.12.0.0 - 66.14.255.255")
 	   ;; ARIN reports this as belonging to GTE, but a comment says to use
 	   ;; verizon.net for abuse reports.  -- rgr, 1-Mar-03.
@@ -172,9 +167,8 @@ or missing, then all connection attempts are ignored.")
 	    "211.243.230.0/24")
 	   "abuse@thrunet.com")
 	  ;; From APNIC
-	  ;; (("61.32.0.0 - 61.43.255.255") "abuse@nic.bora.net")
-	  ((;; "61.33.250.0 - 61.33.250.255"
-	    "61.72.0.0 - 61.77.255.255"
+	  (("61.32.0.0 - 61.43.255.255") "abuse@bora.net")
+	  (("61.72.0.0 - 61.77.255.255"
 	    "61.78.0.0 - 61.85.255.255"		;; korea telecom
 	    "61.96.0.0 - 61.111.255.255"
 	    "61.248.0.0 - 61.255.255.255"
@@ -236,7 +230,6 @@ or missing, then all connection attempts are ignored.")
 	    "211.72.0.0 - 211.72.255.255"
 	    "211.75.0.0 - 211.75.255.255")
 	   "abuse@hinet.net")
-	  ;; ("211.200.0.0/16" "abuse@hanaro.net")
 	  ;; chinanet blocks
 	  ((;; province unknown/unrecorded
 	    "202.96.128.0 - 202.96.191.255"
