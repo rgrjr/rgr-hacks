@@ -44,6 +44,7 @@
 		       force-hours
 		       0)))
 	 (mins (% mins 60)))
+    ;; (message "%S -> %S, %S, %S" seconds hours mins secs)
     (if (or force-hours (> hours 0))
 	(concat (format "%s:" hours)
 		(rgr-make-interval-field mins)
@@ -154,6 +155,7 @@
 		    (setq secs (+ secs (* sign (cdr time))))
 		    (setq total-days (+ total-days (* sign (car time))))
 		    (setq total-secs (+ total-secs (* sign (cdr time))))))
+	    ;; (message "%S => %S days, %S secs" time total-days total-secs)
 	    (setq sigma-signs (+ sign sigma-signs))))))
     (goto-char end)
     (cond ((= sigma-signs -1)
@@ -165,6 +167,18 @@
 	      (setq total-secs (+ total-secs (cdr time)))))
 	  ((not (zerop sigma-signs))
 	    (error "Mismatched in/out lines; parity=%s." sigma-signs)))
+    (if (< total-secs 0)
+	(let* ((secs-per-day (* 24 60 60))
+	       ;; note that / rounds toward zero, whereas we need rounding up.
+	       (borrow-amount (/ (- (1- secs-per-day) total-secs)
+				 secs-per-day)))
+	  ;; need to borrow from the days.
+	  (if (< days borrow-amount)
+	      (error "Oops, got negative time:  %S days, %S secs."
+		     total-days total-secs))
+	  (setq total-days (- total-days borrow-amount))
+	  (setq total-secs (+ total-secs (* borrow-amount secs-per-day)))))
+    ;; (message "%S days, %S secs" total-days total-secs)
     ;; clean up.
     (cond (print-daily-p
 	    (psa-interval-finish-day today days secs)
