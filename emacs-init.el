@@ -128,6 +128,8 @@
 (setq imenu-scanning-message nil)
 ;; get command bindings in apropos.  -- rgr, 9-Apr-03.
 (setq apropos-do-all t)
+;; use unified diffs.  -- rgr, 6-Jul-03.
+(setq diff-switches "-u")
 
 ;; Some xemacs stuff . . .
 (setq tags-build-completion-table nil)
