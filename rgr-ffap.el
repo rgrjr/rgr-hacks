@@ -14,6 +14,8 @@
 	  ("\\.ppt$" "OOo-impress")
 	  ("\\.doc$" "abiword")
 	  ("\\.pdf$" "acroread")
+	  ;; [this doesn't work; ffap hacks it.  -- rgr, 24-Dec-04.]
+	  ;; ("^view:///.*\.html" "mozilla")
 	  ;; image extensions.
 	  ("\\.\\(png\\|jpe?g\\|gif\\)$" "gimp")))
 
@@ -22,21 +24,27 @@
   ;; This is supposed to be pin-compatible with find-file, so that ffap can call
   ;; it interactively if told to suppress its magic.
   (interactive "FFind file: \np")
-  (let ((app-name nil) (tail rgr-ffap-file-to-application-map))
+  ;(message "[got %S]" file-name)
+  (let ((chosen-app nil) (tail rgr-ffap-file-to-application-map))
     (if (not wildcards)
 	(while tail
-	  (if (string-match (car (car tail)) file-name)
-	      (setq app-name (car (cdr (car tail)))
-		    tail nil)
-	      (setq tail (cdr tail)))))
-    (cond ((not app-name)
-	    (find-file file-name wildcards))
-	  ((y-or-n-p (format "Launch %S on %S? " app-name file-name))
-	    (start-process app-name
-			   (get-buffer-create (concat "*" app-name "*"))
-			   app-name file-name))
-	  (t
-	    (find-file file-name)))))
+	  (let* ((app-data (car tail))
+		 (app-name (car (cdr app-data))))
+	    (if (and (string-match (car app-data) file-name)
+		     (y-or-n-p (format "Launch %S on %S? " app-name file-name)))
+		(setq chosen-app app-data
+		      tail nil)
+		(setq tail (cdr tail))))))
+    (let ((app-name (car (cdr chosen-app)))
+	  (app-opts (cdr (cdr chosen-app))))
+      (cond ((not chosen-app)
+	      (find-file file-name wildcards))
+	    ((and (symbolp app-name) (fboundp app-name))
+	      (apply app-name file-name app-opts))
+	    (t
+	      (apply (function start-process) app-name
+		     (get-buffer-create (concat "*" app-name "*"))
+		     app-name (append app-opts (list file-name))))))))
 
 ;;;###autoload
 (defun rgr-install-ffap ()
