@@ -102,6 +102,7 @@ or missing, then all connection attempts are ignored.")
 	    "150.1.0.0 - 150.101.255.255"
 	    "163.13.0.0 - 163.32.255.255"
 	    "163.208.0.0 - 163.212.255.255"
+	    "165.228.0.0 - 165.229.255.255"
 	    "165.246.0.0/16"
 	    "166.103.0.0 - 166.104.255.255"
 	    "166.111.0.0/16"
@@ -120,6 +121,7 @@ or missing, then all connection attempts are ignored.")
 	    "141.0.0.0 - 141.85.255.255"
 	    "148.81.0.0/16"
 	    "151.1.0.0 - 151.2.255.255"
+	    "158.49.0.0 - 158.50.255.255"
 	    "192.114.0.0 - 192.118.255.255"
 	    "193.0.0.0/8"
 	    "194.0.0.0/8"
@@ -245,7 +247,8 @@ or missing, then all connection attempts are ignored.")
 	    "211.75.0.0 - 211.75.255.255")
 	   "abuse@hinet.net")
 	  ;; from APNIC
-	  (("61.187.0.0 - 61.187.255.255")
+	  (("61.187.0.0 - 61.187.255.255"
+	    "220.163.0.0 - 220.165.255.255")
 	   "abuse@ns.chinanet.cn.net"))
   "Alist of (ip-subnet abuse-address &key extras), culled from NIC sites.
 This database is only necessary in those cases when the abuse address is
