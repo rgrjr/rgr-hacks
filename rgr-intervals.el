@@ -302,16 +302,19 @@ message at point."
 ;;;; Date tags (e.g. on ~rogers/projects/random/bills.text lines).
 
 ;;;###autoload
-(defun rgr-date-lines-today ()
-  "Put today's date at the start of each line from the current line to
+(defun rgr-date-lines (date-string)
+  "Put a date string at the start of each line from the current line to
 the end of the paragraph.  The date is of the form 'MMDD' with leading
-zeros.  The lines must have leading whitespace; this whitespace is
-tweaked so as not to disturb the indentation of the rest of the line."
-  (interactive)
-  (let* ((n-lines 0)
-	 (time-tail (nthcdr 3 (decode-time)))
-	 (date-string (concat (rgr-make-interval-field (car (cdr time-tail)))
-			      (rgr-make-interval-field (car time-tail)))))
+zeros, and defaults to today's date.  The lines must have leading
+whitespace; this whitespace is tweaked so as not to disturb the
+indentation of the rest of the line."
+  (interactive
+    (let* ((time-tail (nthcdr 3 (decode-time)))
+	   (default (concat (rgr-make-interval-field (car (cdr time-tail)))
+			    (rgr-make-interval-field (car time-tail))))
+	   (date (read-string "Date string: " default default)))
+      (list date)))
+  (let ((n-lines 0))
     (beginning-of-line)
     (while (looking-at "^\\(    \\|\t\\)")
       (if (= (- (match-end 0) (match-beginning 0)) 4)
