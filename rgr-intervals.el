@@ -45,52 +45,20 @@
 	(concat (format "%s:" mins)
 		(rgr-make-interval-field secs)))))
 
-(defun rgr-print-hours-and-tenths (seconds &optional force-hours)
-  ;; Alternative format to rgr-print-interval (above).
-  (let ((tenth-hours (+ (/ seconds 360)
-			(if (numberp force-hours)
-			    ;; this avoids emacs integer overflow.
-			    (* force-hours 10)
-			    0))))
-    (format "%.1f" (/ tenth-hours 10.0))))
-
-(defun rgr-princ-interval-padded (tag days secs pad-width)
-  ;; helper for rgr-compute-region-interval
-  (if (or (not (zerop days))
-	  (not (zerop secs)))
-      (let* ((string (rgr-print-interval secs (* 24 days)))
-	     (pad (max (- pad-width (length string)) 0)))
-	(princ (format "%s: %s%s\n"
-		       tag (substring "           " 0 pad)
-		       string))
-	t)))
-
-;; To keep the compiler happy.  Do (setq week-days 0 week-secs 0) for
-;; interactive debugging.
-(defvar week-days)
-(defvar week-secs)
-
-(defun psa-interval-finish-week ()
-  ;; helper for rgr-compute-region-interval
-  (and (rgr-princ-interval-padded "Week" week-days week-secs 11)
-       (princ "\n"))
-  (setq week-days 0 week-secs 0))
-
-(defun psa-interval-finish-day (today days secs)
-  ;; helper for rgr-compute-region-interval
-  (rgr-princ-interval-padded today days secs 12)
-  (setq week-days (+ week-days days))
-  (setq week-secs (+ week-secs secs)))
+(defun add-time (t1 t2)
+  "Add two internal times."
+  (let* ((lsw-sum (+ (car (cdr t1)) (car (cdr t2))))
+	 (lsw (mod lsw-sum 65536))
+	 (carry (/ lsw-sum 65536)))
+    (list (+ (car t1) (car t2) carry) lsw)))
 
 ;;;###autoload
-(defun rgr-compute-region-interval (start end &optional insert-p print-daily-p)
+(defun rgr-compute-region-interval (start end &optional insert-p)
   ;; helper for rgr-weekly-intervals & rgr-compute-interval fns.
   (interactive "r\nP")
+  (require 'time-date)
   (let ((sigma-signs 0)
-	(today nil)
-	(days 0) (secs 0)
-	(week-days 0) (week-secs 0)
-	(total-days 0) (total-secs 0))
+	(total nil) (pending-login-time nil))
     ;; No save-excursion so that if we get a syntax error, the user gets to
     ;; see where (but still has to guess within dates.)
     (goto-char start)
@@ -100,11 +68,11 @@
 		(if (eq direction 'effectively)
 		    (setq direction (read (current-buffer))))
 		(cond ((eq direction 'in)
-			-1)
+			+1)
 		      ((eq direction 'out)
 			(if (= sigma-signs 0)
 			    (error "Logout without matching login."))
-			+1)
+			-1)
 		      (t
 			(error "Expected 'in' or 'out', but got '%s'."
 			       direction))))))
@@ -119,77 +87,40 @@
 	  (if (not (eq at 'at))
 	      (error "Expected 'at'."))
 	  (setq day (read (current-buffer)))
-	  (let ((time (discus-parse-date
+	  (let ((time (date-to-time
 			(buffer-substring
 			  (point)
 			  (progn (end-of-line) (point))))))
-	    '(message "Got %s %s on %s" sign time machine)
+	    ;(message "Got %s %s on %s" sign time machine)
 	    ;; Only count times if transitioning to/from 0.  (Note that the
-	    ;; illegal zero-to-one case has already been taken care of;
-	    ;; sigma-signs is never positive.)  -- rgr, 24-Apr-96.
-	    (cond ((or (zerop sigma-signs) (zerop (+ sign sigma-signs)))
-		    ;; Maybe finish up on the previous interval.
-		    (cond ((not print-daily-p))
-			  ((null today)
-			    ;; First complete interval on the first day.
-			    (setq today day))
-			  ((and (< sign 0)
-				(not (eq day today)))
-			    ;; Starting the first interval of a new day.
-			    (psa-interval-finish-day today days secs)
-			    (setq days 0 secs 0)
-			    (if (not (memq day (memq today '(Mon Tue Wed Thu Fri Sat Sun))))
-				;; new week.
-				(psa-interval-finish-week))
-			    (setq today day)))
-		    ;; Accumulate this interval.
-		    (setq days (+ days (* sign (car time))))
-		    (setq secs (+ secs (* sign (cdr time))))
-		    (setq total-days (+ total-days (* sign (car time))))
-		    (setq total-secs (+ total-secs (* sign (cdr time))))))
-	    ;; (message "%S => %S days, %S secs" time total-days total-secs)
-	    (setq sigma-signs (+ sign sigma-signs))))))
+	    ;; illegal zero-to-minus-one case has already been taken care of;
+	    ;; sigma-signs is never negative.)  -- rgr, 24-Apr-96.  [changed
+	    ;; from "never positive."  -- rgr, 16-Feb-05.]
+	    (if (zerop sigma-signs)
+		(setq pending-login-time time))
+	    (setq sigma-signs (+ sign sigma-signs))
+	    (if (zerop sigma-signs)
+		;; Accumulate this interval.
+		(let ((delta (subtract-time time pending-login-time)))
+		  (setq total (if total (add-time total delta) delta))
+		  (setq pending-login-time nil)))
+	    ;; (message "%S => %S total" time total)
+	    ))))
     (goto-char end)
-    (cond ((= sigma-signs -1)
-	    ;; Assume the current time.
-	    (let ((time (discus-parse-date (current-time-string))))
-	      (setq days (+ days (car time)))
-	      (setq secs (+ secs (cdr time)))
-	      (setq total-days (+ total-days (car time)))
-	      (setq total-secs (+ total-secs (cdr time)))))
+    (cond ((not (or total pending-login-time))
+	    (error "No intervals."))
 	  ((not (zerop sigma-signs))
-	    (error "Mismatched in/out lines; parity=%s." sigma-signs)))
-    (if (< total-secs 0)
-	(let* ((secs-per-day (* 24 60 60))
-	       ;; note that / rounds toward zero, whereas we need rounding up.
-	       (borrow-amount (/ (- (1- secs-per-day) total-secs)
-				 secs-per-day)))
-	  ;; need to borrow from the days.
-	  (if (< days borrow-amount)
-	      (error "Oops, got negative time:  %S days, %S secs."
-		     total-days total-secs))
-	  (setq total-days (- total-days borrow-amount))
-	  (setq total-secs (+ total-secs (* borrow-amount secs-per-day)))))
-    ;; (message "%S days, %S secs" total-days total-secs)
-    ;; clean up.
-    (cond (print-daily-p
-	    (psa-interval-finish-day today days secs)
-	    (psa-interval-finish-week)
-	    (rgr-princ-interval-padded "Total" total-days total-secs 10)))
-    (let ((interval (rgr-print-interval total-secs (* 24 total-days))))
+	    ;; Assume the current time.
+	    (let ((delta (subtract-time (current-time) pending-login-time)))
+	      (setq total (if total (add-time total delta) delta)))))
+    ;; (message "total %S" total)
+    (let ((interval (rgr-print-interval (round (time-to-seconds total)))))
       (message "%s%s" interval
-	       (if (= sigma-signs -1)
-		   " (assuming the last interval ends now)."
-		   ""))
+	       (if (zerop sigma-signs)
+		   ""
+		   " (assuming the last interval ends now)."))
       (and insert-p (insert interval))
       interval)))
-
-;;;###autoload
-(defun rgr-weekly-intervals (start end)
-  "Compute daily and weekly totals from the login history in the region."
-  (interactive "r")
-  (with-output-to-temp-buffer "*daily-intervals*"
-    (rgr-compute-region-interval start end nil t)))
 
 ;;;###autoload
 (defun rgr-compute-interval (insert-p)
