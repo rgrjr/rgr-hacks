@@ -77,10 +77,8 @@
 ;;; use bmerc version of rgr-thread-after-save-hook, install
 ;;;	rgr-mac-before-save-hook at home.  -- rgr, 17-Mar-00.
 ;;; only save completions in rgr-emacs if we can write it!  -- rgr, 1-Apr-00.
-;;; set rgr-ssh-default-destination.  -- rgr, 12-Apr-00.
 ;;; rgr-ange-ftp-load-hook: new.  -- rgr, 13-Apr-00.
 ;;; matlab-mode-hook & matlab-shell-mode-hook.  -- rgr, 26-Jul-00.
-;;; change rgr-ssh-default-destination from BU.  -- rgr, 7-Sep-00.
 ;;; Put ("\\.vm$" . vm-mode) on auto-mode-alist.  -- rgr, 27-Nov-00.
 ;;; rgr-elisp-find-tag-for-emacs-key binding.  -- rgr, 17-Dec-00.
 ;;; display and ssh checks for rgr-web-client-name setup.  -- rgr, 12-Jan-01.
@@ -135,11 +133,6 @@
 
 ;; Turn off paging in subordinate shells.  -- rgr, 17-Feb-00.
 (setenv "PAGER" "cat")
-
-;; set up ssh default.  -- rgr, 12-Apr-00.
-(if (eq rgr-site 'home)
-    (setq rgr-ssh-default-destination "rogers@huxley.bu.edu")
-    (setq rgr-ssh-default-destination "rogers@rgrjr.dyndns.org"))
 
 (defun rgr-ange-ftp-load-hook ()
   ;; [may need cleaning up, should probably go elsewhere.  -- rgr, 13-Apr-00.]
@@ -223,7 +216,8 @@
 ;; Mailcrypt stuff.
 (setq mc-default-scheme 'mc-scheme-gpg)
 (setq mc-pgp-path "gpg")
-(setq mc-gpg-user-id "Bob Rogers (main 2003) <rogers@rgrjr.dyndns.org>")
+(and (eq rgr-site 'home)
+     (setq mc-gpg-user-id "Bob Rogers (main 2003) <rogers@rgrjr.dyndns.org>"))
 (setq mc-pgp-keydir (expand-file-name "~/.gnupg"))
 (setq mc-passwd-timeout 600)	;; ten minutes.
 
