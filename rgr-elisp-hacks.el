@@ -113,19 +113,24 @@ A Lisp code line is one that is nonblank and not entirely a comment."
   (setq tags-table-list
 	(rgr-make-tags-table-list
 	  (append (list (expand-file-name "~thread/code/stat")
-			(expand-file-name "~/projects/database/code")
 			;; the htdocs tree will only be available on the alphas,
 			;; but rgr-make-tags-table-list will figure this out.
 			;; -- rgr, 4-Nov-98.
 			"/usr/local/etc/httpd/htdocs/needle-doc/new"
 			;; these are two alternative names for the same place.
-			(expand-file-name "~/projects/oligo-new")
-			(expand-file-name "~/projects/modgen/oligo"))
+			(expand-file-name "~/projects/mgi/oligo")
+			(expand-file-name "/shared/mgi/oligo")
+			;; and this needs to come after.
+			(expand-file-name "~/projects/database/code"))
 		  load-path
-		  (list "/usr/lib/perl5/site_perl/5.6.1/Bio"
-			"/usr/lib/perl5/site_perl/5.6.1/i586-linux/Tk"
+		  (list (expand-file-name "~psa/psa-test/bin")
+			;; [these are not the right places for SuSE 9.0.
+			;; -- rgr, 15-Jun-04.]
+		        ;; "/usr/lib/perl5/site_perl/5.6.1/Bio"
+			;; "/usr/lib/perl5/site_perl/5.6.1/i586-linux/Tk"
+			;; [wicked obsolete.  -- rgr, 15-Jun-04.]
 			;; (expand-file-name "~thread/code/ctserv/bin")
-			(expand-file-name "~psa/psa-test/bin"))))))
+			)))))
 
 (defun rgr-make-tag-table-alist-internal ()
   ;; xemacs version, still in development.  note the change of variable name and
