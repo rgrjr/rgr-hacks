@@ -61,6 +61,9 @@
 (defvar rgr-unauth-host-exceptions
 	'(;; SSH connections into home from work.
 	  ("66.9.243.106" nil "^22/TCP")
+	  ;; SSH connections from BMERC at Boston University.
+	  ("128.197.54.24" nil "^22/TCP")
+	  ("128.197.54.63" nil "^22/TCP")
 	  ;; See http://www.just4youx.net/scanning.html
 	  ("80.253.125.28 - 80.253.125.32" nil
 	   "^\\(3128\\|6588\\|8080\\|1[01]80\\)/TCP")
