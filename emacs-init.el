@@ -55,6 +55,16 @@
 	      (setq load-path (cons discus load-path)))
 	  (load loaddefs)
 	  t)))
+;; For other packages.
+(defvar rgr-imported-packages (expand-file-name "../imported" rgr-emacs)
+  "Directory for other private emacs packages.")
+(if (and (file-directory-p rgr-imported-packages)
+	 (not (member rgr-imported-packages load-path)))
+    (let ((autoloads (expand-file-name "autoloads.el" rgr-imported-packages)))
+      (setq load-path (cons rgr-imported-packages load-path))
+      (if (file-readable-p autoloads)
+	  (load autoloads))
+      t))
 
 (setq rgr-space-means-execute-and-exit t)
 (setq signature-login-name "rgr")

@@ -40,39 +40,16 @@
 ;;;
 ;;;    1.  Make rgr-mouse-mark-text-down highlight during the drag.
 ;;;
-;;;    Modification history:
+;;;    [original] Modification history:
 ;;;
 ;;; rgr-mouse-edit-thing, other mouse hackery.  -- rgr, 30-Mar-94.
 ;;; rgr-mouse-insert-thing, better -edit-thing.  -- rgr, 1-Apr-94.
-;;; make rgr-thing-around-point deal with pathnames better.  -- rgr, 4-Apr-94.
-;;; rgr-mouse-insert-thing of current line.  -- rgr, 6-Apr-94.
-;;; rgr-mail-mode-hook (& rmail), rgr-buffer-menu-exit, split rgr-ed out
-;;;	of rgr-mouse-edit-thing .  -- rgr, 7-Apr-94.
-;;; rgr-buffer-menu-execute-and-select-current command, rgr-with-lisp-syntax
-;;;	and related mouse command fixing.  -- rgr, 12-Apr-94.
-;;; rgr-mouse-mark-text-down, fix rgr-move-past-prefix bobp bug.  -- rgr,
-;;;	27-Apr-94.
+;;; . . .
 ;;; *** emacs 19 update ***
 ;;;	Split out ./rgr-mouse-18.el and ./rgr-rmail-18.el .  -- rgr, 17-Jan-95.
 ;;; split out of ./rgr-hacks.el as the rgr-mouse package.  -- rgr, 27-Jan-95.
 ;;; rgr-find-url: teach rgr-ed to find URL's.  -- rgr, 30-Jan-95.
-;;; rgr-thing-around-point: downcase lispm pathname host.  -- rgr, 1-Feb-95.
-;;; make rgr-ed push stupid mark for edit-definitions-lisp, rgr-web-client-host
-;;;	cleanup to rgr-find-url fn.  -- rgr, 8-Mar-95.
-;;; rgr-thing-around-point: ftp:/file: URL's -> ange-ftp.  -- rgr, 22-Mar-95.
-;;; rgr-find-url: change client -> netscape, minor tweaks.  -- rgr, 14-Mar-96.
-;;; rgr-thing-around-point: fix empty-buffer bug.  -- rgr, 29-Mar-96.
-;;; rgr-find-url: support netscape -remote hack.  -- rgr, 10-May-96.
-;;; rgr-find-url: browse-url version.  -- rgr, 12-Sep-96.
-;;; rgr-browse-url-netscape: maybe run on a remote machine.  -- rgr, 19-Sep-96.
-;;; rgr-web-client-name: solaris config kludge.  -- rgr, 14-Mar-97.
-;;; rgr-find-url-start-browser: (regexp-quote url) hack.  -- rgr, 14-Apr-97.
-;;; rgr-web-client-name: remove solaris config kludge.  -- rgr, 19-Sep-97.
-;;; rgr-find-url-start-browser: netscape 4.04 kludges.  -- rgr, 17-Feb-98.
-;;; rgr-browse-url-netscape: handle 'su' case.  -- rgr, 25-Mar-98.
-;;; rgr-browse-url-netscape: "~/.netscape/lock" test.  -- rgr, 13-Apr-98.
-;;; rgr-browse-url-netscape: flush rgr-web-client-processes.  -- rgr, 29-Apr-98.
-;;; rgr-browse-url-netscape: "~/.netscape/lock" bashing.  -- rgr, 4-May-98.
+;;; . . .
 ;;; rgr-init-browse-url-browser-function: update for 19.34.  -- rgr, 20-Oct-98.
 ;;; rgr-find-url-start-browser: always nohup on alpha.  -- rgr, 24-Mar-99.
 ;;; rgr-find-url-start-browser: fix URL quoting for rsh.  -- rgr, 29-Jul-99.
@@ -88,13 +65,16 @@
 ;;; rgr-ed: make smarter about lisp names in nonlisp bufs.  -- rgr, 11-Aug-02.
 ;;; split out lisp stuff to new ilisp-mouse.el file.  -- rgr, 8-Apr-03.
 ;;;
+;;; $Id$
 
 ;;;; Loading required code.
 
 ;; [this is now part of ilisp, distributed separately, so don't fail if it can't
 ;; be loaded.  -- rgr, 22-Apr-03.]
 (condition-case () (require 'ilisp-mouse)
-  (error nil))
+  (error
+    (message "Can't load ilisp-mouse; %S will not be fully functional."
+	     'rgr-mouse)))
 (require 'browse-url)
 
 ;;;; Variables
