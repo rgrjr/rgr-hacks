@@ -113,6 +113,7 @@ A Lisp code line is one that is nonblank and not entirely a comment."
   (setq tags-table-list
 	(rgr-make-tags-table-list
 	  (append (list (expand-file-name "~thread/code/stat")
+			(expand-file-name "~/projects/database/code")
 			;; the htdocs tree will only be available on the alphas,
 			;; but rgr-make-tags-table-list will figure this out.
 			;; -- rgr, 4-Nov-98.
