@@ -60,7 +60,7 @@
   "Directory for other private emacs packages.")
 (if (and (file-directory-p rgr-imported-packages)
 	 (not (member rgr-imported-packages load-path)))
-    (let ((autoloads (expand-file-name "autoloads.el" rgr-imported-packages)))
+    (let ((autoloads (expand-file-name "loaddefs.el" rgr-imported-packages)))
       (setq load-path (cons rgr-imported-packages load-path))
       (if (file-readable-p autoloads)
 	  (load autoloads))
