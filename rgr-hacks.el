@@ -691,6 +691,8 @@ M-x buffer-menu)."
   ;; rgr-term-setup function).  -- rgr, 4-Apr-96.  [now fixed.  this used to be
   ;; part of rgr-install-x11-hacks, but now installed generally.  -- rgr,
   ;; 6-Feb-98.]
+  (global-set-key [f1] 'rgr-invoke-rmail)
+  (global-set-key [kp-f1] 'rgr-invoke-rmail)
   (global-set-key [f4] 'rgr-insert-symbol-abbreviation)
   ;; [ssh on Windows sends kp-f1 through kp-f4 for f1 through f4.  f5 sends
   ;; nothing, f10 is intercepted, and the others seem to be normal.  -- rgr,
@@ -701,17 +703,9 @@ M-x buffer-menu)."
   ;; [this isn't really equivalent to the LispM version, and gets a funny error
   ;; message if M-p isn't bound.  -- rgr, 19-Aug-01.]
   '(global-set-key "\C-\M-y" "\M-p")
-  ;; Rebind f1 to get mail.
-  (cond (t
-	  (global-set-key [f1] 'rgr-invoke-rmail)
-	  (global-set-key [kp-f1] 'rgr-invoke-rmail))
-	(nil
-	  ;; [was trying to get f1 to act like the Genera <select> key, but it
-	  ;; doesn't seem to work right.  -- rgr, 19-Aug-01.]
-	  (if (eq (lookup-key (current-global-map) [f1]) 'rgr-invoke-rmail)
-	      (global-set-key [f1] nil))
-	  (global-set-key [f1 m] 'rgr-invoke-rmail)
-	  (global-set-key [kp-f1 m] 'rgr-invoke-rmail)))
+  ;; Put repeat-complex-command (C-x ESC ESC) on f6.
+  (global-set-key [f6] 'repeat-complex-command)
+  (global-set-key [kp-f6] 'repeat-complex-command)
   ;; [used to use F5 to select the default other-buffer in the other window,
   ;; creating one if in one-window configuration, and leave the cursor in the
   ;; current window.  now an alternate rubout that doesn't tweak my pinkie.  --
