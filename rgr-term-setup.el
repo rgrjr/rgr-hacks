@@ -58,7 +58,9 @@
 	  (global-set-key "\C-x4\C-f" 'ffap-other-window)))
   ;; Now set up a mail peeker, since I don't have xbiff at home.  --
   ;; rgr, 7-Feb-96.  [but don't do this when su.  -- rgr, 30-Mar-96.]
-  (if (equal (user-login-name) (user-real-login-name))
+  ;; [don't do this at all until we can teach it about maildirs.  -- rgr,
+  ;; 3-Oct-04.]
+  '(if (equal (user-login-name) (user-real-login-name))
       (run-at-time "60 sec" 120 'rgr-check-mail)))
 
 (defun rgr-vt200-term-setup ()
