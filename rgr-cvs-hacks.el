@@ -57,7 +57,7 @@ Files that are being added or deleted are noted as such."
       (while (re-search-forward match-re nil t)
 	(let ((file-name (or (match-string 1) (match-string 3)))
 	      (extra (match-string 4)))
-	  (message "found %S" file-name)
+	  ;; (message "found %S" file-name)
 	  (save-excursion
 	    (set-buffer original-buffer)
 	    (goto-char (point-max))
