@@ -181,17 +181,23 @@ open <tr>, <th>, or <td> markup, and a </tr> closes any open <th> or
   (let ((tag-name (rgr-html-matched-tag-symbol)))
     (if (and (eq tag-name 'a)
 	     (save-excursion
-	       ;; We will normally already be here (the match-beginning) if
-	       ;; searching backward, but not if searching forward.
-	       (goto-char (match-beginning 0))
-	       (forward-sexp 1)
-	       (let ((end (point)))
-		 (goto-char (match-end 0))
-		 ;; [we could parse the attributes instead, but that seems
-		 ;; excessive; the caller may need to parse them anyway.  --
-		 ;; rgr, 4-Dec-97.]
-		 (save-match-data
-		   (re-search-forward "\\<name[ \t\n]*=" end t)))))
+	       ;; [we could parse the attributes instead, but that seems
+	       ;; excessive; the caller may need to parse them anyway.  -- rgr,
+	       ;; 4-Dec-97.]
+	       (save-match-data
+		 ;; We will normally already be here (the match-beginning) if
+		 ;; searching backward, but not if searching forward.  [using
+		 ;; forward-sexp to identify the end of the tag seems more
+		 ;; reliable than parsing it ourselfves.  -- rgr, 26-May-04.]
+		 (goto-char (match-beginning 0))
+		 (forward-sexp 1)
+		 (let ((end (point)) (result nil))
+		   (goto-char (match-end 0))
+		   (while (and (not result) (< (point) end))
+		     (skip-chars-forward " \t\n")
+		     (setq result (looking-at "name[ \t\n]*="))
+		     (skip-chars-forward "^ \t\n"))
+		   result))))
 	'a-name
 	tag-name)))
 
