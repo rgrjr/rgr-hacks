@@ -145,7 +145,8 @@ or missing, then all connection attempts are ignored.")
 	  ;; the top half), but there appears to be a gap at 200.62.0.0 -
 	  ;; 200.62.63.255 for IFX Corporation, Florida, that is still handled
 	  ;; by ARIN.  -- rgr, 2-Mar-03.
-	  (("200.0.0.0 - 200.61.255.255"
+	  (("163.247.0.0/16"
+	    "200.0.0.0 - 200.61.255.255"
 	    "200.62.64.0 - 200.255.255.255") nil :whois "whois.lacnic.net")
 	  (("200.96.0.0/13"
 	    "200.128.0.0 - 200.255.255.255")
