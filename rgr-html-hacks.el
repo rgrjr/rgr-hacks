@@ -1168,6 +1168,32 @@ since the defaults are wrong."
   (let ((adaptive-fill-mode nil))
     (do-auto-fill)))
 
+(defvar rgr-html-helper-new-buffer-template
+	'(html-helper-htmldtd-version
+	  "
+<html>
+<head>
+<title>Bob:  Title</title>
+<link href=\"../site.css\" title=\"Default\" rel=\"stylesheet\" type=\"text/css\">
+</head>
+
+<body>
+<h2>Title</h2>
+
+<p><a href=\"/\"><tt>Home</tt></a> : <a href=\"index.html\">Whatever</a> : Title
+<hr>
+
+<p>
+
+<p>
+<hr>
+<address><a href=\"/bob/contact.html\">Bob Rogers
+	<tt>&lt;rogers@rgrjr.dyndns.org&gt;</tt></a></address>
+$Id$
+</body>
+</html>
+"))
+
 ;;;###autoload
 (defun rgr-html-helper-mode-hook ()
   "This does html-helper-mode to my taste.  You probably want to use
@@ -1178,6 +1204,9 @@ rgr-html-define-commands as a load hook instead.  -- rgr, 14-Oct-97."
   ;; too adaptive, so use rgr-html-do-auto-fill instead.  -- rgr, 13-Jan-00.]
   (and (memq auto-fill-function '(do-auto-fill rgr-do-auto-fill))
        (setq auto-fill-function 'rgr-html-do-auto-fill))
+  ;; Template for home Web pages.
+  (and (eq rgr-site 'home)
+       (setq tempo-template-html-skeleton rgr-html-helper-new-buffer-template))
   ;; Because I don't need this bound to something that inserts "<hr>".
   (define-key html-helper-mode-map "\C-c=" 'discus-quick-source-compare)
   ;; And much prefer the default C-M-f and C-M-b bindings.
