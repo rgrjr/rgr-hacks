@@ -8,6 +8,20 @@
         (expand-file-name "~/projects/linux/backup/backups.text")
   "*Name of file for recording backups.")
 
+(defun rgr-backup-change-stars-to-dots (level)
+  ;; change "*" to "." for backups obsoleted by this one.
+  (let ((other-level nil))
+    (beginning-of-line)
+    (while (and (looking-at "^[ \t]*\\([.*]\\)")
+		(setq other-level (save-excursion
+				    (goto-char (match-end 0))
+				    (- (current-column) 3)))
+		(<= level other-level))
+      (message "[other-level %s]" other-level)
+      (if (equal (match-string 1) "*")
+	  (replace-match "." t t nil 1))
+      (forward-line -1))))
+
 ;;;###autoload
 (defun rgr-add-backup-log-entry ()
   (interactive)
@@ -39,7 +53,9 @@
 				    (format "%dKB" (round (* size 1000)))))))
 	 (insert (make-string (+ level 2) ?\ )
 		 "*" (make-string (- 11 level) ?\ )
-		 (format "%d" level) " " date " (" rounded-size ")\n"))))))
+		 (format "%d" level) " " date " (" rounded-size ")\n"))
+	(forward-line -2)
+	(rgr-backup-change-stars-to-dots level)))))
 
 (provide 'rgr-backup)
 
