@@ -78,7 +78,8 @@ or missing, then all connection attempts are ignored.")
 	'(;; From ARIN
 	  (("24.159.0.0/16") "abuse@chartercom.com")
 	  (("32.0.0.0/8") "abuse@att.com")
-	  ("63.0.0.0 - 63.61.255.255" "abuse@uunet.uu.net")
+	  ;; [now mci.com.  -- rgr, 24-Nov-03.]
+	  ;; ("63.0.0.0 - 63.61.255.255" "abuse@uunet.uu.net")
 	  ("63.216.0.0 - 63.223.255.255" "abuse@cais.net")
 	  (("64.152.0.0/13") "abuse@level3.com")
 	  ("65.0.0.0 - 65.15.255.255" "noc-abuse@noc.home.net")
@@ -100,6 +101,7 @@ or missing, then all connection attempts are ignored.")
 	  (("61.0.0.0 - 61.255.255.255"
 	    "150.1.0.0 - 150.101.255.255"
 	    "163.13.0.0 - 163.32.255.255"
+	    "163.208.0.0 - 163.212.255.255"
 	    "165.246.0.0/16"
 	    "166.103.0.0 - 166.104.255.255"
 	    "166.111.0.0/16"
@@ -241,7 +243,10 @@ or missing, then all connection attempts are ignored.")
 	    "211.20.0.0 - 211.23.255.255"
 	    "211.72.0.0 - 211.72.255.255"
 	    "211.75.0.0 - 211.75.255.255")
-	   "abuse@hinet.net"))
+	   "abuse@hinet.net")
+	  ;; from APNIC
+	  (("61.187.0.0 - 61.187.255.255")
+	   "abuse@ns.chinanet.cn.net")))
   "Alist of (ip-subnet abuse-address &key extras), culled from NIC sites.
 This database is only necessary in those cases when the abuse address is
 not obvious from the subscriber's DNS name.  For that reason, this list
