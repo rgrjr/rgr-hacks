@@ -10,7 +10,6 @@
 ;;;    Modification history:
 ;;;
 ;;; split out of the rgr-hacks.el file.  -- rgr, 20-Nov-98.
-;;; rgr-flush-new-binaries: new command.  -- rgr, 20-Nov-98.
 ;;; rgr-comment-region-lisp: new.  -- rgr, 7-Sep-99.
 ;;; rgr-lisp-def-name: avoid loading ilisp.  -- rgr, 15-Sep-99.
 ;;; rgr-ilisp-mode-hook: move here, restore comint bindings.  -- rgr, 28-Jan-00.
@@ -212,28 +211,6 @@ region."
       (set-marker comment-marker nil))))
 
 ;;;; CMU-CL specific stuff
-
-;;;###autoload
-(defun rgr-flush-new-binaries (&optional no-query-p)
-  (interactive "P")
-  (let ((files-queried nil)
-	(files-to-delete nil))
-    (save-excursion
-      (while (re-search-forward "^\\(.*\\.sparcf\\) written\\.$" nil t)
-	(let ((file (match-string 1)))
-	  (cond ((not (member file files-queried))
-		  (setq files-queried (cons file files-queried))
-		  (if (and (file-readable-p file)
-			   (or no-query-p
-			       (y-or-n-p (format "Delete %s? " file))))
-		      (setq files-to-delete (cons file files-to-delete))))))))
-    (cond (files-to-delete
-	    (message "Deleting %d files." (length files-to-delete))
-	    (mapcar (function (lambda (file)
-		      (condition-case error
-			  (delete-file file)
-			(error (message "Error:  %S" error)))))
-		    files-to-delete)))))
 
 (defun rgr-cmucl-flush-noise (string)
   ;; Take uninteresting boilerplate out of Python (CMU-CL) compiler messages.
