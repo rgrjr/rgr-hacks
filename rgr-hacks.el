@@ -250,6 +250,10 @@ incarnation of the major version)."
 	  (setq tail (cdr (cdr tail)))))
     result))
 
+;; Compatibility with earlier emacs versions.  -- rgr, 22-Aug-99.
+(or (fboundp 'buffer-substring-no-properties)
+    (fset 'buffer-substring-no-properties 'buffer-substring))
+
 ;;;; Renaming buffers.
 
 (defun rgr-parent-dir-and-file-name (file-name)
