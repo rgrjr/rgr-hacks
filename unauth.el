@@ -172,15 +172,17 @@ rgr-unauth-scarf-whois-data fn for details.  -- rgr, 29-Dec-02.")
 		  identifier ")"))
   "Regexp that recognizes the protocol/attempt count/disposition line.")
 
-(defvar rgr-unauth-benign-protocol-regexp
+(defvar rgr-unauth-benign-protocol-regexp 
         (concat "^\\(ftp\\|143[34]\\|ms-sql-[sm]\\|epmap"
-		"\\|6346\\|1214\\|445\\|microsoft-ds\\)/tcp$"
+		"\\|6346\\|1214\\|445\\|microsoft-ds\\|17300\\)/tcp$"
 		"\\|^\\(epmap\\|ms-sql-m\\)/udp$")
   ;; 1433 is for the Microsoft SQL Server; see the "Spida" worm advisory on the
   ;; http://www.iss.net/security_center/alerts/advise118.php page.  I no longer
   ;; report these.  And 6346 is gnutella, and 1214 is KaZaA, both of which are
   ;; too ambiguous to report.  [445 aka "microsoft-ds" is for Windows file
   ;; service; there seems to be a new worm propagating.  -- rgr, 18-Dec-02.]
+  ;; [don't really know what 17300 is, but it's probably another damn microsoft
+  ;; thing.  -- rgr, 15-May-03.]
   "Regexp that matches protocol names (e.g. 'ftp/tcp') for which we
 should never complain even when somebody attempts to connect.  For
 instance, FTP connections are benign, because I do run a Web server, so
@@ -500,12 +502,12 @@ start at most one emacs per day."
       (insert ").  ")
       (let* ((zone (current-time-zone))
 	     (hrs (/ (car zone) 3600))
-	     (mins (mod (car zone) 3600)))
+	     (mins (/ (mod (car zone) 3600) 60)))
 	(insert (if plural-p "Times are " "Time is ")
 		(car (cdr zone))
 		(format " (%.2d%.2d)" hrs mins)
 		", and this machine is an NTP server (see 
-http://www.eecis.udel.edu/~ntp/) that operates at stratum 3, 
+http://www.ntp.org/) that operates at stratum 3,
 so it generally keeps time within a fraction of a second."))
       (fill-paragraph nil)
       (insert "\n\n   Thanks in advance for taking care of this,"
