@@ -15,12 +15,9 @@
 ;;;
 ;;;    To compile this (almost) without error, do the following:
 ;;;
-;;; (progn (mapcar 'require '(discus)) (load "debug"))
+;;; (progn (load "debug"))
 ;;;
-;;; Discus *must* be loaded, so that with-discus-log-output will be expanded
-;;; correctly.  -- rgr, 25-Jan-95.
-;;;
-;;;    Modification history:
+;;;    [old] Modification history:
 ;;;
 ;;; started history.  -- rgr, 2-Mar-94.
 ;;; rgr-show-elisp-arglist, etc.  -- rgr, 13-Apr-94.
@@ -31,9 +28,6 @@
 ;;; *** emacs 19 update ***
 ;;; rgr-guess-arglist-from-documentation, . . .  -- rgr, 25-Jan-95.
 ;;; rgr-document-all-subrs: new hack.  -- rgr, 28-Jan-95.
-;;; moved discus-emacs-update here.  -- rgr, 31-Jan-95.
-;;; discus-emacs-update: cleaned up a little.  -- rgr, 15-Feb-95.
-;;; rgr-time-evaluation, binding compile-defun.  -- rgr, 22-Feb-95.
 ;;; rgr-elisp-arglist: deal with compiled macros.  -- rgr, 5-Jun-95.
 ;;; split elisp stuff out of ./rgr-hacks.lisp file.  -- rgr, 26-Mar-96.
 ;;; moved rgr-mapcar2 here, added autoloads.  -- rgr, 20-Jul-96.
@@ -285,19 +279,6 @@ The source is found by using the \\[find-tag] command."
 		  (t
 		    (princ (format "%S %S\n" atom doc)))))
 	  (setq tail (cdr tail)))))))
-
-(defun rgr-analyze-run-time (start-time end-time)
-  (require 'discus-date)
-  (let ((time (- (cdr (discus-parse-date end-time))
-		 (cdr (discus-parse-date start-time)))))
-    (message "Evaluation of form took %d second%s."
-	     time (if (= time 1) "" "s"))))
-
-(defmacro rgr-time-evaluation (&rest body-forms)
-  "After evaluating the body-forms, print a message telling how long."
-  (` (let ((end-time nil) (start-time (current-time-string)))
-       (prog1 (progn (,@ body-forms))
-	 (rgr-analyze-run-time start-time (current-time-string))))))
 
 ;; Installation (also used for ilisp).  -- rgr, 26-Mar-96.
 
