@@ -98,7 +98,10 @@ forms there.")
   "Update the rgr-hacks-autoloads.el file with the latest autoloads
 from this directory."
   (interactive)
-  (rgr-update-directory-autoloads rgr-emacs "rgr-hacks-autoloads.el"))
+  (rgr-update-directory-autoloads rgr-emacs "rgr-hacks-autoloads.el")
+  (let ((imported (expand-file-name "../imported" rgr-emacs)))
+    (if (file-directory-p imported)
+	(rgr-update-directory-autoloads imported))))
 
 ;;;###autoload
 (defun rgr-batch-update-autoloads ()
