@@ -33,8 +33,10 @@ The paragraphs are numbered from 1; if you wish to change this, use the
 		    "\\([^ \t\n]\\)"))
 	  (end (set-marker (make-marker) end)))
       (goto-char start)
+      (while (looking-at "^[ \t]*$")
+	(forward-line))
       (if (looking-at "^  +")
-	  (replace-match (format "\n   %d.  " (setq index (1+ index)))))
+	  (replace-match (format "   %d.  " (setq index (1+ index)))))
       (while (re-search-forward end-of-sentence-re end t)
 	(replace-match (concat (match-string 1)
 			       (format "\n\n   %d.  "
