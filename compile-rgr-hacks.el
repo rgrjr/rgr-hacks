@@ -34,7 +34,8 @@ rgr-hacks-compile-module (see below).")
 	  ;; file is supposed to do.  -- rgr, 23-Apr-03.
 	  ("rgr-allegro" load-p nil)
 	  "rgr-bib"
-	  "rgr-check-mail"
+	  ;; [should try to remove this dependency.  -- rgr, 26-Apr-03.]
+	  ("rgr-check-mail" require (discus-date))
 	  "rgr-compile-hacks"
 	  "rgr-dired"
 	  "rgr-elisp-hacks"
@@ -67,7 +68,8 @@ rgr-hacks-compile-module (see below).")
 	  ;; "rgr-rect-hacks"
 	  "rgr-rmail-hacks"
 	  "rgr-shell-hacks"
-	  "rgr-squid-log"
+	  ;; [should try to remove this dependency.  -- rgr, 26-Apr-03.]
+	  ("rgr-squid-log" require (discus-date))
 	  "rgr-tcl"
 	  "rgr-tripwire-minus-rpm"
 	  ("rgr-w3-hacks" require (w3))
