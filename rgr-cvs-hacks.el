@@ -218,21 +218,20 @@ noted as such."
 
 (defun rgr-mode-definition-name ()
   ;; Total kludge.
-  (cond ((member major-mode '(emacs-lisp-mode lisp-mode))
-	  (save-excursion
+  (save-excursion
+    (cond ((member major-mode '(emacs-lisp-mode lisp-mode))
 	    (if (not (looking-at "^("))
 		(beginning-of-defun))
-	    (rgr-lisp-def-name t)))
-	((eq major-mode 'perl-mode)
-	  (rgr-perl-definition-name))
-	((eq major-mode 'pir-mode)
-	  (save-excursion
+	    (rgr-lisp-def-name t))
+	  ((eq major-mode 'perl-mode)
+	    (rgr-perl-definition-name))
+	  ((eq major-mode 'pir-mode)
 	    (and (re-search-backward "^\\.sub[ \t]+\\([^ \t\n]+\\)" nil t)
-		 (match-string 1))))
-	(t
-	  (message "Can't find definitions for %S mode." major-mode)
-	  (sit-for 2)
-	  nil)))
+		 (match-string 1)))
+	  (t
+	    (message "Can't find definitions for %S mode." major-mode)
+	    (sit-for 2)
+	    nil))))
 
 (defun rgr-vc-comment-file-names ()
   ;; Return the comment file names at point, skipping past them.
@@ -289,37 +288,30 @@ noted as such."
 	      (setq result star))))
       result)))
 
-;;;###autoload
-(defun rgr-diff-add-definition-comment (&optional other-file)
-  "Find the definition name of the corresponding source line.
-`diff-jump-to-old-file' (or its opposite if the OTHER-FILE prefix arg
-is given) determines whether to jump to the old or the new file.
-If the prefix arg is bigger than 8 (for example with \\[universal-argument] \\[universal-argument])
-  then `diff-jump-to-old-file' is also set, for the next invocations."
-  (interactive "P")
-  (let* ((rev (not (save-excursion (beginning-of-line) (looking-at "[-<]"))))
-	 ;; this is a list of (buf line-offset pos src dst &optional switched).
-	 (loc (diff-find-source-location other-file rev))
-	 (buf (car loc))
-	 (pos (nth 2 loc))
-	 (src (nth 3 loc))
-	 (name (save-excursion
-		 (set-buffer buf)
-		 (goto-char (+ pos (cdr src)))
-		 (rgr-mode-definition-name))))
+(defun rgr-current-comment-buffer (&optional for-buffer)
+  ;; Given a buffer (which defaults to the current buffer), find the appropriate
+  ;; comment buffer, if one exists.  [we may need a better theory for how to
+  ;; identify the right comment buffer.  -- rgr, 25-Feb-05.]
+  (save-excursion
+    (and for-buffer
+	 (set-buffer for-buffer))
+    (apply (function rgr-find-more-recent-buffer)
+	   (get-buffer "*VC-log*")
+	   (rgr-comment-buffers))))
+
+(defun rgr-add-definition-comment-internal (name &optional source-buffer)
+  ;; Given a name in source-buffer (which defaults to the current buffer),
+  ;; insert "   + (def-name): " into to the current comment buffer.
+  (let* ((source-buffer (or source-buffer (current-buffer)))
+	 (changed-file (buffer-file-name source-buffer)))
     (switch-to-buffer-other-window
-      ;; [need a better theory for how to identify the right comment buffer.  --
-      ;; rgr, 25-Feb-05.]
-      (or (apply (function rgr-find-more-recent-buffer)
-		 (get-buffer "*VC-log*")
-		 (rgr-comment-buffers))
+      (or (rgr-current-comment-buffer source-buffer)
 	  (find-file-noselect "comment.text")))
     (let ((current-comment-files (rgr-vc-current-comment-files))
-	  (changed-file (buffer-file-name buf))
 	  (comment-start nil))
       (cond ((member changed-file current-comment-files)
 	      ;; assume we're in the right place.
-	      )
+	      (beginning-of-line))
 	    ((setq comment-start (rgr-vc-find-file-comment changed-file))
 	      '(error "Changed file %S but buffer is at files %S."
 		     changed-file current-comment-files)
@@ -330,7 +322,33 @@ If the prefix arg is bigger than 8 (for example with \\[universal-argument] \\[u
 	      (beginning-of-line))))
     (rgr-cvs-plus)
     (if name
-	(insert "(" name "):  "))))
+	(insert "(" name "):  "))
+    name))
+
+;;;###autoload
+(defun rgr-add-definition-comment ()
+  "Find the current definition name and add it to the current patch comment."
+  (interactive)
+  (rgr-add-definition-comment-internal (rgr-mode-definition-name)))
+
+;;;###autoload
+(defun rgr-diff-add-definition-comment (&optional other-file)
+  "Find the definition name of the corresponding source line.
+`diff-jump-to-old-file' (or its opposite if the OTHER-FILE prefix arg
+is given) determines whether to jump to the old or the new file.
+This is useful, for instance, when a definition has been deleted."
+  (interactive "P")
+  (let* ((rev (not (save-excursion (beginning-of-line) (looking-at "[-<]"))))
+	 ;; this is a list of (buf line-offset pos src dst &optional switched).
+	 (loc (diff-find-source-location other-file rev))
+	 (source-buffer (car loc))
+	 (pos (nth 2 loc))
+	 (src (nth 3 loc))
+	 (name (save-excursion
+		 (set-buffer source-buffer)
+		 (goto-char (+ pos (cdr src)))
+		 (rgr-mode-definition-name))))
+    (rgr-add-definition-comment-internal name source-buffer)))
 
 ;;;###autoload
 (defun rgr-cvs-plus ()

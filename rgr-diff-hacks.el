@@ -74,6 +74,7 @@
 ;;;###autoload
 (defun rgr-install-diff-hacks ()
   (global-set-key "\C-c=" 'rgr-quick-source-compare)
+  (global-set-key "\C-c!" 'rgr-add-definition-comment)
   (add-hook 'diff-mode-hook 'rgr-diff-mode-hook))
 
 (provide 'rgr-diff-hacks)
