@@ -2,6 +2,55 @@
 ;;;
 ;;;; Hacking perl mode.
 ;;;
+;;; Copyright (C) 1996-2003  Robert G. Rogers Jr
+;;;
+;;; This file is not part of GNU Emacs, but it customizes perl-mode, which is.
+;;; Accordingly, it is distributed under the same terms as GNU Emacs:
+;;;
+;;;	GNU Emacs is free software; you can redistribute it and/or modify
+;;;	it under the terms of the GNU General Public License as published by
+;;;	the Free Software Foundation; either version 2, or (at your option)
+;;;	any later version.
+;;;
+;;;	GNU Emacs is distributed in the hope that it will be useful,
+;;;	but WITHOUT ANY WARRANTY; without even the implied warranty of
+;;;	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+;;;	GNU General Public License for more details.
+;;;
+;;;	You should have received a copy of the GNU General Public License
+;;;	along with GNU Emacs; see the file COPYING.  If not, write to the
+;;;	Free Software Foundation, Inc., 59 Temple Place - Suite 330,
+;;;	Boston, MA 02111-1307, USA.
+;;;
+;;; Commentary:
+;;;
+;;;    To install the documentation lookup commands, put the following in your
+;;; .emacs file:
+;;;
+;;;	(autoload 'rgr-perl-mode-install-documentation-hacks "rgr-perl-hacks")
+;;;	(add-hook 'perl-mode-hook 'rgr-perl-mode-install-documentation-hacks)
+;;;
+;;; You should be aware that the use of "C-z" as a prefix violates the emacs
+;;; key-binding standard.  "C-z" was chosen for compatibility with the
+;;; "traditional" ilisp bindings for the corresponding functionality for Lisp
+;;; development; these in turn were based on the MIT Lisp Machine Zmacs
+;;; implementation.  In order to avoid stepping on other bindings, a user could
+;;; choose to bind them to "C-c a", "C-c d", etc., instead.  [And even ilisp
+;;; will soon change to conform to the emacs key binding standard, though the
+;;; exact bindings are still being decided.  So stay tuned.  -- rgr, 30-Apr-03.]
+;;;
+;;;    You should also be aware that documentation lookup relies on the
+;;; indentation of the "perlfunc" man page, which may vary from system to
+;;; system.  If rgr-perl-show-documentation can't even find the documentation
+;;; for "print", for example, you may need to tweak the value of the
+;;; rgr-perl-function-documentation-prefix variable so that it exactly matches
+;;; the whitespace that appears before the names of documented functions, and no
+;;; more.
+;;;
+;;;    You might also want to look at rgr-perl-mode-fix-indentation and
+;;; rgr-perl-mode-install-extra-hacks, but be aware that the latter includes
+;;; commands that depend on other rgr-hacks functions not defined in this file.
+;;;
 ;;;    Modification history:
 ;;;
 ;;; created with rgr-perl-quick-arglist hack.  -- rgr, 26-Jul-96.
@@ -29,8 +78,35 @@
 ;;; rgr-perl-mode-hook: prefer /usr/bin/perl for #! magic.  -- rgr, 22-Oct-02.
 ;;; rgr-perl-function-documentation-prefix: add SuSE support.  -- rgr, 4-Nov-02.
 ;;; rgr-perl-newline-and-maybe-indent: new POD hack.  -- rgr, 8-Nov-02.
-;;; rgr-perl-mode-hook: use "/usr/bin/perl -w" magic.  -- rgr, 10-Jan-03.
 ;;;
+;;; $Id$
+
+;;;; variables.
+
+(defvar rgr-perldoc-program "perldoc")
+(defvar rgr-perldoc-args "")
+
+(defvar rgr-perl-function-documentation-prefix
+        (cond ((string-match "osf" system-configuration)
+		;; only two spaces in front of function names in the man page.
+		;; [I hope that this really depends on OSF1 . . .  -- rgr,
+		;; 29-Apr-98.]
+		"^  ")
+	      ((string-match "linux" system-configuration)
+	        ;; "*-linux-gnu" and "*-suse-linux" tested.
+		"^       ")
+	      (t
+		;; Default (works on SunOS 4.1.4 at least).
+		"^     "))
+  "Regular expression that matches the precise indentation in front of
+the function name in the perl documentation.  This appears to be
+somewhat system-dependent.")
+
+(defvar rgr-manpage-done-p nil)
+(defvar rgr-perl-manpage-alphabetical-listing nil
+  "Start of alphabetical function listing.")
+
+(defvar rgr-perl-function-indent 0)
 
 ;;;; general stuff.
 
@@ -56,26 +132,6 @@ for perl syntax]."
 	(rgr-perl-definition-name))))
 
 ;;;; perl documentation support.
-
-(defvar rgr-perl-function-documentation-prefix
-        (cond ((string-match "osf" system-configuration)
-		;; only two spaces in front of function names in the man page.
-		;; [I hope that this really depends on OSF1 . . .  -- rgr,
-		;; 29-Apr-98.]
-		"^  ")
-	      ((string-match "linux" system-configuration)
-	        ;; "*-linux-gnu" and "*-suse-linux" tested.
-		"^       ")
-	      (t
-		;; Default (works on SunOS 4.1.4 at least).
-		"^     "))
-  "Regular expression that matches the precise indentation in front of
-the function name in the perl documentation.  This appears to be
-somewhat system-dependent.")
-
-(defvar rgr-manpage-done-p nil)
-(defvar rgr-perl-manpage-alphabetical-listing nil
-  "Start of alphabetical function listing.")
 
 (defun rgr-manpage-done () (setq rgr-manpage-done-p t))
 
@@ -128,8 +184,26 @@ somewhat system-dependent.")
 	    (setq start (1- start)))
 	(buffer-substring start end)))))
 
+(defun rgr-perl-prompt-for-name (prompt-string-start)
+  (let* ((default (rgr-perl-get-name-around-point))
+	 (result (read-string
+		  (format "%s%s: "
+			  prompt-string-start
+			  (if default
+			      (concat " (default '" default "')")
+			      ""))
+		  nil nil default)))
+    result))
+
 ;;;###autoload
 (defun rgr-perl-show-documentation (name)
+  "Find the documentation for builtin functions on the perlfunc man page.
+Prompts for the name of a perl function; the default is a name extracted
+from the next near point.  The \"man perlfunc\" documentation page is
+then shown in another window, scrolled down to the start of the
+specified function.  If the documentation can't be found, the window is
+positioned at the start of the functional descriptions, to make it
+easier to search the page manually."
   (interactive
     (list (rgr-perl-prompt-for-name "Find documentation for perl function")))
   (let ((regexp (concat rgr-perl-function-documentation-prefix
@@ -155,12 +229,15 @@ somewhat system-dependent.")
 
 ;;;###autoload
 (defun rgr-perl-show-arglist (name)
-  (interactive "sShow arglist for perl function: ")
-  (let* (;; [this only works on SunOS; the documentation is indented by three
-	 ;; less on the alphas.  -- rgr, 29-Apr-98.]
-	 ;; (indent "     ") (long-indent "             ")
-	 ;; (regexp (concat "^" indent name " "))
-	 (regexp (concat rgr-perl-function-documentation-prefix
+  "Find the arguments for builtins documented on the perlfunc man page.
+Prompts for the name of a perl function; the default is a name extracted
+from the next near point.  If only one variant of the function is
+documented, then that line is shown in the message area at the bottom of
+the frame.  If multiple variants are shown (or if the function is not
+documented on the perlfunc man page), then the documentation page is
+shown in another window, as by the rgr-perl-show-documentation command."
+  (interactive (list (rgr-perl-prompt-for-name "Show arguments for")))
+  (let* ((regexp (concat rgr-perl-function-documentation-prefix
 			 (regexp-quote name)
 			 " "))
 	 (man-buffer (rgr-get-man-buffer "perlfunc")))
@@ -186,29 +263,18 @@ somewhat system-dependent.")
 
 ;;;###autoload
 (defun rgr-perl-quick-arglist ()
-  "Only works for builtins documented in the perlfunc man page."
+  "Find the arguments for builtins documented on the perlfunc man page.
+See the rgr-perl-show-arglist command."
   (interactive)
   (rgr-perl-show-arglist (rgr-perl-get-name-around-point)))
 
 ;;; perldoc interface.
 
-(defun rgr-perl-prompt-for-name (prompt-string-start)
-  (let* ((default (rgr-perl-get-name-around-point))
-	 (result (read-string
-		  (format "%s%s: "
-			  prompt-string-start
-			  (if default
-			      (concat " (default '" default "')")
-			      ""))
-		  nil nil default)))
-    result))
-
-(defvar rgr-perldoc-program "perldoc")
-(defvar rgr-perldoc-args "")
-
 ;;;###autoload
 (defun rgr-perldoc (name)
-  "Find perldoc documentation, e.g. for a perl module."
+  "Find perldoc documentation, e.g. for a perl module.
+This is like \\[man], but calls `perldoc' instead of `man' to request
+the page."
   (interactive
     (list (rgr-perl-prompt-for-name "Find perlpod documentation for")))
   ;; Need to require this first, since if man autoloads while we have these
@@ -221,10 +287,11 @@ somewhat system-dependent.")
 
 ;;; Indentation.
 
-(defvar rgr-perl-function-indent 0)
-
 (defun rgr-perl-indent-command ()
-  "Indent current line as Perl code.  [Simplified version.  -- rgr, 4-Aug-97.]"
+  "Indent current line as Perl code."
+  ;; [simplified version.  -- rgr, 4-Aug-97.]  [may no longer be necessary, as
+  ;; the perl-tab-to-comment default is now nil.  see the comments there,
+  ;; especially the one by rms.  -- rgr, 30-Apr-03.]
   (interactive)
   (let ((fn-start 0) (rgr-perl-function-indent 0))
     (save-excursion
@@ -235,6 +302,7 @@ somewhat system-dependent.")
     (perl-indent-line nil fn-start)))
 
 (defun rgr-perl-newline-and-maybe-indent (arg)
+  "Insert a newline and indent if not within POD."
   (interactive "p")
   (newline arg)
   (if (save-excursion
@@ -242,55 +310,74 @@ somewhat system-dependent.")
 	    (looking-at "^=cut")))
       (rgr-perl-indent-command)))
 
+;;; Installing these commands.
+
 ;;;###autoload
-(defun rgr-perl-mode-hook ()
-  ;; Swap newline and return character bindings (to get indentation by default).
-  ;; See also the rgr-define-lisp-mode-commands comment.  -- rgr, 13-Jun-96.
-  ;; Also, use a simplified indent.  -- rgr, 4-Aug-97.
+(defun rgr-perl-mode-install-documentation-hacks ()
+  ;; perl-mode-hook function that installs commands to get function arguments
+  ;; and documentation from the man page.  See also the rgr-perldoc command.  --
+  ;; rgr, 26-Jul-96.  [note that "C-z a" and "C-z d" are nonstandard bindings; i
+  ;; chose them for compatibility with ilisp, but even ilisp will soon change.
+  ;; a user could choose to bind them to "C-c a" and "C-c d", though.  -- rgr,
+  ;; 30-Apr-03.]
+  (define-key perl-mode-map "\C-za" 'rgr-perl-quick-arglist)
+  (define-key perl-mode-map "\C-z\C-a" 'rgr-perl-show-arglist)
+  (define-key perl-mode-map "\C-zd" 'rgr-perl-quick-documentation)
+  (define-key perl-mode-map "\C-z\C-d" 'rgr-perl-quick-documentation))
+
+;;;###autoload
+(defun rgr-perl-mode-fix-indentation ()
+  ;; perl-mode-hook function that installs a simplified version of the
+  ;; indentation code.  This is necessary because the indenter often gets it
+  ;; wrong.  -- rgr, 4-Aug-97.
+  ;; Start by swapping newline and return character bindings (to get indentation
+  ;; by default).
   (define-key perl-mode-map "\r" 'rgr-perl-newline-and-maybe-indent)
   (define-key perl-mode-map "\n" 'newline)
   (define-key perl-mode-map "\t" 'rgr-perl-indent-command)
   ;; Don't do indenting on ";" -- ${$foo} loses.  -- rgr, 16-May-97.
   (define-key perl-mode-map ";" 'self-insert-command)
+  ;; Indent comments, even at BOL (by dropping ";?#\\|" from the start of this
+  ;; regular expression).  It is also necessary to use rgr-perl-indent-command,
+  ;; since perl-indent-command overrides the regexp.  -- rgr, 4-Aug-97.
+  (setq perl-nochange "\f\\|\\s(\\|\\(\\w\\|\\s_\\)+:"))
+
+;;;###autoload
+(defun rgr-perl-mode-install-extra-hacks ()
+  ;; These all require code defined in other rgr-*-hacks.el files.
   ;; Try to avoid shifting.  -- rgr, 20-Dec-96.
   (define-key perl-mode-map "-" 'rgr-c-electric-dash)
   ;; Learn subroutine names.  -- rgr, 14-Dec-98.
   (make-local-variable 'rgr-definition-line-regexp)
   (setq rgr-definition-line-regexp "^ *sub +")
   (rgr-relearn-buffer-definition-names)
-  ;; Function arguments and documentation from the man page.  -- rgr, 26-Jul-96.
-  (define-key perl-mode-map "\C-za" 'rgr-perl-quick-arglist)
-  (define-key perl-mode-map "\C-zd" 'rgr-perl-quick-documentation)
   ;; Standard modification history.
   (define-key perl-mode-map "\M-*" 'rgr-add-to-perl-modification-history)
   ;; This is also inherited from the global map, but define it here for sure.
   (define-key perl-mode-map "\M-q" 'rgr-fill-script-comment)
-  ;; Indent comments, even at BOL (by dropping ";?#\\|" from the start of this
-  ;; regular expression).  It is also necessary to use rgr-perl-indent-command,
-  ;; since perl-indent-command overrides the regexp.  -- rgr, 4-Aug-97.
-  (setq perl-nochange "\f\\|\\s(\\|\\(\\w\\|\\s_\\)+:")
   ;; Put in interpreter magic.  -- rgr, 29-Apr-97.  [but not in library modules.
-  ;; -- rgr, 16-May-97.]  [kludge:  have to hardwire the /usr/local/bin/perl
-  ;; path, because it is the only possibility that exists on all three machine
-  ;; types [at BMERC].  the alphas prefer /usr/bin/perl, and the solaris
-  ;; machines prefer /bin/perl, both based on the $PATH setting.  -- rgr,
-  ;; 22-May-98.]  [but /usr/local/bin/perl doesn't exist in standard RH Linux,
-  ;; so use /usr/bin/perl instead.  -- rgr, 16-Apr-00.]
+  ;; -- rgr, 16-May-97.]  [/usr/bin/perl is more standard, so prefer that.  --
+  ;; rgr, 22-Oct-02.]
   (cond ((not (string-match "\.pr?l$" (buffer-file-name))))
-	;; [while the "real" perl is now in /usr/local/bin/, /usr/bin/perl is
-	;; standard, so we need a link from there anyway.  -- rgr, 22-Oct-02.]
 	((file-executable-p "/usr/bin/perl")
 	  (require 'executable)
 	  (executable-set-magic "/usr/bin/perl -w"))
 	((file-executable-p "/usr/local/bin/perl")
 	  (require 'executable)
-	  (executable-set-magic "/usr/local/bin/perl")))
-  ;; Version dependent stuff.
-  (rgr-emacs-major-version-case
-   ((19 20 lucid19)
-     ;; Shadow global comment-region-lisp binding.  [but this loads ilisp, which
-     ;; is a bother . . .  -- rgr, 26-Jul-96.]  [replaced with my own hack.  --
-     ;; rgr, 7-Sep-99.]
-     (define-key perl-mode-map [?\C-x ?\C-\;] 'rgr-comment-region-lisp))))
+	  (executable-set-magic "/usr/local/bin/perl -w")))
+  (if (member rgr-emacs-major-version '(19 20 lucid19))
+      ;; Shadow global comment-region-lisp binding.  [but this loads ilisp,
+      ;; which is a bother . . .  -- rgr, 26-Jul-96.]  [replaced with my own
+      ;; hack.  -- rgr, 7-Sep-99.]
+      (define-key perl-mode-map [?\C-x ?\C-\;] 'rgr-comment-region-lisp)))
 
-;; (setq debug-on-error nil)
+;;;###autoload
+(defun rgr-perl-mode-hook ()
+  ;; Take the whole enchilada.
+  (rgr-perl-mode-fix-indentation)
+  (rgr-perl-mode-install-documentation-hacks)
+  (rgr-perl-mode-install-extra-hacks))
+
+(provide 'rgr-perl-mode)
+
+;; End of rgr-perl-hacks.el
