@@ -124,6 +124,7 @@ A Lisp code line is one that is nonblank and not entirely a comment."
 			  ;; rgr-make-tags-table-list will figure this out.  --
 			  ;; rgr, 4-Nov-98.
 			  "/usr/local/etc/httpd/htdocs/needle-doc/new")))))
+  (setq tags-table-list (car tags-table-set-list))
   (let ((oligo-web (expand-file-name "~/projects/oligo")))
     ;; these directories contain just the essentials for oligo tools web
     ;; development.  if they exist, add them as a second (separate) set.  --
