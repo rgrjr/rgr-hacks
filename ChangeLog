@@ -1,0 +1,6 @@
+2003-08-23  Bob Rogers  <rogers@rgrjr.dyndns.org>
+
+	* rgr-unauth-query.el: New source file, query results are now
+	cached.  So far, there is no provision for flushing the cache; you
+	must set rgr-unauth-whois-results-cache to nil manually.
+
