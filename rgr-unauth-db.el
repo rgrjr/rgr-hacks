@@ -208,6 +208,7 @@ or missing, then all connection attempts are ignored.")
 	    "218.232.0.0 - 218.233.255.255"
 	    "218.234.0.0 - 218.239.255.255"
 	    "218.144.0.0 - 218.159.255.255"
+	    "220.64.0.0 - 220.71.255.255"
 	    "220.72.0.0 - 220.87.255.255")
 	   nil :whois "whois.nic.or.kr")
 	  ((;; [apparently at least partly out-of-date.  -- rgr, 28-Jan-03.]
