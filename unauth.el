@@ -127,7 +127,7 @@ should never complain even when somebody attempts to connect.  For
 instance, FTP connections are benign, because I do run a Web server, so
 somebody might legitimately suppose I was also running an FTP server.")
 
-(defvar rgr-unauth-minimum-attempts 10
+(defvar rgr-unauth-minimum-attempts 5
   "Minimum number of non-benign attempts on a given day before an IP is
 worth noticing.  This should really be 1, but I don't have that much
 time to kill.")
