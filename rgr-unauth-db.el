@@ -76,7 +76,10 @@ or missing, then all connection attempts are ignored.")
 
 (defvar rgr-unauth-abuse-addresses
 	'(;; From ARIN
-	  (("24.159.0.0/16") "abuse@chartercom.com")
+	  ;; [at least the second one has an abuse address listed now.  -- rgr,
+	  ;; 16-Dec-03.]
+	  ;; (("24.159.0.0/16") "abuse@chartercom.com")
+	  ;; ("66.168.0.0 - 66.169.255.255" "abuse@chartercom.com")
 	  (("32.0.0.0/8") "abuse@att.com")
 	  ;; [now mci.com.  -- rgr, 24-Nov-03.]
 	  ;; ("63.0.0.0 - 63.61.255.255" "abuse@uunet.uu.net")
@@ -91,18 +94,20 @@ or missing, then all connection attempts are ignored.")
 	    "204.212.0.0 - 204.215.255.255"
 	    "206.228.0.0 - 206.231.255.255"
 	    "207.12.0.0 - 207.15.255.255"
-	    "208.0.0.0 - 208.35.255.255")
+	    ;; "208.0.0.0 - 208.35.255.255"
+	    )
 	   "abuse@sprint.net")
 	  ("66.19.0.0/16" "security@starnetinc.com")
-	  ("66.168.0.0 - 66.169.255.255" "abuse@chartercom.com")
-	  (("68.32.0.0 - 68.63.255.255"
-	    "68.80.0.0 - 68.87.255.255")
-	   "abuse@comcastpc.com")
+	  ;; [at least one of these blocks seems to have machine-readable abuse
+	  ;; info now.  -- rgr, 14-Dec-03.]
+	  ;; (("68.32.0.0 - 68.63.255.255" "68.80.0.0 - 68.87.255.255") "abuse@comcastpc.com")
 	  (("61.0.0.0 - 61.255.255.255"
+	    "138.130.0.0 - 138.130.255.255"
 	    "150.1.0.0 - 150.101.255.255"
 	    "163.13.0.0 - 163.32.255.255"
 	    "163.208.0.0 - 163.212.255.255"
 	    "165.228.0.0 - 165.229.255.255"
+	    "165.132.0.0 - 165.133.255.255"
 	    "165.246.0.0/16"
 	    "166.103.0.0 - 166.104.255.255"
 	    "166.111.0.0/16"
@@ -120,7 +125,7 @@ or missing, then all connection attempts are ignored.")
 	    "130.228.0.0/16"
 	    "141.0.0.0 - 141.85.255.255"
 	    "148.81.0.0/16"
-	    "151.1.0.0 - 151.2.255.255"
+	    "151.1.0.0 - 151.100.255.255"
 	    "158.49.0.0 - 158.50.255.255"
 	    "192.114.0.0 - 192.118.255.255"
 	    "193.0.0.0/8"
@@ -155,6 +160,7 @@ or missing, then all connection attempts are ignored.")
 	  ;; 200.62.63.255 for IFX Corporation, Florida, that is still handled
 	  ;; by ARIN.  -- rgr, 2-Mar-03.
 	  (("24.232.0.0/16"
+	    "148.201.0.0 - 148.250.255.255"
 	    "163.247.0.0/16"
 	    "168.234.0.0/16"
 	    "200.0.0.0 - 200.61.255.255"
