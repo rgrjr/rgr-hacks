@@ -236,7 +236,23 @@ if (e.g.) the pathname does not indicate a server."
   (psa-status-internal
     (expand-file-name (if test-p "~psa/psa-test" "~psa/psa-request"))))
 
-;;;;
+;;;; FASTA-format sequence hackery.
+
+;; By looking for offsets at the start of the line, this sometimes works for
+;; random sequence alignments as well.
+
+(defun rgr-fasta-goto-start-with-offset ()
+  (cond ((save-excursion
+	   (beginning-of-line)
+	   (looking-at "^[ \t]*\\([0-9]+\\) *"))
+	  (goto-char (match-end 0))
+	  (1- (string-to-int (match-string 1))))
+	((or (looking-at "^>")
+	     (re-search-backward "^>" nil t))
+	  (forward-line)
+	  0)
+	(t
+	  (error "Can't find the start of a FASTA sequence."))))
 
 ;;;###autoload
 (defun rgr-fasta-goto-base (base-number)
@@ -247,20 +263,36 @@ if (e.g.) the pathname does not indicate a server."
       (error "Base number must be positive."))
   (let ((pos nil))
     (save-excursion
-      (or (re-search-backward "^>" nil t)
-	  (error "Can't find the start of a FASTA sequence."))
-      (forward-line)
-      (while (and (> base-number 1)
-		  (not (member (char-after) '(?> nil))))
-	(skip-chars-forward "^>A-Za-z")
-	(forward-char 1)
-	(setq base-number (1- base-number)))
-      (skip-chars-forward " \t\n")
-      (if (member (char-after) '(?> nil))
-	  (error "No such base."))
-      (setq pos (point)))
+      (let ((offset (1+ (rgr-fasta-goto-start-with-offset))))
+	(while (and (< offset base-number)
+		    (not (member (char-after) '(?> nil))))
+	  (skip-chars-forward "^>A-Za-z")
+	  (forward-char 1)
+	  (setq offset (1+ offset)))
+	(skip-chars-forward "0-9 \t\n")
+	(if (not (looking-at "[a-zA-Z]"))
+	    (error "No such base."))
+	(setq pos (point))))
     (and pos
 	 (goto-char pos))))
+
+;;;###autoload
+(defun rgr-fasta-what-base ()
+  "Within a FASTA sequence, show the base number of the base after point."
+  (interactive)
+  (save-excursion
+    (let ((start (point))
+	  (base-number (rgr-fasta-goto-start-with-offset)))
+      (skip-chars-forward "^>A-Za-z0-9")
+      (while (and (< (point) start)
+		  (not (member (char-after) '(?> nil))))
+	(forward-char 1)
+	(setq base-number (1+ base-number))
+	(skip-chars-forward "^>A-Za-z"))
+      (skip-chars-forward " \t\n")
+      (if (member (char-after) '(?> nil))
+	  (message "After base %d." base-number)
+	  (message "Before base %d." (1+ base-number))))))
 
 ;;;; Done.
 
