@@ -181,8 +181,10 @@
 (and rgr-abbrev-completion-save-directory
      (rgr-install-weekly-completion-cycle))
 
-;; New feature!  -- rgr, 20-Jul-95.
-(require 'ilisp-possibilities)
+;; New feature!  -- rgr, 20-Jul-95.  [this is now part of ilisp, distributed
+;; separately, so don't fail if it can't be loaded.  -- rgr, 22-Apr-03.]
+(condition-case () (require 'ilisp-possibilities)
+  (error nil))
 
 (rgr-make-tags-table-list-hook)
 ;; Zmacs binds this to C-M-., but that's find-tag-regexp in GNU emacs.  -- rgr,

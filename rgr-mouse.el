@@ -95,7 +95,10 @@
 
 ;;;; Loading required code.
 
-(require 'ilisp-mouse)
+;; [this is now part of ilisp, distributed separately, so don't fail if it can't
+;; be loaded.  -- rgr, 22-Apr-03.]
+(condition-case () (require 'ilisp-mouse)
+  (error nil))
 
 ;;;; Variables
 
