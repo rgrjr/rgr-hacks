@@ -8,10 +8,8 @@
 ;;; rgr-get-man-buffer: now does the unspeakable.  -- rgr, 2-Aug-96.
 ;;; rgr-get-man-buffer: fix (require 'man) bug.  -- rgr, 7-Aug-96.
 ;;; rgr-perl-show-documentation: new.  -- rgr, 8-Aug-96.
-;;; rgr-reinstall-scripts: new hack.  -- rgr, 12-Aug-96.
 ;;; rgr-add-to-perl-modification-history: new hack.  -- rgr, 13-Aug-96.
 ;;; rgr-perl-show-arglist: msg instead of showing doc buf.  -- rgr, 23-Oct-96.
-;;; rgr-reinstall-scripts: add verbose-p arg.  -- rgr, 2-Dec-96.
 ;;; rgr-perl-mode-hook: add rgr-c-electric-dash.  -- rgr, 20-Dec-96.
 ;;; rgr-perl-mode-hook: (executable-set-magic "perl").  -- rgr, 29-Apr-97.
 ;;; rgr-perl-mode-hook: no electric-perl-terminator on ':'.  -- rgr, 16-May-97.
@@ -33,40 +31,6 @@
 ;;; rgr-perl-newline-and-maybe-indent: new POD hack.  -- rgr, 8-Nov-02.
 ;;; rgr-perl-mode-hook: use "/usr/bin/perl -w" magic.  -- rgr, 10-Jan-03.
 ;;;
-
-;;;; Installation hacks.
-
-;; This is here for lack of a better place.  Pretty hackish in any case.  --
-;; rgr, 12-Aug-96.
-
-(defvar rgr-install-directory (expand-file-name "~thread/code/bin/"))
-
-;;;###autoload
-(defun rgr-reinstall-scripts (&optional verbose-p)
-  "Check scripts in this directory vs the rgr-install-directory variable.
-A numeric arg comments on the up-to-dateness of all files in both dirs."
-  (interactive "P")
-  (let ((tail
-	  ;; The cdring skips "." and "..".
-	  (cdr (cdr (directory-files rgr-install-directory))))
-	(count 0))
-    (while tail
-      (let* ((source (car tail))
-	     (dest (concat rgr-install-directory source)))
-	(cond ((not (and (file-readable-p source) (file-readable-p dest))))
-	      ((file-newer-than-file-p source dest)
-		(message "%s needs installing." source)
-	        (sit-for 1)
-	        (setq count (1+ count)))
-	      (verbose-p
-		(message "%s is up to date in %s." source rgr-install-directory)
-	        (sit-for 1))))
-      (setq tail (cdr tail)))
-    (if (zerop count)
-	(message "%s is up to date wrt %s."
-		 rgr-install-directory default-directory)
-	(message "%d file%s installed in %s."
-		 count (if (= count 1) "" "s") rgr-install-directory))))
 
 ;;;; general stuff.
 
@@ -178,7 +142,8 @@ somewhat system-dependent.")
     (cond ((not (re-search-forward regexp nil t))
 	    (pop-mark)
 	    (error "Can't find %s documentation." name)))
-    (goto-char (+ (match-beginning 0) 5))
+    (goto-char (match-beginning 0))
+    (skip-chars-forward " \t")
     (recenter 0)
     (other-window -1)))
 
@@ -268,16 +233,6 @@ somewhat system-dependent.")
       (skip-chars-forward " \t\f")
       (setq rgr-perl-function-indent (current-column)))
     (perl-indent-line nil fn-start)))
-
-;; [this backfires, because perl-beginning-of-function only goes to the previous
-;; "sub" form, not the *matching* sub.  so after the nested subroutine, lines
-;; get indented by 0, because it thinks we're outside a top-level form.  -- rgr,
-;; 4-Aug-97.]
-'(defadvice calculate-perl-indent (around rgr-perl-function-indent activate)
-  (let ((result ad-do-it))
-    (if (numberp result)
-	(+ result rgr-perl-function-indent)
-	result)))
 
 (defun rgr-perl-newline-and-maybe-indent (arg)
   (interactive "p")
