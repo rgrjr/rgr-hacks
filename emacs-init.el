@@ -166,9 +166,13 @@
 	(eval-after-load "ange-ftp" '(rgr-ange-ftp-load-hook))))
 
 ;; This matters for certain threading applications.  -- rgr, 19-Nov-97.  [but
-;; solaris screws it up; ONLY shows the group.  -- rgr, 27-Oct-98.]
+;; solaris screws it up; ONLY shows the group.  -- rgr, 27-Oct-98.]  [and "ls"
+;; in SuSE 8.1 (part of fileutils 4.1.11) seems to *suppress* the group.  --
+;; rgr, 7-May-03.]
 (setq dired-listing-switches
-      (if (string-match "solaris" system-configuration)
+      (if (or (string-match "solaris" system-configuration)
+	      (and (string-match "suse" system-configuration)
+		   (rgr-emacs-version-p 21 2)))
 	  "-al"
 	  "-alg"))
 ;; new hack  -- rgr, 2-Feb-99.
