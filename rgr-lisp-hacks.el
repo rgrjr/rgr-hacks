@@ -258,14 +258,18 @@ region."
 
 ;;;###autoload
 (defun rgr-ilisp-mode-hook ()
-  (cond ((eq rgr-site 'home)
-	  (setq cmulisp-local-source-directory "/usr/local/src/cmucl-18c/src/")
-	  (setq cmulisp-source-directory-regexp "^target:")))
+  (setq ilisp-mode-hook nil)
+  (setq lisp-mode-hook nil)
+  (setq ilisp-*prefix* "\C-c")
+  (setq ilisp-*use-fsf-compliant-keybindings* t))
+
+(defun rgr-old-ilisp-mode-hook ()
   ;; [this disables the annoying hack where ilisp grovels through all buffers if
   ;; the lisp doesn't know where to find the definition.  though, since cmucl
   ;; loses interactive definition source files, this may cause trouble.  -- rgr,
   ;; 30-Jul-02.]  [no longer true; patched in ilisp.  -- rgr, 28-Aug-02.]
-  (setq lisp-edit-files nil)
+  ;; [ilisp M-. now ignores this setting.  -- rgr, 27-Dec-03.]
+  ;; (setq lisp-edit-files nil)
   ;; [this doesn't seem to work -- ilisp-mode-map is nil.  -- rgr, 5-Apr-94.]
   ;; [so we need this incantation to build it.  (ilisp-mode-map contains key
   ;; bindings for the inferior lisp.)  -- rgr, 22-Dec-99.]  [no; put it on
