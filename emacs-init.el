@@ -163,11 +163,17 @@
 ;; 17-Dec-00.
 (global-set-key "\C-c\M-." 'rgr-elisp-find-tag-for-emacs-key)
 
+;; We want to ignore these extensions regardless of whether we are actually
+;; running any lisps.
 (setq completion-ignored-extensions
       (append '(;; ACL (and as modified).
 		".fasl" ".aw86f" ".al86f"
 		;; CMU Common Lisp.
 		".x86f" ".axpf" ".sparcf" ".sparcf7"
+		;; SBCL
+		".sb86f"
+		;; CLISP
+		".fas" ".lib"
 		;; LispWorks?
 		".afasl")
 	      completion-ignored-extensions))
