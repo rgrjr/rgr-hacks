@@ -169,16 +169,17 @@
 
 ;; Newer feature (ported from Lispm implementation).  -- rgr, 29-Nov-96.
 ;; [only save completions in rgr-emacs if we can write it!  -- rgr, 1-Apr-00.]
+;; [now prefer to save in ~/emacs/completions instead.  -- rgr, 23-Apr-03.]
 (setq rgr-abbrev-completion-save-directory
-      (and (file-writable-p rgr-emacs)
-	   ;; [turn this off when root for now, because emacs thinks it can
-	   ;; write anything in that case, but it can't when nfs-mounted, and
-	   ;; it's too hard to check.  -- rgr, 12-Dec-02.]
-	   (not (zerop (user-uid)))
-	   rgr-emacs))
-;; [must also flush this.  -- rgr, 7-Apr-03.]
-(if (null rgr-abbrev-completion-save-directory)
-    (setq rgr-abbrev-completion-save-file nil))
+      (cond ((zerop (user-uid))
+	      ;; [turn this off when root, because emacs thinks it can write
+	      ;; anything in that case, but it can't when mounted via nfs, and
+	      ;; it's hard to check.  -- rgr, 12-Dec-02.]
+	      nil)
+	    ((file-writable-p (expand-file-name "~/emacs/completions"))
+	      (expand-file-name "~/emacs/completions"))
+	    ((file-writable-p rgr-emacs)
+	      rgr-emacs)))
 (rgr-install-abbrev-completion)
 (and rgr-abbrev-completion-save-directory
      (rgr-install-weekly-completion-cycle))

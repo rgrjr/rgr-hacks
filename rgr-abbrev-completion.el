@@ -93,17 +93,19 @@
 ;;; rgr-write-completion-file: made this a command.  -- rgr, 2-Sep-02.
 ;;;
 
-;; Compatibility with earlier emacs versions.  -- rgr, 22-Aug-99.
-(or (fboundp 'buffer-substring-no-properties)
-    (fset 'buffer-substring-no-properties 'buffer-substring))
-
 (defvar rgr-completion-min-entry-length 6
   ;; [used to be 8; we are now trying a new value, which is in fact the
   ;; "historic" LSP value.  -- rgr, 10-Mar-99.]
   "*Don't bother remembering words shorter than this.")
-(defvar rgr-abbrev-completion-save-directory (expand-file-name "~"))
+(defvar rgr-abbrev-completion-save-directory
+	(expand-file-name "~/emacs/completions"))
 (defvar rgr-abbrev-completion-save-file
-  (expand-file-name "completions.text" rgr-abbrev-completion-save-directory))
+	(and rgr-abbrev-completion-save-directory
+	     (file-writable-p rgr-abbrev-completion-save-directory)
+	     (expand-file-name "completions.text"
+			       rgr-abbrev-completion-save-directory))
+  "*Default file into which to save completions between sessions, nil to
+disable.")
 (defvar rgr-completion-auto-save-timer nil
   "A timer object if auto-save is enabled (see rgr-completion-start-auto-save),
 else nil.")
@@ -993,6 +995,10 @@ name with the day of the week in it."
 
 ;;;###autoload
 (defun rgr-install-abbrev-completion ()
+  "Install hooks for abbrev completion.
+This is meant for calling from a .emacs file, but is also a command so
+it can be re-initialized if any of the hooks get stepped on."
+  (interactive)
   (add-hook 'find-file-hooks 'rgr-abbrev-find-file-hook)
   (add-hook 'kill-emacs-query-functions 'rgr-save-completion-hack)
   (add-hook 'post-command-hook 'rgr-maybe-learn-new-symbol))
