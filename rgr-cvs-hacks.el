@@ -78,17 +78,22 @@ noted as such."
       (set-buffer other-buffer)
       (goto-char (point-min))
       (while (re-search-forward match-re nil t)
-	(let ((file-name (or (match-string 1) (match-string 3)))
-	      (extra (match-string 4)))
+	(let* ((file-name (or (match-string 1) (match-string 3)))
+	       (extra (match-string 4))
+	       (insertion
+		 (concat "* " file-name
+			 (cond ((equal extra "was removed") " (deleted)")
+			       (extra " (added)")
+			       (t ""))
+			 ":")))
 	  ;; (message "found %S" file-name)
 	  (save-excursion
 	    (set-buffer original-buffer)
 	    (goto-char (point-max))
-	    (insert "* " file-name
-		    (cond ((equal extra "was removed") " (deleted)")
-			  (extra " (added)")
-			  (t ""))
-		    ":\n")))))
+	    (if (not (re-search-backward
+		       (concat "^" (regexp-quote insertion) "$")
+		       nil t))
+		(insert insertion "\n"))))))
     ;; move point to start adding comments.
     (or (eobp)
 	(forward-line 1))))
