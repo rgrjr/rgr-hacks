@@ -33,7 +33,6 @@
 ;;;	whitespace in rgr-unauth-whois-servers.  -- rgr, 11-Feb-01.
 ;;; rgr-unauth-query-arin-internal: don't use \! for IP.  -- rgr, 14-Feb-01.
 ;;; rgr-unauth-find-all-subnets: deal with overlaps.  -- rgr, 19-Feb-01.
-;;; whois.registro.br.  -- rgr, 7-Mar-01.
 ;;; rgr-unauth-send-complaint: use rgr-unauth-make-uid.  -- rgr, 9-Mar-01.
 ;;; rgr-unauth-abuse-addresses: remove 62.224.0.0/14.  -- rgr, 22-Mar-01.
 ;;; rgr-unauth-insert-stuff: also check /var/log/messages.1.  -- rgr, 1-Apr-01.
@@ -43,9 +42,7 @@
 ;;; fudge host name for reports to mediaone.  -- rgr, 28-Oct-01.
 ;;; rgr-unauth-insert-stuff: include numeric timezone.  -- rgr, 1-Nov-01.
 ;;; rgr-unauth-scarf-attempt-alist: also scarf ssh/tcp.  -- rgr, 13-Dec-01.
-;;; mediaone.net -> attbi.com.  -- rgr, 19-Feb-02.
 ;;; attbi.net -> attbi.com, new netblock, fix my DNS name.  -- rgr, 14-Mar-02.
-;;; "CHINANET Hebei province network".  -- rgr, 24-Mar-02.
 ;;; rgr-unauth-make-abuse-address: support ".ad.jp".  -- rgr, 13-Apr-02.
 ;;; rgr-unauth-insert-stuff: mention NTP in time blurb.  -- rgr, 7-May-02.
 ;;; rgr-unauth-insert-stuff: extract previous attempts.  -- rgr, 13-May-02.
@@ -55,11 +52,7 @@
 ;;; rgr-unauth-class-a-entries interface to bucketized address DB, plus the
 ;;;	complete "CHINANET Sichuan province network".  -- rgr, 21-Jul-02.
 ;;; rgr-unauth-benign-protocol-regexp: added KaZaA.  -- rgr, 24-Jul-02.
-;;; "abuse@jsinfo.net" entry.  -- rgr, 23-Aug-02.
-;;; security@telesp.net.br, more krnic.  -- rgr, 25-Aug-02.
 ;;; rgr-unauth-previous-month-log-file-name search.  -- rgr, 27-Aug-02.
-;;; more chinanet.  -- rgr, 31-Aug-02.
-;;; more kornet.net.  -- rgr, 7-Sep-02.
 ;;; new whois.lacnic.net registry.  -- rgr, 3-Oct-02.
 ;;; rgr-unauth-insert-stuff: change reverse DNS address.  -- rgr, 27-Oct-02.
 ;;; JPNIC support, clean "added subnet" comments.  -- rgr, 12-Dec-02.
@@ -796,13 +789,13 @@ so it generally keeps time within a fraction of a second."))
 	(if (or (member disp '("REJECT" "DENY"))
 		;; This will be accepted by the firewall, but may be an attack
 		;; of some sort (if I don't recognize who it's coming from).
-		(equal proto "ssh/tcp"))
-	    (let ((attempts (string-to-int (match-string 2))))
-	      (let ((entry (assoc proto attempt-alist)))
-		(if entry
-		    (setcdr entry (+ attempts (cdr entry)))
-		    (setq attempt-alist
-			  (cons (cons proto attempts) attempt-alist)))))))
+		(equal proto "22/tcp"))
+	    (let* ((attempts (string-to-int (match-string 2)))
+		   (entry (assoc proto attempt-alist)))
+	      (if entry
+		  (setcdr entry (+ attempts (cdr entry)))
+		  (setq attempt-alist
+			(cons (cons proto attempts) attempt-alist))))))
       (forward-line))
     ;; Should now be on the next "From" line.
     attempt-alist))
@@ -845,6 +838,20 @@ so it generally keeps time within a fraction of a second."))
     (if (re-search-backward "^[A-Z][a-z][a-z] [ 0-9][0-9]:" nil t)
 	(buffer-substring (match-beginning 0) (1- (match-end 0))))))
 
+(defun rgr-unauth-summarize-attempt-alist (attempt-alist)
+  ;; make a string that summarized the name and counts of each attempt alist
+  ;; entry.
+  (let ((strings nil) (tail attempt-alist))
+    (while tail
+      (let ((entry (car tail)))
+	(if strings
+	    (setq strings (cons ", " strings)))
+	(setq strings
+	      (cons (format "%s (%d)" (car entry) (cdr entry))
+		    strings)))
+      (setq tail (cdr tail)))
+    (apply 'concat strings)))
+
 ;;;###autoload
 (defun rgr-unauthorized-connection ()
   (interactive)
@@ -870,19 +877,16 @@ so it generally keeps time within a fraction of a second."))
 		      ((rgr-unauth-all-attempts-benign-p data)
 			;; generate a message about attempts that were rejected
 			;; but are considered "benign."
-			(let ((strings nil) (tail (nth 2 data)))
-			  (while tail
-			    (let ((entry (car tail)))
-			      (if strings
-				  (setq strings (cons ", " strings)))
-			      (setq strings
-				    (cons (format "%s (%d)"
-						  (car entry) (cdr entry))
-					  strings)))
-			    (setq tail (cdr tail)))
-			  (message "Ignoring %s" (apply 'concat strings))
-			  ;; (sit-for 1)
-			  t))))
+			(message "Ignoring %s"
+				 (rgr-unauth-summarize-attempt-alist
+				   (nth 2 data)))
+		        ;; (sit-for 1)
+			t)
+		      ((rgr-unauth-excepted-host-p (car data) (nth 2 data))
+			;; tell about hosts that are considered "benign."
+			(message "Ignoring host %s" (car data))
+		        ;; (sit-for 1)
+			t)))
       ;; loop for effect.
       )
     (if data

@@ -3,7 +3,7 @@
 ;;;    Code in this file supports the report logging interface.  See M-x
 ;;; rgr-unauthorized-connection for the user interface.
 ;;;
-;;;    Modification history:
+;;;    [old] Modification history:
 ;;;
 ;;; created.  -- rgr, 13-Dec-02.
 ;;; rgr-unauth-scarf-msg-entry: tweak addr, add source.  -- rgr, 14-Dec-02.
@@ -45,6 +45,7 @@
 ;;; REMOVE "abuse@bellsouth.net" in favor of ARIN lookup.  -- rgr, 24-Apr-03.
 ;;; another nic.ad.jp netblock.  -- rgr, 25-Apr-03.
 ;;;
+;;; $Id$
 
 (defvar rgr-unauth-report-log-file (expand-file-name "~/mail/abuse-log.tbl")
   "File for recording sent firewall log messages.")
@@ -56,6 +57,17 @@
 		  "Jul\\|Aug\\|Sep\\|Oct\\|Nov\\|Dec\\) +" digit "+ "
 		  2digit ":" 2digit ":" 2digit "\\)"))
   "Capture the date from a reported log entry.")
+
+(defvar rgr-unauth-host-exceptions
+	'(;; SSH connections into home from work.
+	  ("168.103.43.201" nil "^22/TCP")
+	  ;; See http://www.just4youx.net/scanning.html
+	  ("80.253.125.28 - 80.253.125.32" nil
+	   "^\\(3128\\|6588\\|8080\\|1[01]80\\)/TCP"))
+  "Alist of (subnet parsed-subnet port-re) for host IP ranges for which
+we want to some or all connection attempts, as controlled by port-re.
+parsed-subnet should always be specified as nil.  If the port-re is nil
+or missing, then all connection attempts are ignored.")
 
 (defvar rgr-unauth-abuse-addresses
 	'(;; From ARIN
@@ -576,6 +588,40 @@ rgr-unauth-bucketize-address-blocks to rebuild it when needed.")
 	    (setq result (cons (cdr pair) result))))
       (setq tail (cdr tail)))
     result))
+
+;;; Exception database.
+
+(defun rgr-unauth-excepted-host-p (ip attempt-alist)
+  ;; if attempt-alist is empty, then this returns nil; if t, it returns the
+  ;; regexp (if any).
+  (let ((tail rgr-unauth-host-exceptions)
+	(matched-entry nil))
+    (while tail
+      (let* ((entry (car tail))
+	     (parsed-host (car (cdr entry))))
+	(cond ((not parsed-host)
+		(setq parsed-host (rgr-unauth-parse-ip-subnet (car entry)))
+	        (setcar (cdr entry) parsed-host)))
+	(if (rgr-unauth-subnet-match-p parsed-host ip)
+	    (setq matched-entry entry tail nil)
+	    (setq tail (cdr tail)))))
+    (if matched-entry
+	(let* ((port-re (nth 2 matched-entry))
+	       (result (if (eq attempt-alist t) port-re t))
+	       (tail (if (or (null port-re) (eq attempt-alist t))
+			 nil
+			 attempt-alist)))
+	  ;; if we have a nontrivial regexp to check against a nonempty
+	  ;; attempt-alist, and we haven't been told to just return the regexp,
+	  ;; then return non-nil only if all attempts match.
+	  (while tail
+	    (if (not (string-match port-re (car (car tail))))
+		(setq result nil tail nil)
+		(setq tail (cdr tail))))
+	  result))))
+
+;; (rgr-unauth-excepted-host-p (rgr-unauth-parse-ip-address "80.253.125.31") '(("8081/TCP" 1)))
+;; (string-match "^\\(3128\\|6588\\|8080\\)/TCP" "8080/TCP")
 
 ;;; Logging.
 
