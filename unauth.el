@@ -274,7 +274,7 @@ start at most one emacs per day."
 
 (defun rgr-unauth-relative-date-phrase (date)
   (if (stringp date)
-      (let* ((day (car (discus-parse-date date)))
+      (let* ((day (car (discus-parse-date date 'past)))
 	     (today (car (discus-parse-date (current-time-string))))
 	     (delta (- today day)))
 	(cond ((= delta -1) "tomorrow")
