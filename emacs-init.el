@@ -279,13 +279,20 @@
 		    "mgi@www.modulargenetics.com")
 		  '("rogers@modulargenetics.dnsalias.com"))
 	      '("rogers@huxley.bu.edu")))
+(if (eq rgr-site 'home)
+    ;; Enable tunnelling to make the MGI database and intranet Web server
+    ;; available from home.  This requires corresponding ~/.mgi.conf and
+    ;; /usr/sbin/redirect.pl hacks to make it work.  -- rgr, 29-Feb-04.
+    (setq ssh-per-host-option-alist
+	  '(("modulargenetics\\.dnsalias\\.com$"
+	     "-L" "9123:rdbms:3306" "-L" "8081:alexandria:80"))))
 
 ;; Change TERM=emacs into something that Tru64 "man" can deal with.  It refuses
 ;; to run if it can't recognize the terminal type, which is broken; it should
 ;; just assume "dumb" (though M-x manual-page could force this).  Change this
 ;; (almost) last so that other inits can see the original TERM value.  -- rgr,
-;; 20-Aug-01.
-(if (equal (getenv "TERM") "emacs")
+;; 20-Aug-01.  [punt.  -- rgr, 29-Feb-04.]
+'(if (equal (getenv "TERM") "emacs")
     (setenv "TERM" "dumb"))
 ;; Fix MANPATH to include /usr/local/share/man/, which gets missed by the
 ;; $PATH-oriented "man" implementation.  -- rgr, 1-May-03.  [probably moot after
