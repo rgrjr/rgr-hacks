@@ -76,14 +76,6 @@ or missing, then all connection attempts are ignored.")
 
 (defvar rgr-unauth-abuse-addresses
 	'(;; From ARIN
-	  (("24.0.0.0 - 24.23.255.255"
-	    "24.176.0.0 - 24.183.255.255"
-	    "24.248.0.0 - 24.255.255.255")
-	   "abuse@home.com")
-	  ((;; abuse address per email.
-	    "24.113.0.0/16"
-	    ;; this second is "Shaw Fiberlink Ltd."
-	    "24.64.0.0 - 24.71.255.255") "internet.abuse@shaw.ca")
 	  (("24.159.0.0/16") "abuse@chartercom.com")
 	  (("32.0.0.0/8") "abuse@att.com")
 	  ("63.0.0.0 - 63.61.255.255" "abuse@uunet.uu.net")
@@ -108,6 +100,7 @@ or missing, then all connection attempts are ignored.")
 	  (("61.0.0.0 - 61.255.255.255"
 	    "163.13.0.0 - 163.32.255.255"
 	    "165.246.0.0/16"
+	    "166.103.0.0 - 166.104.255.255"
 	    "166.111.0.0/16"
 	    "202.0.0.0 - 203.255.255.0"
 	    "210.0.0.0 - 211.255.255.255"
