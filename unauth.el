@@ -529,7 +529,8 @@ start at most one emacs per day."
       ;; finish boilerplate.
       (insert "\nThe destination host is ")
       (if (or (equal abuse-address "abuse@mediaone.net")
-	      (equal abuse-address "abuse@attbi.com"))
+	      (equal abuse-address "abuse@attbi.com")
+	      (equal abuse-address "abuse@comcast.net"))
 	  ;; cheating for our ISP.
 	  (insert "h009027bdf26f.ne.client2.attbi.com")
 	  (insert (system-name)))
