@@ -96,4 +96,24 @@ Files that are being added or deleted are noted as such."
 (defun rgr-cvs-log-edit-hook ()
   (define-key log-edit-mode-map "\C-c+" 'rgr-cvs-plus))
 
+;;;###autoload
+(defun rgr-change-log-insert-plus ()
+  "Insert a '  + ' at the beginning of the current line."
+  (interactive)
+  (cond ((not (bolp))
+	  (save-excursion
+	    (beginning-of-line)
+	    (rgr-change-log-insert-plus)))
+	(t
+	  (cond ((looking-at "^[ \t]*\\* ")
+		  (insert "\n")
+		  (forward-line -1)))
+	  (skip-chars-forward " \t")
+	  (indent-to 11)
+	  (insert "+ "))))
+
+;;;###autoload
+(defun rgr-change-log-edit-hook ()
+  (define-key change-log-mode-map "\C-c+" 'rgr-change-log-insert-plus))
+
 (provide 'rgr-cvs-hacks)

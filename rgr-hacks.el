@@ -325,35 +325,36 @@ backup file has already been made)."
 
 ;;; auto-fill
 
+(defun rgr-change-log-indent-relative-maybe ()
+  "Keep indenting past a '+' bullet on the previous line."
+  (indent-relative-maybe)
+  (let ((start-column (current-column)))
+    (if (save-excursion
+	  (forward-line -1)
+	  (move-to-column start-column)
+	  ;; It doesn't count if start-column is inside a tab on this line.
+	  ;; (message "[point is %s]" (point))
+	  (and (= (current-column) start-column)
+	       (eq (char-after) ?+)))
+	(indent-relative))))
+
 (defun rgr-do-auto-fill ()
   ;; Just do auto fill, without adaptive-fill-mode stuff.  [it seems that, in
   ;; emacs 20.x, I should just set normal-auto-fill-function to this, and flush
   ;; the rgr-auto-fill-mode interface.  -- rgr, 25-Nov-99.]
+  ;; [rgr-auto-fill-mode is now history.  -- rgr, 1-Nov-04.]
   (let ((adaptive-fill-mode nil)
 	;; According to the indent-to-left-margin source doc (the elisp comment
 	;; before the definition), it should be the default for text mode, but
 	;; somebody seems to have bashed it to indent-relative-maybe instead.
 	;; This has the effect of completely sabotaging the rebinding of
-	;; adaptive-fill-mode to nil above.  -- rgr, 25-Nov-99.
-	(indent-line-function 'indent-to-left-margin))
+	;; adaptive-fill-mode to nil above.  -- rgr, 25-Nov-99.  [but this is
+	;; almost what we want in change-log-mode.  -- rgr, 20-Sep-04.]
+	(indent-line-function
+	  (if (eq major-mode 'change-log-mode)
+	      'rgr-change-log-indent-relative-maybe
+	      'indent-to-left-margin)))
     (do-auto-fill)))
-
-;;;###autoload
-(defun rgr-auto-fill-mode (&optional arg)
-  "Toggle rgr-auto-fill mode.
-With arg, turn rgr-auto-fill mode on if and only if arg is positive.
-In rgr-auto-fill mode, just as in 'normal' auto-fill mode, inserting a
-space at a column beyond `current-fill-column' automatically breaks the
-line at a previous space, only rgr-auto-fill mode shuts off the losing
-adaptive-fill-mode feature locally."
-  (interactive "P")
-  (prog1 (setq auto-fill-function
-	       (if (if (null arg)
-		       (not auto-fill-function)
-		       (> (prefix-numeric-value arg) 0))
-		   'rgr-do-auto-fill
-		   nil))
-    (force-mode-line-update)))
 
 ;;;###autoload
 (defun rgr-text-mode-hook ()
@@ -361,13 +362,9 @@ adaptive-fill-mode feature locally."
   ;; certain text modes.  try it and see.  [Seems to work pretty well, but the
   ;; emacs 19.30 auto fill (& subsequent versions) are too smart for their own
   ;; good.  -- rgr, 6-Jun-96.]
-  (rgr-auto-fill-mode 1)
+  (setq normal-auto-fill-function 'rgr-do-auto-fill)
+  (auto-fill-mode 1)
   (setq fill-column 72)
-  ;; It's annoying when auto-fill-mode tries to do this (in emacs 19.30).  --
-  ;; rgr, 25-Mar-96.  [I think rgr-auto-fill-mode should fix the problem; we do
-  ;; want adaptive-fill-mode for M-q.  -- rgr, 6-Jun-96.]
-  '(and (memq major-mode '(mail-mode html-helper-mode))
-       (set (make-local-variable 'adaptive-fill-mode) nil))
   ;; the standard text paragraph definition is a pain.  set it to be the same as
   ;; in lisp mode: an empty line or newpage.  -- rgr, 14-Feb-94.
   (setq paragraph-start "^$\\|^"))
