@@ -1,8 +1,8 @@
 ;;;; vm customizations.
 ;;;
-;;;    These work with vm-6.75 (and perhaps others).
+;;;    These work with vm-6.75 and later.
 ;;;
-;;;    Modification history:
+;;;    [old] Modification history:
 ;;;
 ;;; created (split out of rgr-mail-hacks.el).  -- rgr, 12-Jan-00.
 ;;; rgr-vm-quit-no-save: clean up dangling pointers.  -- rgr, 13-Jan-00.
@@ -27,8 +27,9 @@
 ;;;
 
 (defun rgr-vm-preprocess-spool-files (entries)
-  ;; given a list of (list &optional folder inbox crash) entries, expand this
-  ;; into a list of vm-spool-files entries using standard defaults.
+  "Given a list of (list &optional folder inbox crash list-address)
+entries, expand it into a list of vm-spool-files entries using standard
+defaults."
   (let ((incoming-directory (expand-file-name "incoming/" vm-folder-directory)))
     (mapcar (function (lambda (entry)
 	      (let* ((list-name (if (consp entry) (car entry) entry))
