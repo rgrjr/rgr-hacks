@@ -7,20 +7,25 @@
 ;;; $Id$
 
 (defvar rgr-ffap-file-to-application-map
-	'(("\\.gnumeric$" "gnumeric")))
+	'(("\\.gnumeric$" "gnumeric")
+	  ("\\.xls$" "gnumeric")
+	  ("\\.pdf$" "acroread")))
 
 ;;;###autoload
-(defun rgr-ffap-file-finder (file-name)
+(defun rgr-ffap-file-finder (file-name &optional wildcards)
+  ;; This is supposed to be pin-compatible with find-file, so that ffap can call
+  ;; it interactively if told to suppress its magic.
+  (interactive "FFind file: \np")
   (let ((app-name nil) (tail rgr-ffap-file-to-application-map))
-    (while tail
-      (if (string-match (car (car tail)) file-name)
-	  (setq app-name (car (cdr (car tail)))
-		tail nil)
-	  (setq tail (cdr tail))))
+    (if (not wildcards)
+	(while tail
+	  (if (string-match (car (car tail)) file-name)
+	      (setq app-name (car (cdr (car tail)))
+		    tail nil)
+	      (setq tail (cdr tail)))))
     (cond ((not app-name)
-	    (find-file file-name))
+	    (find-file file-name wildcards))
 	  ((y-or-n-p (format "Launch %S on %S? " app-name file-name))
-	    '(error "not implemented")
 	    (start-process app-name
 			   (get-buffer-create (concat "*" app-name "*"))
 			   app-name file-name))
