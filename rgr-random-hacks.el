@@ -14,7 +14,7 @@
 ;;; read-event returns (but see ./encode-key.el).  Use (e.g.) [?\C-\M-%] in
 ;;; define-key calls.
 ;;;
-;;;    Modification history:
+;;;    [old] Modification history:
 ;;;
 ;;; rgr-update-autoloads: 19.31 updated.  -- rgr, 20-Jul-96.
 ;;; rgr-command-history-hook: new, not working well.  -- rgr, 12-Aug-96.
@@ -105,23 +105,6 @@ from this directory."
   "Calls rgr-update-directory-autoloads on command-line-args-left."
   (apply 'rgr-update-directory-autoloads command-line-args-left)
   (setq command-line-args-left nil))
-
-;; [obsolete; was autoloaded.  -- rgr, 26-Apr-03.]
-'(defun rgr-update-dist-autoloads ()
-  "Update the ~/emacs/dist/emacs/loaddefs.el file with the latest
-autoloads from this directory."
-  (interactive)
-  (require 'autoload)
-  (let* ((default-directory (expand-file-name "~/emacs/dist/emacs/"))
-	 (generated-autoload-file (expand-file-name "loaddefs.el")))
-    (funcall (if (fboundp 'update-autoloads-from-directories)
-		 ;; emacs 20 version (takes &rest directories)
-		 'update-autoloads-from-directories
-		 ;; emacs 19 version (takes a single directory).  [this was
-		 ;; called update-directory-autoloads prior to 19.31.  -- rgr,
-		 ;; 20-Jul-96.]
-		 'update-autoloads-from-directory)
-	     default-directory)))
 
 ;;;; Byte compilation.
 
@@ -252,15 +235,6 @@ if (e.g.) the pathname does not indicate a server."
   (interactive "P")
   (psa-status-internal
     (expand-file-name (if test-p "~psa/psa-test" "~psa/psa-request"))))
-
-;;;; Other
-
-(defun rgr-command-history-hook ()
-  ;; Unfortunately this doesn't work right; the hook function doesn't get called
-  ;; until after the history buffer is built.  -- rgr, 12-Aug-96.
-  (or (member 'switch-to-buffer default-command-history-filter-garbage)
-      (setq default-command-history-filter-garbage
-	    (cons 'switch-to-buffer default-command-history-filter-garbage))))
 
 ;;;; Done.
 
