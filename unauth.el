@@ -456,13 +456,16 @@ start at most one emacs per day."
 	;; pretty).
 	(indent-rigidly start (point) 4))
       ;; Insert boilerplate characterizing previous attempts.
-      (if previous-attempts
+      (if previous-reports
 	  (let ((n-previous (length previous-attempts))
 		(tail previous-attempts))
 	    (insert "\nThis is in addition to "
-		    (if (> n-previous 1)
-			"previous attempts"
-			"a previous attempt")
+		    (cond ((= n-previous 0)
+			   ;; this happens when the last reported attempt
+			   ;; doesn't show up in the logs.
+			   "previous attempt(s)")
+			  ((> n-previous 1) "previous attempts")
+			  (t "a previous attempt"))
 		    " from this IP ")
 	    (while tail
 	      (let* ((attempt (car tail))
