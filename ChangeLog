@@ -1,3 +1,28 @@
+2003-09-27  Bob Rogers  <rogers@rgrjr.dyndns.org>
+
+	* rgr-hacks.el (rgr-install-function-keys):  Put
+	repeat-complex-command (C-x ESC ESC) on f6.
+	
+2003-09-20  Bob Rogers  <rogers@rgrjr.dyndns.org>
+
+	* rgr-mouse.el:  Warn if ilisp-mouse not found.
+
+	* emacs-init.el:  Put new "../imported" directory onto the
+	load-path if it exists.
+
+2003-09-16  Bob Rogers  <rogers@rgrjr.dyndns.org>
+
+	* rgr-genbank.el:  New hack for locating GenBank loci.  See the
+	rgr-genbank-find-locus and rgr-genbank-find-next-locus commands.
+	
+2003-09-05  Bob Rogers  <rogers@rgrjr.dyndns.org>
+
+	* rgr-rect-hacks.el:  New box-creation commands for ASCII art.
+	
+2003-09-04  Bob Rogers  <rogers@rgrjr.dyndns.org>
+
+	* rgr-log-view.el:  First working version of rgr-log-view-diff.
+	
 2003-09-01  Bob Rogers  <rogers@rgrjr.dyndns.org>
 
 	* rgr-unauth-query.el: rgr-unauth-query-whois-server-cached must

@@ -4,6 +4,7 @@
 ;;;
 ;;; created.  -- rgr, 15-Jan-03.
 ;;;
+;;; $Id$
 
 (require 'rect)
 
@@ -11,9 +12,9 @@
   "Characters to put around a box:  the first character is for the
 corners, the second is for the top and bottom, the third is for the
 side, and the fourth is for the interior.  For a box that spans at least
-three lines, the first two characters form the start of the first and
-last box line, and the third and fourth characters form the start of the
-second and other interior lines.")
+three lines, the first two characters form the start/end and middle of
+the first and last box line, and the third and fourth characters form
+the start/end and middle of all other lines.")
 
 (defvar box-rectangle-state nil
   "Kludge to tell the line operator whether to generate a first/last line.")
