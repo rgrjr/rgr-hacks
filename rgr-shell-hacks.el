@@ -220,6 +220,14 @@ Useful in telnet/ssh sessions for propagating $XAUTHORITY."
 ;;;###autoload
 (defun rgr-shell-mode-hook ()
   "shell-mode is for running a shell under emacs via M-x shell."
+  (let ((replacement "Enter \\|Kerberos"))
+    (and (not (string-match (regexp-quote replacement)
+			    comint-password-prompt-regexp))
+	 (string-match "Kerberos" comint-password-prompt-regexp)
+	 ;; this is needed to encompass the standard prompt for the mysql
+	 ;; client.  -- rgr, 13-Jun-03.
+	 (setq comint-password-prompt-regexp
+	       (replace-match replacement t t comint-password-prompt-regexp))))
   ;; [oops; this is redundant.  -- rgr, 20-Jan-00.]
   ;; (define-key shell-mode-map "\M-\r" 'rgr-shell-insert-previous-input)
   (define-key shell-mode-map "\C-cx" 'rgr-shell-set-display)
