@@ -496,6 +496,7 @@ directory."
 	    (setq vm-dired-mail-buffers (cons (car vm-dired-buffers)
 					      vm-dired-mail-buffers)))
 	(setq vm-dired-buffers (cdr vm-dired-buffers))))
+    (setq vm-dired-mail-buffers (nreverse vm-dired-mail-buffers))
     ;; do validation before asking the user anything.
     (if (null vm-dired-mail-buffers)
 	(error "No mail buffers; start composing a message first."))
@@ -522,19 +523,14 @@ directory."
 		(error "Aborted.")))
 	  (t
 	    (let* ((default-buffer (car vm-dired-mail-buffers))
-		   (choice
+		   (chosen-buffer
 		     ;; [this sucks; we should select from mail buffers, and use
 		     ;; the most recent unsent one as the default.  -- rgr,
 		     ;; 13-Sep-04.]
-		     (read-buffer
-		       (format "Attach %s to message (default %s)? "
-			       files-description
-			       (buffer-name default-buffer))
-		       default-buffer t))
-		   (chosen-buffer
-		     (if (equal choice "")
-			 (car vm-dired-mail-buffers)
-			 (get-buffer choice))))
+		     (get-buffer
+		       (read-buffer
+			 (format "Attach %s to message? " files-description)
+			 default-buffer t))))
 	      (if (not (member chosen-buffer vm-dired-mail-buffers))
 		  (error "%S is not a mail buffer." chosen-buffer))
 	      (vm-dired-attach-files-to-message files chosen-buffer))))))
