@@ -187,7 +187,8 @@
 
 (cond ((eq rgr-site 'home)
 	(add-hook 'write-file-hooks 'rgr-mac-before-save-hook))
-      ((eq rgr-site 'bmerc)
+      ((and (eq rgr-site 'bmerc)
+	    (fboundp 'bmerc-thread-after-save-hook))
 	(add-hook 'after-save-hook 'bmerc-thread-after-save-hook)))
 
 (cond ((rgr-emacs-version-p 19 0)
