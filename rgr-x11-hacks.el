@@ -47,8 +47,9 @@
 			(if (eq rgr-emacs-flavor 'fsf)
 			    'emacs
 			    rgr-emacs-flavor)
-			(if (equal version "21.2")
-			    ;; don't show the standard version.
+			(if (or (equal version "21.2")
+				(equal version "21.3"))
+			    ;; don't show the standard version(s).
 			    ""
 			    ;; add spacing.
 			    (concat version " "))
@@ -58,6 +59,8 @@
 	  (setq frame-title-format label)
 	  (modify-frame-parameters (selected-frame)
 				   (list (cons 'name label)
+					 ;; [this doesn't seem to work in 20.3.
+					 ;; -- rgr, 21-Mar-04.]
 					 (cons 'mouse-color
 					       (if su-p "blue" "red")))))))
 
