@@ -487,8 +487,6 @@ keys at all."
 	 (new-dir (expand-file-name "new" source))
 	 (new-files (directory-files new-dir t))
 	 (new-mail nil))
-    (and v+q-verbose-p
-	 (message "Got files %S" new-files))
     (unwind-protect
 	 (save-excursion
 	   (set-buffer buffer)
