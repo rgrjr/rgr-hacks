@@ -4,6 +4,8 @@
 ;;;
 ;;; $Id$
 
+(require 'rgr-unauth-db)
+
 (defvar rgr-unauth-whois-servers
 	'(("whois.arin.net" "(\\(NET\\(BLK\\)?-[^ \t\n\)]+\\))")
 	  ("whois.ripe.net" "(\\(NETBLK-[^ \t\n\)]+\\))") ;; probably wrong
@@ -11,6 +13,72 @@
 	  ;; our purposes.  -- rgr, 12-Dec-02.]
 	  ;; ("whois.apnic.net" "^netname *: +\\([^ \t\n]+\\)")
 	  ))
+
+(defvar rgr-unauth-whois-results-cache nil
+  "Used by rgr-unauth-query-whois-server-cached to store returned
+values.  Format is (parsed-netrange . results).")
+
+(defvar rgr-unauth-whois-server-regexps
+	'(("whois.arin.net"
+	   "^NetRange: +\\([0-9.]+ *- *[0-9.]+\\)" 
+	   ;; there is usually a trailing space on these.
+	   (every "^TechEmail: +\\([^ \t\n]+\\)")
+	   (first "^OrgAbuseEmail: +\\([^ \t\n]+\\)"
+	          "^AbuseEmail: +\\([^ \t\n]+\\)"))
+	  ("whois.ripe.net"
+	   "^inetnum: +\\([0-9.]+ *- *[0-9.]+\\)" 
+	   ;; the field is just called "e-mail", but we have to restrict this to
+	   ;; pick only entries with a "nic-hdl" listed as being a technical
+	   ;; contact.  see rgr-unauth-scarf-ripe-data for gory details.
+	   (every (ripe "^tech-c: *\\([^ \t\n]+\\)"
+			"^nic-hdl: *"
+			"^e-mail: *\\([^ \t\n]+\\)")))
+	  ("whois.lacnic.net"
+	   "^inetnum: +\\([0-9.]+ *- *[0-9.]+\\|[0-9./]+\\)"
+	   ;; lacnic also defines an "owner contact" field, which is often the
+	   ;; only thing available.
+	   (every (ripe (first "tech-c: *\\([^ \t\n]+\\)"
+			       "owner-c: *\\([^ \t\n]+\\)")
+			"^nic-hdl: *"
+			"^e-mail: *\\([^ \t\n]+\\)")))
+	  ("whois.registro.br"
+	   ;; these are always CIDR format.
+	   "^inetnum: +\\([0-9./]+\\)"
+	   ;; the field is just called "e-mail", but we have to restrict this to
+	   ;; pick only entries with a "nic-hdl" listed as being a technical
+	   ;; contact.  see rgr-unauth-scarf-ripe-data for gory details.
+	   (every (ripe "^tech-c: *\\([^ \t\n]+\\)"
+			"^nic-hdl-br: *"
+			"^e-mail: *\\([^ \t\n]+\\)"))
+	   (ripe "^abuse-c: *\\([^ \t\n]+\\)"
+		 "^nic-hdl-br: *"
+		 "^e-mail: *\\([^ \t\n]+\\)"))
+	  ("whois.apnic.net"
+	   "^inetnum: +\\([0-9.]+ *- *[0-9.]+\\)" 
+	   (every (ripe "tech-c: *\\([^ \t\n]+\\)"
+			"^nic-hdl: *"
+			"^e-mail: *\\([^ \t\n]+\\)")))
+	  ("whois.nic.or.kr"
+	   "^IP Address *: *\\([0-9.]+ *- *[0-9.]+\\)"
+	   (every (paragraph "Tech Contact Information"
+			     "E-Mail *: *\\([^ \t\n]+\\)"))
+	   (paragraph "Abuse Contact Information"
+		      "E-Mail *: *\\([^ \t\n]+\\)"))
+	  ("whois.nic.ad.jp"
+	   "\\[Network Number\\] *\\([0-9.]+ *- *[0-9.]+\\)"
+	   (every (ripe "\\[Technical Contact\\] *\\([^ \t\n]+\\)"
+			"\\[JPNIC Handle\\] +"
+			"\\[E-Mail\\] +\\([^ \t\n]+\\)"))))
+  "Alist mapping whois servers to information that helps us grok their
+output format.  Each entry is (whois-server-name ip-address-finder
+tech-poc-finder abuse-address-finder).  The finders can be strings,
+which are used as regexps where (match-string 1) returns the value, but
+can also be lists that start with each, first, every, paragraph, and
+match-string (to select other than the first), and contain various
+kinds of finder subspecs.  [see the
+rgr-unauth-scarf-whois-data fn for details.  -- rgr, 29-Dec-02.")
+
+;;; Querying servers.
 
 (defun rgr-unauth-query-arin-internal (netblk query-host &optional buffer)
   ;; performs the actual based on the shell-command fn.
@@ -95,4 +163,166 @@
 	      (insert (rgr-unauth-query-arin-internal handle query-host)))))
 	buffer))))
 
+;;; Parsing query results.
+
+(defun rgr-unauth-scarf-ripe-data (end handle-spec para-prefix email-regexp)
+  ;; the field is just called "e-mail", but we have to restrict this to just
+  ;; entries with a "nic-hdl" listed as being a technical contact.  really, this
+  ;; is just a relational join on the "nic-hdl" field.  fortunately, each entry
+  ;; is a paragraph, and NIC handles are unique, so the search itself is
+  ;; straightforward, we just have to construct a
+  ;; (paragraph "^nic-hdl: *FOO" "^e-mail: *\\([^ \t\n]+\\)" expression on the
+  ;; fly from what the first spec returned.
+  (let ((handle (rgr-unauth-scarf-whois-data handle-spec end)))
+    (and handle
+	 (save-excursion
+	   ;; this save-excursion is what makes it possible to wrap an "every"
+	   ;; around a "ripe" spec.
+	   (rgr-unauth-scarf-whois-data
+	     (list 'paragraph
+		   (concat para-prefix (regexp-quote handle))
+		   email-regexp)
+	     end)))))
+
+(defun rgr-unauth-scarf-whois-data (spec &optional end)
+  ;; Many of these clauses are not well tested.  -- rgr, 29-Dec-02.
+  (cond ((null spec) nil)
+	((stringp spec)
+	  (and (re-search-forward spec end t)
+	       (match-string 1)))
+	((not (consp spec)) nil)
+	((eq (car spec) 'match-string)
+	  (and (re-search-forward (car (cdr spec)) end t)
+	       (mapconcat (function match-string) (cdr (cdr spec)) "")))
+	((eq (car spec) 'paragraph)
+	  (and (re-search-forward (car (cdr spec)) end t)
+	       (let ((para-spec (nth 2 spec))
+		     (end (progn (forward-paragraph 1) (point))))
+		 (backward-paragraph 1)
+		 (rgr-unauth-scarf-whois-data para-spec end))))
+	((eq (car spec) 'every)
+	  ;; return a list of every hit, moving point each time.
+	  (let ((hit (rgr-unauth-scarf-whois-data (car (cdr spec)) end)))
+	    (and hit
+		 (let ((rest (rgr-unauth-scarf-whois-data spec end)))
+		   (if (member hit rest)
+		       rest
+		       (cons hit rest))))))
+	((eq (car spec) 'ripe)
+	  (apply (function rgr-unauth-scarf-ripe-data) end (cdr spec)))
+	((eq (car spec) 'each)
+	  ;; return a list with each hit or miss, resetting point each time.
+	  (let ((start (point)))
+	    (mapcar (function (lambda (subspec)
+		      (prog1 (rgr-unauth-scarf-whois-data subspec end)
+			(goto-char start))))
+		    (cdr spec))))
+	((eq (car spec) 'first)
+	  ;; return the first hit, resetting point after unsuccessful specs.
+	  (let ((start (point))
+		(tail (cdr spec))
+		(hit nil))
+	    (while tail
+	      (goto-char start)
+	      (setq hit (rgr-unauth-scarf-whois-data (car tail) end))
+	      (setq tail (if hit nil (cdr tail))))
+	    hit))
+	(t (error "Unrecognized 'Whois' data spec %S." spec))))
+
+(defun rgr-unauth-query-whois-server-internal (host-ip whois-server)
+  "This is the principal entry point for uncached noninteractive
+queries, despite the name.  Performs all server querying, including
+followups, parses the results, and returns a list of (last-query-host
+. whois-fields) in the format prescribed by the appropriate
+rgr-unauth-whois-server-regexps entry."
+  (let ((buffer (rgr-unauth-query-arin host-ip whois-server)))
+    (save-excursion
+      (set-buffer buffer)
+      ;; need to evaluate all this in the query buffer.
+      (let ((whois-regexps (assoc rgr-unauth-last-query-host
+				  rgr-unauth-whois-server-regexps)))
+	(cons rgr-unauth-last-query-host
+	      (mapcar (function (lambda (spec)
+			(goto-char (point-min))
+			(rgr-unauth-scarf-whois-data spec)))
+		      (cdr whois-regexps)))))))
+
+(defun rgr-unauth-query-find-cached-entry (ip &optional cache)
+  (let ((tail (or cache rgr-unauth-whois-results-cache))
+	(result nil))
+    (while tail
+      (let ((entry (car tail)))
+	(if (rgr-unauth-subnet-match-p (car entry) ip)
+	    (setq result (cdr entry)
+		  tail nil)
+	    (setq tail (cdr tail)))))
+    result))
+
+(defun rgr-unauth-query-whois-server-cached (host-ip whois-server)
+  "This is the principal entry point for noninteractive queries.  If
+there are cached results for this netblock, then return those.
+Otherwise, queries the appropriate server(s), and parses and caches the
+results.  Returns a list of (last-query-host . whois-fields) in the
+format prescribed by the appropriate rgr-unauth-whois-server-regexps
+entry in either case."
+  (let* ((ip (rgr-unauth-parse-ip-address host-ip))
+	 (entry (rgr-unauth-query-find-cached-entry ip)))
+    (cond ((null entry)
+	    (setq entry
+		  (rgr-unauth-query-whois-server-internal host-ip whois-server))
+	    (setq rgr-unauth-whois-results-cache
+		  (cons (cons (rgr-unauth-parse-ip-subnet (car (cdr entry)))
+			      entry)
+			rgr-unauth-whois-results-cache))))
+    entry))
+
+(defun rgr-unauth-present-query-results (host-ip source &optional netrange
+						 addresses abuse-poc)
+  "Interactive interface to (uncached) server querying.
+Prints a summary of the parsed results."
+  (with-output-to-temp-buffer "*Query summary*"
+    (princ (format "Query IP:  %s\n" host-ip))
+    (princ (format "Whois server:  %s\n" source))
+    (and netrange
+	 (princ (format "Net range:  %s\n" netrange)))
+    (and addresses
+	 (let ((tail addresses))
+	   (princ "Technical contact addresses:\n")
+	   (while tail
+	     (princ "  ")
+	     (princ (car tail))
+	     (princ "\n")
+	     (setq tail (cdr tail)))))
+    (and abuse-poc
+	 (princ (format "Abuse contact:  %s\n" abuse-poc)))))
+
+(defun rgr-unauth-query-whois-server (host-ip &optional whois-server)
+  ;; query whois server(s), and present the result summary to the user.
+  (interactive
+    (let* ((default-ip
+	    (and (re-search-forward rgr-hacks-dotted-quad-regexp)
+		 (match-string 0)))
+	   (host-ip 
+	     (if default-ip
+		 (read-string (format "IP address (default %s): "
+				      default-ip)
+			      nil nil default-ip)
+		 (read-string "IP address: ")))
+	   (default-whois-server
+	     (or (rgr-find-if (function rgr-subnet-whois-server)
+			      (rgr-unauth-find-all-subnets host-ip))
+		 "whois.arin.net"))
+	   (whois-server
+	     (read-string (format "WHOIS server (default %s): "
+				  default-whois-server)
+			  nil nil default-whois-server)))
+      (list host-ip whois-server)))
+  (apply (function rgr-unauth-present-query-results) host-ip
+	 (rgr-unauth-query-whois-server-internal host-ip whois-server)))
+
 (provide 'rgr-unauth-query)
+
+;;; Debugging.
+
+;; (rgr-unauth-query-find-cached-entry (rgr-unauth-parse-ip-address "24.29.147.127"))
+;; (rgr-unauth-query-whois-server-cached "24.29.147.127" "whois.arin.net")
