@@ -127,6 +127,11 @@ should never complain even when somebody attempts to connect.  For
 instance, FTP connections are benign, because I do run a Web server, so
 somebody might legitimately suppose I was also running an FTP server.")
 
+(defvar rgr-unauth-minimum-attempts 10
+  "Minimum number of non-benign attempts on a given day before an IP is
+worth noticing.  This should really be 1, but I don't have that much
+time to kill.")
+
 ;;; Utility functions.
 
 (defvar rgr-unauth-uid-date-prefix "")
@@ -355,6 +360,9 @@ start at most one emacs per day."
 			  ((> n-previous 1) "previous attempts")
 			  (t "a previous attempt"))
 		    " from this IP ")
+	    (save-excursion
+	      (and (search-backward "the following unauthorized")
+		   (replace-match "the following further unauthorized" t t)))
 	    (while tail
 	      (let* ((attempt (car tail))
 		     (date (car attempt)) (protocol (car (cdr attempt)))
@@ -566,6 +574,19 @@ so it generally keeps time within a fraction of a second."))
       (setq tail (cdr tail)))
     result))
 
+(defun rgr-unauth-too-few-attempts-p (data)
+  ;; Returns T iff this guy made less than the minimum number of non-benign
+  ;; connection attempts.
+  (let ((total 0) (tail (nth 2 data)))
+    (while tail
+      (let* ((pair (car tail))
+	     (proto (car pair)) (count (cdr pair)))
+	(cond ((string-match rgr-unauth-benign-protocol-regexp proto))
+	      (t
+	        (setq total (+ count total)))))
+      (setq tail (cdr tail)))
+    (< total rgr-unauth-minimum-attempts)))
+
 (defun rgr-unauth-private-address-p (data)
   "Return non-nil if data is for a private address."
   ;; [added 169.254.0.0/16.  -- rgr, 2-Feb-01.]
@@ -627,6 +648,14 @@ so it generally keeps time within a fraction of a second."))
 			;; generate a message about attempts that were rejected
 			;; but are considered "benign."
 			(message "Ignoring %s"
+				 (rgr-unauth-summarize-attempt-alist
+				   (nth 2 data)))
+		        ;; (sit-for 1)
+			t)
+		      ((rgr-unauth-too-few-attempts-p data)
+			;; generate a message about attempts that were rejected
+			;; but are considered "benign."
+			(message "Ignoring %s (too few)"
 				 (rgr-unauth-summarize-attempt-alist
 				   (nth 2 data)))
 		        ;; (sit-for 1)
