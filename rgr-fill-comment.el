@@ -27,10 +27,11 @@
     (forward-line direction)))
 
 (defun rgr-find-lisp-fill-prefix (near-point)
-  ;; Return a string that looks like " ;; " or some such, NIL if none.  Mungs
-  ;; the match data.  Driven by comment-start-skip if defined; if not, falls
-  ;; back on comment-start (but may not work if comment-start is more than a
-  ;; single character).  Definitely does *not* work for C /*, but then M-q would
+  ;; Return a string that is a prefix of the line containing near-point, and
+  ;; that looks like " ;; " or some such, else NIL if none.  Mungs the match
+  ;; data.  Driven by comment-start-skip if defined; if not, falls back on
+  ;; comment-start (but may not work if comment-start is more than a single
+  ;; character).  Definitely does *not* work for C /*, but then M-q would
   ;; randomize the */'s anyway.  [new version that handles leading whitespace
   ;; better.  -- rgr, 10-Nov-94.]
   (save-excursion
@@ -39,8 +40,13 @@
     (let ((bol (point)))
       (skip-chars-forward " \t")
       (cond (comment-start-skip
-	      (and (looking-at comment-start-skip)
-		   (buffer-substring bol (match-end 0))))
+	      (if (or (looking-at comment-start-skip)
+		      ;; [kludge around perl-mode wierdness concerning comments
+		      ;; that don't start at BOL.  -- rgr, 8-Mar-05.]
+		      (and (not (bolp))
+			   (progn (forward-char -1)
+				  (looking-at comment-start-skip))))
+		  (buffer-substring bol (match-end 0))))
 	    (t
 	      (and (looking-at (concat comment-start "+[ \t]*"))
 		   (buffer-substring bol (match-end 0))))))))
@@ -52,7 +58,7 @@
   (let* ((initial (point))
 	 (fill-column lisp-comment-fill-column)
 	 (fill-prefix (rgr-find-lisp-fill-prefix (point))))
-    ;; (message "Fill prefix is %s." (prin1-to-string fill-prefix))
+    ;; (message "Fill prefix is %S." fill-prefix)
     (if fill-prefix
 	(let ((from nil) (to nil))
 	  (save-excursion
