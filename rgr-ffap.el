@@ -9,6 +9,8 @@
 (defvar rgr-ffap-file-to-application-map
 	'(("\\.gnumeric$" "gnumeric")
 	  ("\\.xls$" "gnumeric")
+	  ;; ("\\.csv$" "gnumeric")	;; [doesn't work.  -- rgr, 18-Feb-04.]
+	  ("\\.doc$" "abiword")
 	  ("\\.pdf$" "acroread")))
 
 ;;;###autoload
