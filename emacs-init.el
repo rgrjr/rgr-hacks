@@ -205,6 +205,7 @@
 (setq mc-passwd-timeout 600)	;; ten minutes.
 ;; TMDA stuff.  -- rgr, 18-May-04.
 (setq tmda-default-whitelist (expand-file-name "~/.tmda/accepted"))
+(setq tmda-default-blacklist (expand-file-name "~/.tmda/rejected"))
 
 (cond ((eq rgr-site 'home)
 	(add-hook 'write-file-hooks 'rgr-mac-before-save-hook))
