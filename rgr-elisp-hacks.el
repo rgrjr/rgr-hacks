@@ -54,6 +54,7 @@
 ;;; rgr-make-tags-table-list-hook: correct autoload problem.  -- rgr, 20-Aug-01.
 ;;; rgr-make-tags-table-list: don't expand nil.  -- rgr, 23-Aug-02.
 ;;;
+;;; $Id$
 
 ;;;; elisp hackery.
 
@@ -124,13 +125,10 @@ A Lisp code line is one that is nonblank and not entirely a comment."
 			(expand-file-name "~/projects/database/code"))
 		  load-path
 		  (list (expand-file-name "~psa/psa-test/bin")
-			;; [these are not the right places for SuSE 9.0.
-			;; -- rgr, 15-Jun-04.]
-		        ;; "/usr/lib/perl5/site_perl/5.6.1/Bio"
-			;; "/usr/lib/perl5/site_perl/5.6.1/i586-linux/Tk"
-			;; [wicked obsolete.  -- rgr, 15-Jun-04.]
-			;; (expand-file-name "~thread/code/ctserv/bin")
-			)))))
+			;; [this works for SuSE 9.0.  -- rgr, 28-Jan-05.]
+			"/usr/lib/perl5/site_perl/5.8.1/Bio"
+			;; [this is for SuSE 8.1.  -- rgr, 15-Jun-04.]
+			"/usr/lib/perl5/site_perl/5.6.1/Bio")))))
 
 (defun rgr-make-tag-table-alist-internal ()
   ;; xemacs version, still in development.  note the change of variable name and
