@@ -120,16 +120,6 @@
 (setq signature-login-name "rgr")
 (rgr-install-hacks)
 
-(if (and (eq window-system 'x)
-	 ;; [this works because this font can be found on the only suse install
-	 ;; i have on this machine.  -- rgr, 21-May-03.]
-	 (string-match "suse" system-configuration)
-	 (or (equal "rgrjr.dyndns.org" rgr-x11-display-host)
-	     (equal "rgrjr" rgr-x11-display-host)))
-    ;; compensate for excruciatingly small pixel size on my home display.
-    (set-frame-font
-      "-adobe-courier-medium-r-normal--18-180-75-75-m-110-iso8859-15"))
-
 ;; disable transient-mark-mode (seems to be on by default in the SuSE 20.7
 ;; version).  -- rgr, 27-Jun-01.
 (setq transient-mark-mode nil)
