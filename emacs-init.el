@@ -135,7 +135,7 @@
 (setq tags-build-completion-table nil)
 (setq zmacs-regions nil)
 
-;; Turn off the tool-bar when working remotely, because it can be very slow over
+;; Turn off the toolbar when working remotely, because it can be very slow over
 ;; ssh.  -- rgr, 5-May-03.  [actually, it's just as useless locally.  -- rgr,
 ;; 12-May-03.]
 (cond ((and window-system
@@ -144,6 +144,9 @@
 	     (tool-bar-mode -1))
         (and (fboundp 'x-show-tip)
 	     (tooltip-mode -1))))
+;; Also turn off the splash graphic; it's not a problem when working locally,
+;; but takes a few seconds to shovel over SSH.  -- rgr, 12-Jul-03.
+(defun use-fancy-splash-screens-p () nil)
 
 ;; Turn off paging in subordinate shells.  -- rgr, 17-Feb-00.
 (setenv "PAGER" "cat")
