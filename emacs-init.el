@@ -133,6 +133,14 @@
 (setq tags-build-completion-table nil)
 (setq zmacs-regions nil)
 
+;; Turn off the tool-bar when working remotely, because it can be very slow over
+;; ssh.  -- rgr, 5-May-03.
+(cond ((getenv "SSH_CLIENT")
+        (and (display-graphic-p)
+	     (tool-bar-mode -1))
+        (and (fboundp 'x-show-tip)
+	     (tooltip-mode -1))))
+
 ;; Turn off paging in subordinate shells.  -- rgr, 17-Feb-00.
 (setenv "PAGER" "cat")
 
