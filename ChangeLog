@@ -1,3 +1,39 @@
+2004-01-01  Bob Rogers  <rogers@rgrjr.dyndns.org>
+
+	* Fix rgr-unauth-relative-date-phrase bug:  Log dates are in the
+	past.
+	* Ignore common SBCL and CLISP binary extentions in completion.
+
+2003-12-19  Bob Rogers  <rogers@rgrjr.dyndns.org>
+
+	* First version of rgr-cvs-recent-changes, with fancy C-u
+	interpretation.
+
+2003-11-15  Bob Rogers  <rogers@rgrjr.dyndns.org>
+
+	* New rgr-ffap-file-finder hack.  (Plus other misc changes.)
+
+2003-11-07  Bob Rogers  <rogers@rgrjr.dyndns.org>
+
+	* vm-maildir-file-date now depends (gracefully) on discus,
+	instead of ungracefully on "date -t".
+
+2003-10-23  Bob Rogers  <rogers@rgrjr.dyndns.org>
+
+	* rgr-unauth-query-arin now binds resize-mini-windows to nil,
+	forcing shell-command to show the output in a window of its own.
+
+2003-10-21  Bob Rogers  <rogers@rgrjr.dyndns.org>
+
+	* rgr-install-ffap: Make ffap somewhat less greedy about "news:"
+	and "mailto:" urls, and prevent it from looking up foo.pl" as a
+	file server in Poland.
+
+2003-10-05  Bob Rogers  <rogers@rgrjr.dyndns.org>
+
+	* Made rgr-unauthorized-connection smarter about finding its way
+	back to the mail buffer.
+
 2003-09-27  Bob Rogers  <rogers@rgrjr.dyndns.org>
 
 	* rgr-hacks.el (rgr-install-function-keys):  Put
