@@ -26,7 +26,7 @@ that many days."
 	 (today (car (discus-parse-date (current-time-string))))
 	 (n-days-ago (discus-print-date (cons (- today number-of-days) nil))))
     ;; (error "Date '%s'." n-days-ago)
-    (shell-command (format "cvs log -d '>%s' | cvs-chrono-log.pl"
+    (shell-command (format "cvs -q log -d '>%s' | cvs-chrono-log.pl"
 			   n-days-ago))))
 
 (provide 'rgr-cvs-hacks)
