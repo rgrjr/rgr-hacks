@@ -250,6 +250,22 @@ incarnation of the major version)."
 	  (setq tail (cdr (cdr tail)))))
     result))
 
+(defun rgr-fix-manpath (new)
+  "Fix MANPATH to include new, which may have been missed by a
+$PATH-oriented \"man\" implementation."
+  (let ((path (getenv "MANPATH")))
+    (if (not path)
+	(save-excursion
+	  (set-buffer (get-buffer-create " *manpath-temp*"))
+	  (call-process "manpath" nil t nil)
+	  (goto-char (point-min))
+	  (end-of-line)
+	  (setq path (buffer-substring (point-min) (point)))))
+    (if (and (file-directory-p new)
+	     (file-readable-p new)
+	     (not (string-match new path)))
+	(setenv "MANPATH" (concat new ":" path)))))
+
 ;; Compatibility with earlier emacs versions.  -- rgr, 22-Aug-99.
 (or (fboundp 'buffer-substring-no-properties)
     (fset 'buffer-substring-no-properties 'buffer-substring))

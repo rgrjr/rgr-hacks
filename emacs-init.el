@@ -302,6 +302,9 @@
 ;; 20-Aug-01.
 (if (equal (getenv "TERM") "emacs")
     (setenv "TERM" "dumb"))
+;; Fix MANPATH to include /usr/local/share/man/, which gets missed by the
+;; $PATH-oriented "man" implementation.  -- rgr, 1-May-03.
+(rgr-fix-manpath "/usr/local/share/man")
 
 ;;; Additional inits.
 (cond ((and (eq rgr-site 'bmerc)
