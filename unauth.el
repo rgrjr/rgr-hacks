@@ -38,8 +38,7 @@
 ;;; rgr-unauth-abuse-addresses: remove 62.224.0.0/14.  -- rgr, 22-Mar-01.
 ;;; rgr-unauth-insert-stuff: also check /var/log/messages.1.  -- rgr, 1-Apr-01.
 ;;; ...
-;;; RR-NYS-2BLK, swbell subnets; make rgr-unauth-insert-local-hostname check for
-;;;	errors.  -- rgr, 21-Oct-01.
+;;; rgr-unauth-insert-local-hostname error check.  -- rgr, 21-Oct-01.
 ;;; rgr-unauth-insert-stuff: TIA before sig.  -- rgr, 22-Oct-01.
 ;;; fudge host name for reports to mediaone.  -- rgr, 28-Oct-01.
 ;;; rgr-unauth-insert-stuff: include numeric timezone.  -- rgr, 1-Nov-01.
@@ -50,7 +49,6 @@
 ;;; rgr-unauth-make-abuse-address: support ".ad.jp".  -- rgr, 13-Apr-02.
 ;;; rgr-unauth-insert-stuff: mention NTP in time blurb.  -- rgr, 7-May-02.
 ;;; rgr-unauth-insert-stuff: extract previous attempts.  -- rgr, 13-May-02.
-;;; rgr-unauth-insert-stuff: "Spida" spew.  -- rgr, 25-May-02.
 ;;; bbnplanet.com -> genuity.net.  -- rgr, 4-Jul-02.
 ;;; rgr-unauth-benign-protocol-regexp, skip 1433 ("Spida" worm), correct gte.net
 ;;;	entry, more concentric.net, thrunet.com.  -- rgr, 5-Jul-02.
@@ -62,28 +60,12 @@
 ;;; rgr-unauth-previous-month-log-file-name search.  -- rgr, 27-Aug-02.
 ;;; more chinanet.  -- rgr, 31-Aug-02.
 ;;; more kornet.net.  -- rgr, 7-Sep-02.
-;;; another chinanet beijing subnet.  -- rgr, 12-Sep-02.
-;;; another concentric.net subnet.  -- rgr, 16-Sep-02.
-;;; rogers-abuse return address, plus another krnic block.  -- rgr, 24-Sep-02.
-;;; abuse@att.com class A megablock.  -- rgr, 27-Sep-02.
 ;;; new whois.lacnic.net registry.  -- rgr, 3-Oct-02.
-;;; new abuse@level3.com entry.  -- rgr, 14-Oct-02.
-;;; "abuse@t-ipnet.de" entry.  -- rgr, 16-Oct-02.
-;;; another t-ipnet.de subnet.  -- rgr, 17-Oct-02.
 ;;; rgr-unauth-insert-stuff: change reverse DNS address.  -- rgr, 27-Oct-02.
-;;; another abuse@kornet.net subnet.  -- rgr, 4-Nov-02.
-;;; another abuse@t-ipnet.de subnet.  -- rgr, 6-Nov-02.
-;;; abuse@bellsouth.net subnet.  -- rgr, 18-Nov-02.
-;;; "CNINFONET Xingjiang province network".  -- rgr, 21-Nov-02.
-;;; chinanet hunan, xo.com.  -- rgr, 28-Nov-02.
-;;; more xo.com.  -- rgr, 30-Nov-02.
-;;; verizon, apnic, krnic subnets.  -- rgr, 4-Dec-02.
 ;;; JPNIC support, clean "added subnet" comments.  -- rgr, 12-Dec-02.
-;;; another KRNIC subnet.  -- rgr, 15-Dec-02.
 ;;; rgr-unauth-query-arin-inserting-headers: new.  -- rgr, 16-Dec-02.
 ;;; rgr-unauth-whois-server-regexps: lacnic & apnic stubs.  -- rgr, 17-Dec-02.
 ;;; rgr-unauth-benign-protocol-regexp: skip 445 probes.  -- rgr, 18-Dec-02.
-;;; another verizon.net chunk.  -- rgr, 22-Dec-02.
 ;;; moved subnet database to rgr-unauth-db.el file.  -- rgr, 23-Dec-02.
 ;;; rgr-unauth-query-arin-inserting-headers: look for an ARIN abuse POC.
 ;;;	-- rgr, 28-Dec-02.
@@ -103,6 +85,10 @@
 ;;;
 
 (require 'rgr-unauth-db)
+
+(defvar rgr-unauth-use-log-report-date-p nil
+  "*If nil, include all unreported log events.  If non-nil, use only
+those log events generated since the start of the report period.")
 
 (defvar rgr-unauth-last-query-host nil
   "String naming the last server queried for POCs, e.g. \"whois.ripe.net\".
@@ -328,15 +314,34 @@ start at most one emacs per day."
 		  ip-address-colon-port " "))
   "Matched substrings are (protocol source-ip source-port dest-ip dest-port).")
 
-(defun rgr-unauth-extract-previous-attempts (&optional report-date)
-  (let ((start (point))
-	(current-date-prefix (or report-date
-				 (save-excursion
-				   (goto-char (point-max))
-				   (forward-line -1)
-				   (buffer-substring (point) (+ (point) 6)))))
-	(result nil))
-    (while (not (looking-at current-date-prefix))
+(defun rgr-unauth-extract-previous-attempts (&optional last-reported-entry-date
+					     report-date)
+  ;; This assumes we are narrowed down to just the log entries.  Identify the
+  ;; ones we want to trim, and return a digested form for later summarization.
+  (let* ((start (point-min))
+	 (prev-end (set-marker (make-marker) (point)))
+	 (result nil))
+    (goto-char start)
+    (let ((date (or last-reported-entry-date report-date)))
+      ;; (message "[using regexp date %S]" date)
+      (cond ((null date)
+	      ;; no report date, so use it all.
+	      )
+	    ((not (re-search-forward (concat "^" (regexp-quote date)) nil t))
+	      ;; hmm, this shouldn't happen, but just in case, leave it all in
+	      ;; so that the user can figure it out.
+	      (message "No date %S in log?" date)
+	      (sit-for 1))
+	    (last-reported-entry-date
+	      ;; we want to exclude anything we've already reported.
+	      (forward-line 1))
+	    (t
+	      ;; this should be the "report-date", so include this line.
+	      (beginning-of-line)))
+      (setq prev-end (set-marker (make-marker) (point))))
+    ;; Now operate on lines between start & prev-end.
+    (goto-char start)
+    (while (< (point) prev-end)
       (let ((detail-start (point))
 	    (detail-end (save-excursion
 			  (forward-line 1)
@@ -351,8 +356,8 @@ start at most one emacs per day."
 	        (delete-region detail-start detail-end))
 	      (t
 		(goto-char detail-end)))))
-    ;; now get rid of the earlier detail lines.  [actually, it's better to
-    ;; delete only the detail lines we can parse.  -- rgr, 13-May-02.]
+    ;; now get rid of the earlier detail lines.  [no; it's better to delete only
+    ;; the detail lines we can parse.  -- rgr, 13-May-02.]
     ;; (delete-region start (point))
     (nreverse result)))
 
@@ -408,8 +413,7 @@ start at most one emacs per day."
 	 (proto-insert (if (cdr protocols)
 			   ""
 			   (concat " for " (car protocols) " service")))
-	 (spida-worm-p (and (null (cdr protocols))
-			    (equal (car protocols) "1433/tcp")))
+	 (last-report-date (car (cdr previous-reports)))
 	 (previous-attempts nil))
     (save-excursion
       (goto-char (point-max))
@@ -419,16 +423,10 @@ start at most one emacs per day."
       (if host-name
 	  (insert host-name " (" host-ip ")")
 	  (insert host-ip))
-      (insert " " (rgr-unauth-relative-date-phrase log-report-date))
-      (if spida-worm-p
-	  (insert ".  No doubt this machine has fallen prey "
-		  "to the Microsoft SQL Server \"Spida\" worm (see "
-		  "http://www.iss.net/security_center/alerts/advise118.php).")
-	  (insert ":"))
+      (insert " " (rgr-unauth-relative-date-phrase log-report-date) ":")
       (rgr-mail-fill-paragraph nil)
       (insert "\n\n")
-      ;; grab log section.  we blithely assume that these are the only hits from
-      ;; this IP.  after all, this isn't fully automated.
+      ;; Grab complete log entries for this IP.
       (let ((start (point))
 	    (last-log-file (rgr-unauth-previous-month-log-file-name)))
 	;; look for hits in the previous month first.  if this file doesn't
@@ -443,10 +441,16 @@ start at most one emacs per day."
 	(save-excursion
 	  (save-restriction
 	    (narrow-to-region start (point))
-	    (goto-char start)
+	    ;; Prune log entries to eliminate anything we've already reported.
 	    (setq previous-attempts
-		  (rgr-unauth-extract-previous-attempts log-report-date))))
+		  (rgr-unauth-extract-previous-attempts
+		    last-report-date
+		    (and rgr-unauth-use-log-report-date-p
+			 log-report-date)))))
+	;; Indent for prettiness (inasmuch as one can ever make a log report
+	;; pretty).
 	(indent-rigidly start (point) 4))
+      ;; Insert boilerplate characterizing previous attempts.
       (if previous-attempts
 	  (let ((n-previous (length previous-attempts))
 		(tail previous-attempts))
@@ -475,7 +479,8 @@ start at most one emacs per day."
 		      (insert "the last of which was "))
 		  (insert "reported in an email with \"[" last
 			  "]\" in the subject."))
-		(insert "previously reported."))))
+		(insert "[not?] previously reported."))))
+      ;; finish boilerplate.
       (insert "\nThe destination host is ")
       (if (or (equal abuse-address "abuse@mediaone.net")
 	      (equal abuse-address "abuse@attbi.com"))
@@ -493,7 +498,7 @@ start at most one emacs per day."
 		(format " (%.2d%.2d)" hrs mins)
 		", and this machine is an NTP server (see 
 http://www.eecis.udel.edu/~ntp/) that operates at stratum 3, 
-so it keeps time within a fraction of a second."))
+so it generally keeps time within a fraction of a second."))
       (fill-paragraph nil)
       (insert "\n\n   Thanks in advance for taking care of this,"
 	      "\n\n\t\t\t\t\t-- Bob Rogers\n"))))
@@ -708,7 +713,6 @@ so it keeps time within a fraction of a second."))
 		       (> (cdr (car attempt-alist)) 1)))
 	 (previous-reports (rgr-unauth-find-previous-reports-for-ip host-ip))
 	 (last-report-address (car previous-reports))
-	 (last-report-date (car (cdr previous-reports)))
 	 (subnets (rgr-unauth-find-all-subnets host-ip))
 	 (whois-server
 	   (rgr-find-if (function rgr-subnet-whois-server) subnets))
@@ -716,20 +720,20 @@ so it keeps time within a fraction of a second."))
 	   (rgr-find-if (function rgr-subnet-abuse-address) subnets))
 	 (abuse-address (or official-abuse-address
 			    last-report-address
-			    (rgr-unauth-make-abuse-address host-name))))
-    (vm-mail-internal nil abuse-address
-		      ;; This is the subject.  We put a unique identifier into
-		      ;; the subject so that we can tell what is being
-		      ;; acknowledged for acknowledgement messages that only
-		      ;; quote the subject.  (Surprisingly, the sender's address
-		      ;; is often useless for this.)
-		      (concat "Unauthorized"
-			      (if (null (cdr attempt-alist))
-				  (concat " " (car (car attempt-alist)))
-				  "")
-			      " connection attempt"
-			      (if plural-p "s" "")
-			      " [" (rgr-unauth-make-uid) "]"))
+			    (rgr-unauth-make-abuse-address host-name)))
+	 (uid (rgr-unauth-make-uid))
+	 ;; We put a unique identifier into the subject so that we can tell what
+	 ;; is being acknowledged for acknowledgement messages that only quote
+	 ;; the subject.  (Surprisingly, the sender's address is often useless
+	 ;; for this.)  Unfortunately, some ISPs don't quote anything.
+	 (subject (concat "Unauthorized"
+			  (if (null (cdr attempt-alist))
+			      (concat " " (car (car attempt-alist)))
+			      "")
+			  " probe"
+			  (if plural-p "s" "")
+			  " from " host-ip " [" uid "]")))
+    (vm-mail-internal nil abuse-address subject)
     (v+q-set-return-address "rogers-abuse@rgrjr.dyndns.org")
     (rgr-unauth-insert-stuff report-date abuse-address host-name host-ip
 			     attempt-alist plural-p previous-reports)
