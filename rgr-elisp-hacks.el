@@ -122,6 +122,7 @@ A Lisp code line is one that is nonblank and not entirely a comment."
 			(expand-file-name "~/projects/modgen/oligo"))
 		  load-path
 		  (list "/usr/lib/perl5/site_perl/5.6.1/Bio"
+			"/usr/lib/perl5/site_perl/5.6.1/i586-linux/Tk"
 			;; (expand-file-name "~thread/code/ctserv/bin")
 			(expand-file-name "~psa/psa-test/bin"))))))
 
