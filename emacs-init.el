@@ -94,6 +94,8 @@
 ;;; update mc-gpg-user-id to new key.  -- rgr, 29-Jan-02.
 ;;; extended completion-ignored-extensions value.  -- rgr, 15-Mar-02.
 ;;; autoload wiki-remote-get.  -- rgr, 1-Apr-02.
+;;; don't run vm if not available.  -- rgr, 14-Nov-02.
+;;; disable rgr-abbrev-completion-save-directory when root.  -- rgr, 12-Dec-02.
 ;;; alternative v+q-mbox-status on f2.  -- rgr, 16-Jan-03.
 ;;; update mc-gpg-user-id to use new key.  -- rgr, 12-Feb-03.
 ;;; use mail-default-headers to BCC around spam filters.  -- rgr, 20-Mar-03.
@@ -172,10 +174,19 @@
 
 ;; Newer feature (ported from Lispm implementation).  -- rgr, 29-Nov-96.
 ;; [only save completions in rgr-emacs if we can write it!  -- rgr, 1-Apr-00.]
-(and (file-writable-p rgr-emacs)
-     (setq rgr-abbrev-completion-save-directory rgr-emacs))
+(setq rgr-abbrev-completion-save-directory
+      (and (file-writable-p rgr-emacs)
+	   ;; [turn this off when root for now, because emacs thinks it can
+	   ;; write anything in that case, but it can't when nfs-mounted, and
+	   ;; it's too hard to check.  -- rgr, 12-Dec-02.]
+	   (not (zerop (user-uid)))
+	   rgr-emacs))
+;; [must also flush this.  -- rgr, 7-Apr-03.]
+(if (null rgr-abbrev-completion-save-directory)
+    (setq rgr-abbrev-completion-save-file nil))
 (rgr-install-abbrev-completion)
-(rgr-install-weekly-completion-cycle)
+(and rgr-abbrev-completion-save-directory
+     (rgr-install-weekly-completion-cycle))
 
 ;; New feature!  -- rgr, 20-Jul-95.
 (require 'ilisp-possibilities)
@@ -197,7 +208,8 @@
 (add-hook 'rmail-mode-hook 'rgr-rmail-mode-hook)
 (add-hook 'mail-mode-hook 'rgr-mail-mode-hook)
 (add-hook 'vm-mail-mode-hook 'rgr-vm-mail-mode-hook)
-(global-set-key "\C-xm" 'vm-mail)
+(if (fboundp 'vm-mail)
+    (global-set-key "\C-xm" 'vm-mail))
 (global-set-key (if (eq rgr-emacs-flavor 'fsf) [s-f1] [(super f1)])
 		'v+q-mbox-status)
 ;; also try f2, which is easier to type at MGI.  -- rgr, 16-Jan-03.
