@@ -173,12 +173,14 @@ rgr-unauth-scarf-whois-data fn for details.  -- rgr, 29-Dec-02.")
   "Regexp that recognizes the protocol/attempt count/disposition line.")
 
 (defvar rgr-unauth-benign-protocol-regexp
-	"^\\(ftp\\|1433\\|6346\\|1214\\|445\\)/tcp$"
+        (concat "^\\(ftp\\|143[34]\\|ms-sql-[sm]\\|epmap"
+		"\\|6346\\|1214\\|445\\|microsoft-ds\\)/tcp$"
+		"\\|^\\(epmap\\|ms-sql-m\\)/udp$")
   ;; 1433 is for the Microsoft SQL Server; see the "Spida" worm advisory on the
   ;; http://www.iss.net/security_center/alerts/advise118.php page.  I no longer
   ;; report these.  And 6346 is gnutella, and 1214 is KaZaA, both of which are
-  ;; too ambiguous to report.  [445 is for Windows file service; there seems to
-  ;; be a new worm propagating.  -- rgr, 18-Dec-02.]
+  ;; too ambiguous to report.  [445 aka "microsoft-ds" is for Windows file
+  ;; service; there seems to be a new worm propagating.  -- rgr, 18-Dec-02.]
   "Regexp that matches protocol names (e.g. 'ftp/tcp') for which we
 should never complain even when somebody attempts to connect.  For
 instance, FTP connections are benign, because I do run a Web server, so
@@ -226,7 +228,7 @@ start at most one emacs per day."
 		      ((string-match rgr-unauth-ip-address-regexp netblk)
 		        netblk)
 		      (t (concat "\\!" netblk))))
-	 (command (concat "whois " query "@" query-host)))
+	 (command (concat "whois -h " query-host " " query)))
     (message "Querying for %s at %s..." netblk query-host)
     (sit-for 0)
     (save-excursion
@@ -254,11 +256,10 @@ start at most one emacs per day."
 	 (jpnic-p (equal query-host "whois.nic.ad.jp"))
 	 (buffer (get-buffer-create (concat "*" query-host "*")))
 	 (netblk-regexp (car (cdr (assoc query-host rgr-unauth-whois-servers))))
-	 (command (concat "whois " host-ip
+	 (command (concat "whois -h " query-host " " host-ip
 			  ;; jpnic uses this idiosyncratic syntax to select
 			  ;; english-only output.
-			  (if jpnic-p "/e@" "@")
-			  query-host))
+			  (if jpnic-p "/e" "")))
 	 (netblks nil))
     (shell-command command buffer)
     (save-excursion
@@ -431,13 +432,17 @@ start at most one emacs per day."
 	    (last-log-file (rgr-unauth-previous-month-log-file-name)))
 	;; look for hits in the previous month first.  if this file doesn't
 	;; exist, then we probably just rolled the logs last night, so we should
-	;; try /var/log/messages.1 instead.
-	(call-process "fgrep" nil t nil
-		      "-he" host-ip
-		      (if (file-readable-p last-log-file)
-			  last-log-file
-			  "/var/log/messages.1")
-		      "/var/log/messages")
+	;; try /var/log/messages.1 instead.  [also look in the old system.  --
+	;; rgr, 3-May-03.]
+	(apply (function call-process) "fgrep" nil t nil
+	       "-he" host-ip
+	       (append (cond ((file-readable-p "/mnt/rh60/var/log/messages")
+			       '("/mnt/rh60/var/log/messages")))
+		       (cond ((file-readable-p last-log-file)
+			       (list last-log-file))
+			     ((file-readable-p "/var/log/messages.1")
+			       '("/var/log/messages.1")))
+		       '("/var/log/messages")))
 	(save-excursion
 	  (save-restriction
 	    (narrow-to-region start (point))

@@ -235,6 +235,7 @@
 	    "218.21.64.0 - 218.21.127.255"
 	    ;; "CHINANET Guizhou province network"
 	    "218.86.128.0 - 218.86.255.255"
+	    "219.141.0.0 - 219.141.127.255"
 	    ;; "CHINANET Hebei province network"
 	    "61.182.0.0 - 61.182.255.255"
 	    ;; "CHINANET heilongjiang province network"
