@@ -254,6 +254,14 @@
 ;; wiki-remote stuff.
 (autoload 'wiki-remote-get "wiki-remote.el" "Get wiki PAGE from wiki NAME." t)
 
+;; M-x ssh.  -- rgr, 1-Aug-03.
+(setq ssh-host-history
+      (append (if (eq rgr-site 'mgi)
+		  '("rogers@rgrjr.dyndns.org"
+		    "mgi@www.modulargenetics.com")
+		  '("rogers@modulargenetics.dnsalias.com"))
+	      '("rogers@huxley.bu.edu")))
+
 ;; Change TERM=emacs into something that Tru64 "man" can deal with.  It refuses
 ;; to run if it can't recognize the terminal type, which is broken; it should
 ;; just assume "dumb" (though M-x manual-page could force this).  Change this

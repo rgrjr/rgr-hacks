@@ -124,10 +124,11 @@ layer.  That actually works best for rgr-subordinate-emacs-p purposes.
 		     ;; REMOTEHOST is defined only for ssh, so
 		     ;; rgr-canonicalize-host-name will return the local host
 		     ;; name if not connected via ssh, so this is not strictly
-		     ;; the "remote host."  But it works.
+		     ;; the "remote host."  But it works.  [Except not for the
+		     ;; OpenSSH 3.4p1 version shipped with SuSE 8.1, it appears.
+		     ;; -- rgr, 14-Jul-03.]
 		     (rgr-canonicalize-host-name (getenv "REMOTEHOST"))))
-	       (or (null remote-host)
-		   (equal local-host remote-host)
+	       (or (equal local-host remote-host)
 		   (equal (rgr-host-domain-suffix local-host)
 			  (rgr-host-domain-suffix remote-host))))
 	     ;; Require that we not be "su" as somebody else.

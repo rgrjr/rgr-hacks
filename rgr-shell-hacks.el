@@ -6,25 +6,10 @@
 ;;;
 ;;;	  (mapcar 'require '(shell sh-script compile telnet))
 ;;;
-;;;    Modification history:
+;;; $Id$
 ;;;
-;;; cdgrep command.  -- rgr, 4-Apr-94.
-;;; rgr-shell-mode-hook and rgr-squelch-password hacks.  -- rgr, 23-Feb-95.
-;;; added cdcgrep command.  -- rgr, 18-May-95.
-;;; split out of ./rgr-hacks.el file.  -- rgr, 26-Mar-96.
-;;; rgr-sh-mode-hook: new.  -- rgr, 16-Aug-96.
-;;; rgr-recompile: new.  -- rgr, 30-Aug-96.
-;;; rgr-recompile: fix "Invoke compile afresh" arg bug.  -- rgr, 14-Nov-96.
-;;; rgr-recompile: make "last compile in cd" really work.  -- rgr, 25-Nov-96.
-;;; cdgrep & rgr-recompile to ./rgr-compile-hacks.el.  -- rgr, 26-Nov-96.
-;;; rgr-sh-mode-hook: use rgr-c-electric-dash fn.  -- rgr, 13-Dec-96.
-;;; rgr-find-shell: new hack, handles multiple shells.  -- rgr, 17-Apr-97.
-;;; rgr-shell-buffer-major-modes: new, add telnet-mode.  -- rgr, 8-May-97.
-;;; new rgr-comint-get-old-input-with-continuation-lines implementation,
-;;;	new rgr-shell-insert-previous-input command.  -- rgr, 20-Aug-97.
-;;; rgr-telnet-mode-hook, split rgr-shell-mode-hook.  -- rgr, 24-Mar-99.
-;;; rgr-find-shell: new numeric arg.  -- rgr, 13-Sep-99.
-;;; rgr-shell-mode-hook: orig. 20.3 comint-prompt-regexp.  -- rgr, 9-Dec-99.
+;;;    [old] Modification history:
+;;;
 ;;; ssh: new.  -- rgr, 13-Dec-99.
 ;;; rgr-shell-set-display: new.  -- rgr, 20-Jan-00.
 ;;; rgr-shell-set-display: ensure host.  -- rgr, 28-Jan-00.
@@ -122,11 +107,8 @@ next (and subsequent) line if the current (previous) line ends in '\\'."
       (buffer-substring start (point)))))
 
 (defvar rgr-secure-shell-program "ssh")
-(defvar ssh-host-history
-	(list (if (eq rgr-site 'mgi)
-		  "rogers@rgrjr.dyndns.org"
-		  "rogers@modulargenetics.dnsalias.com")
-	     "rogers@huxley.bu.edu"))
+(defvar ssh-host-history nil
+  "*History of recent SSH hosts.")
 (defvar ssh-mode-map (if (eq rgr-emacs-flavor 'xemacs)
 			 ;; keymaps are not lists in xemacs.
 			 (copy-keymap comint-mode-map)
