@@ -60,7 +60,7 @@
 
 (defvar rgr-unauth-host-exceptions
 	'(;; SSH connections into home from work.
-	  ("168.103.43.201" nil "^22/TCP")
+	  ("66.9.243.106" nil "^22/TCP")
 	  ;; See http://www.just4youx.net/scanning.html
 	  ("80.253.125.28 - 80.253.125.32" nil
 	   "^\\(3128\\|6588\\|8080\\|1[01]80\\)/TCP")
@@ -107,7 +107,8 @@ or missing, then all connection attempts are ignored.")
 	    "210.0.0.0 - 211.255.255.255"
 	    "218.0.0.0/8"
 	    "219.0.0.0/8"
-	    "220.0.0.0/8") nil :whois "whois.apnic.net")
+	    "220.0.0.0/8"
+	    "221.0.0.0/8") nil :whois "whois.apnic.net")
 	  (("24.132.0.0/16"
 	    "62.0.0.0/8"
 	    "80.0.0.0/8"
@@ -138,6 +139,7 @@ or missing, then all connection attempts are ignored.")
 	    "211.120.0.0 - 211.135.255.255"
 	    "218.40.0.0 - 218.47.255.255"
 	    "219.96.0.0 - 219.127.255.255"
+	    "219.160.0.0 - 219.165.255.255"
 	    "219.166.0.0 - 219.167.255.255"
 	    "220.96.0.0 - 220.99.255.255")
 	   nil :whois "whois.nic.ad.jp")
