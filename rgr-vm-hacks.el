@@ -406,13 +406,13 @@ directory."
 	       (charset nil) (description nil))
 	  (if (vm-mime-types-match "text" type)
 	      (let ((cs (completing-read
-			  "Character set for %s (default US-ASCII): "
+			  (format "Character set for %s (default US-ASCII): "
+				  abbrev)
 			  abbrev vm-mime-charset-completion-alist)))
 		(if (> (length cs) 0)
 		    (setq charset cs))))
 	  (setq description
-		(read-string (format "One line description for %s: "
-				     abbrev)))
+		(read-string (format "One line description for %s: " abbrev)))
 	  (vm-mime-attach-file file type charset description))
 	(setq tail (cdr tail))))))
 
@@ -460,15 +460,16 @@ directory."
 						  (car vm-dired-mail-buffers))
 		(error "Aborted.")))
 	  (t
-	    (let* ((choice
+	    (let* ((default-buffer (car vm-dired-mail-buffers))
+		   (choice
 		     ;; [this sucks; we should select from mail buffers, and use
 		     ;; the most recent unsent one as the default.  -- rgr,
 		     ;; 13-Sep-04.]
 		     (read-buffer
 		       (format "Attach %s to message (default %s)? "
 			       files-description
-			       (buffer-name (car vm-dired-mail-buffers))
-			       nil t)))
+			       (buffer-name default-buffer))
+		       default-buffer t))
 		   (chosen-buffer
 		     (if (equal choice "")
 			 (car vm-dired-mail-buffers)
