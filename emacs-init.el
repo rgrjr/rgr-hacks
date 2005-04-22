@@ -227,8 +227,7 @@
 (rgr-define-lisp-mode-commands lisp-interaction-mode-map)
 (rgr-common-lisp-indentation)
 
-(add-hook 'diff-mode-hook 'rgr-diff-mode-hook)
-(global-set-key "\C-c=" 'rgr-quick-source-compare)
+(rgr-install-diff-hacks)
 (add-hook 'log-view-mode-hook 'rgr-log-view-mode-hook)
 (add-hook 'ilisp-mode-hook 'rgr-ilisp-mode-hook)
 (add-hook 'lisp-mode-hook 'rgr-lisp-mode-hook)
