@@ -247,9 +247,9 @@ if (e.g.) the pathname does not indicate a server."
 (defun rgr-fasta-goto-start-with-offset ()
   (cond ((save-excursion
 	   (beginning-of-line)
-	   (looking-at "^[ \t]*\\([0-9]+\\) *"))
+	   (looking-at "^[ \t]*\\([^ \t\n:]+:[ \t]*\\)\\([0-9]+\\) *"))
 	  (goto-char (match-end 0))
-	  (1- (string-to-int (match-string 1))))
+	  (1- (string-to-int (match-string 2))))
 	((or (looking-at "^>")
 	     (re-search-backward "^>" nil t))
 	  (forward-line)
@@ -296,6 +296,56 @@ if (e.g.) the pathname does not indicate a server."
       (if (member (char-after) '(?> nil))
 	  (message "After base %d." base-number)
 	  (message "Before base %d." (1+ base-number))))))
+
+(defvar rgr-seqaln-diff-line-match "^      [ |]+$")
+
+(defun rgr-seqaln-find-match-point (point)
+  (save-excursion
+    (goto-char point)
+    (let ((col (current-column)))
+      (if (< col 6)
+	  (setq col 6))
+      (beginning-of-line)
+      (cond ((or (looking-at rgr-seqaln-diff-line-match)
+		 (progn (forward-line 1)
+			(looking-at rgr-seqaln-diff-line-match))
+		 (progn (forward-line -2)
+			(looking-at rgr-seqaln-diff-line-match)))
+	      (move-to-column col)
+	      (if (eolp)
+		  (forward-char -1))
+	      (point))
+	    (t
+	      (goto-char point)
+	      (message "This does not appear to be in seqaln output.")
+	      (sit-for 1)
+	      nil)))))
+
+;;;###autoload
+(defun rgr-seqaln-percent-homology (start end)
+  "With point and mark in the same alignment, report the pct identity between."
+  (interactive "r")
+  (let ((match-start (rgr-seqaln-find-match-point start))
+	(match-end (rgr-seqaln-find-match-point end))
+	(n-matches 0) (n-positions 0))
+    (message "[got %S and %S.]" match-start match-end)
+    (if (and match-start match-end)
+	(save-excursion
+	  (goto-char match-start)
+	  (while (<= (point) match-end)
+	    (cond ((eobp)
+		    (error "Not in an alignment any more."))
+		  ((eolp)
+		    (forward-line 3)
+		    (or (looking-at rgr-seqaln-diff-line-match)
+			(error "Not in an alignment any more."))
+		    (forward-char 6)))
+	    (if (= (char-after) ?|)
+		(setq n-matches (1+ n-matches)))
+	    (setq n-positions (1+ n-positions))
+	    (forward-char))
+	  (message "%d/%d matches, %.1f%%"
+		   n-matches n-positions (/ (* n-matches 100) n-positions))))))
 
 ;;;; Done.
 
