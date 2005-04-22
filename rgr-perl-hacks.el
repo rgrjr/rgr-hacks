@@ -349,9 +349,10 @@ the page."
   ;; These all require code defined in other rgr-*-hacks.el files.
   ;; Try to avoid shifting.  -- rgr, 20-Dec-96.
   (define-key perl-mode-map "-" 'rgr-c-electric-dash)
-  ;; Learn subroutine names.  -- rgr, 14-Dec-98.
+  ;; Learn subroutine names.  -- rgr, 14-Dec-98.  [insist on an open curly so
+  ;; that we don't pick up forward decls.  -- rgr, 22-Apr-05.]
   (make-local-variable 'rgr-definition-line-regexp)
-  (setq rgr-definition-line-regexp "^ *sub +")
+  (setq rgr-definition-line-regexp "^ *sub +.*{")
   (rgr-relearn-buffer-definition-names)
   ;; Standard modification history.
   (define-key perl-mode-map "\M-*" 'rgr-add-to-perl-modification-history)
@@ -367,7 +368,7 @@ the page."
 	((file-executable-p "/usr/local/bin/perl")
 	  (require 'executable)
 	  (executable-set-magic "/usr/local/bin/perl -w")))
-  (if (member rgr-emacs-major-version '(19 20 lucid19))
+  (if (not (eq rgr-emacs-major-version 18))
       ;; Shadow global comment-region-lisp binding.  [but this loads ilisp,
       ;; which is a bother . . .  -- rgr, 26-Jul-96.]  [replaced with my own
       ;; hack.  -- rgr, 7-Sep-99.]
