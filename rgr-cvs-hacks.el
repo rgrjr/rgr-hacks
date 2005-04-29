@@ -39,8 +39,9 @@
 	  ;; (message "[dir %S default %S]" dir default-directory)
 	  (if (and (eq major-mode 'text-mode)
 		   (string-match "^comment" (buffer-name))
-		   (equal default-directory
-			  (substring dir 0 (length default-directory))))
+		   (let ((dd-len (length default-directory)))
+		     (and (<= dd-len (length dir))
+			  (equal default-directory (substring dir 0 dd-len)))))
 	      (setq result (cons buffer result))))
 	(setq tail (cdr tail))))
     (nreverse result)))
