@@ -220,6 +220,9 @@ Useful in telnet/ssh sessions for propagating $XAUTHORITY."
 ;;;###autoload
 (defun rgr-comint-mode-hook ()
   "comint-mode is what shell-mode and telnet-mode are built on."
+  ;; always look for passwords.  this should be the global default, but it's
+  ;; not, and i can't always configure the site properly.  -- rgr, 28-Apr-05.
+  (add-hook 'comint-output-filter-functions 'comint-watch-for-password-prompt)
   ;; as if there aren't enough useless funky special characters to have to
   ;; remember to escape.  [This is not necessary in emacs 18.  -- rgr,
   ;; 21-Dec-94.]
