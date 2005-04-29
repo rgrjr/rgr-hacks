@@ -88,6 +88,30 @@ A Lisp code line is one that is nonblank and not entirely a comment."
 	       (buffer-name))
       count)))
 
+;;;; Statistics.
+
+;; [this is here for lack of a better place.  -- rgr, 29-Apr-05.]
+
+;;;###autoload
+(defun rgr-mean-and-sd (observations)
+  "Compute mean and standard deviation of a list of observations."
+  (let ((n 0) (sigma-x 0) (sigma-x^2 0))
+    (while observations
+      (let ((x (car observations)))
+	(setq n (1+ n))
+	(setq sigma-x (+ sigma-x x))
+	(setq sigma-x^2 (+ sigma-x^2 (* x x))))
+      (setq observations (cdr observations)))
+    (cond ((= n 0) (list 0 0))
+	  ((= n 1) (list sigma-x 0))
+	  (t
+	    (let ((mean (/ sigma-x n)))
+	      (list mean
+		    (sqrt (/ (+ sigma-x^2
+				(* -2 mean sigma-x)
+				(* n mean mean))
+			     (1- n)))))))))
+
 ;;;; Tags files and tables.
 
 ;;;###autoload
@@ -109,6 +133,8 @@ A Lisp code line is one that is nonblank and not entirely a comment."
 	(list
 	  (rgr-make-tags-table-list
 	    (append (list "/shared/mgi/oligo" "~/projects/mgi/oligo"
+			  "/usr/local/src/rogers/bmerc/pima-profile-0.1/src"
+			  "/usr/local/src/rogers/bmerc/PIMA-0.6_2"
 			  ;; [this works for SuSE 9.0.  -- rgr, 28-Jan-05.]
 			  "/usr/lib/perl5/site_perl/5.8.1/Bio"
 			  ;; [this is for SuSE 8.1.  -- rgr, 15-Jun-04.]
