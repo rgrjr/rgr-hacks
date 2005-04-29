@@ -241,7 +241,7 @@
 ;; [this rules out files in the CVS directory, TAGS files, normal emacs backup
 ;; and autosave files, and CVS ".#file.version" files.  -- rgr, 28-Feb-05.]
 (setq grep-find-command (concat "find . -type f "
-				"| grep -Ev '/\\.?#|~$|/TAGS$|/CVS/' "
+				"| grep -Ev '/\\.?#|~$|/TAGS$|/\.svn/|/CVS/' "
 				"| xargs -e grep -n -e "))
 (add-hook 'compilation-mode-hook 'rgr-compilation-mode-hook)
 (add-hook 'makefile-mode-hook 'rgr-makefile-mode-hook)
