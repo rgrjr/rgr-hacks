@@ -57,66 +57,124 @@
   ;; helper for rgr-weekly-intervals & rgr-compute-interval fns.
   (interactive "r\nP")
   (require 'time-date)
-  (let ((sigma-signs 0)
+  ;; This operates as a state machine with two (effectively infinite) parallel
+  ;; series of states, [I0, I1, I2, I3, ...] and [O0, O1, O2, O3 ...].  The I
+  ;; states corresond to "effectively in" and the O states to "effectively out".
+  ;; The numeric part of the state is carried by the sigma-signs counter; it
+  ;; reflects the number of concurrent logins at a given point.  The state
+  ;; transition logic is as follows:
+  ;;
+  ;;    1.  Start in the I0 state.
+  ;;
+  ;;    2.  Ordinary login increments the numeric portion without affecting the
+  ;; in/out bit.  The transition from I0 to I1 causes the associated event time
+  ;; to be recorded in pending-login-time.
+  ;;
+  ;;    3.  Similarly for ordinary logout, the numeric portion is decremented,
+  ;; and the transition from I1 to I0 causes the interval between
+  ;; pending-login-time and the event time to be accumulated in total.
+  ;;
+  ;;    4.  Logging "effectively out" transitions between I_n to O_n, for any n,
+  ;; and accumulates the pending interval if (plusp n).  It is an error if we
+  ;; are already in an O state (since we don't keep track of the "effective"
+  ;; depth).
+  ;;
+  ;;    5.  Finally, logging "effectively in" transitions between O_n to I_n,
+  ;; for any n, and records the event time in pending-login-time if (plusp n).
+  ;;
+  ;; If the final state is I_n where (plusp n), then we accumulate the interval
+  ;; between pending-login-time and now, and mention that in the generated
+  ;; message.
+  (let ((sigma-signs 0) (effectively-out nil)
 	(total nil) (pending-login-time nil))
     ;; No save-excursion so that if we get a syntax error, the user gets to
     ;; see where (but still has to guess within dates.)
     (goto-char start)
     (while (re-search-forward "^Logged " end t)
-      (let ((sign
+      (let* ((effectively-p nil)
+	     (sign
 	      (let ((direction (read (current-buffer))))
-		(if (eq direction 'effectively)
-		    (setq direction (read (current-buffer))))
+		(cond ((eq direction 'effectively)
+			(setq effectively-p t)
+		        (setq direction (read (current-buffer)))))
 		(cond ((eq direction 'in)
 			+1)
-		      ((eq direction 'out)
-			(if (= sigma-signs 0)
-			    (error "Logout without matching login."))
-			-1)
-		      (t
+		      ((not (eq direction 'out))
 			(error "Expected 'in' or 'out', but got '%s'."
-			       direction))))))
+			       direction))
+		      ((= sigma-signs 0)
+			(error "Logout without matching login."))
+		      (t
+			-1)))))
+	(cond (effectively-p
+		;; check consistency.
+		(if (and (= sign 1) (not effectively-out))
+		    (error "'Effectively in' without prior 'effectively out'."))
+		(if (and (= sign -1) effectively-out)
+		    (error "Duplicate 'effectively out'."))))
 	(if (not (eq (read (current-buffer)) 'on))
 	    (error "Expected 'on'."))
 	(let ((machine (read (current-buffer)))
 	      (at (read (current-buffer)))
-	      (terminal nil) (day nil))
+	      (terminal nil) (day nil) (time nil)
+	      (accumulate-p nil))
 	  (if (eq at 'via)
 	      (setq terminal (read (current-buffer))
 		    at (read (current-buffer))))
 	  (if (not (eq at 'at))
 	      (error "Expected 'at'."))
 	  (setq day (read (current-buffer)))
-	  (let ((time (date-to-time
-			(buffer-substring
-			  (point)
-			  (progn (end-of-line) (point))))))
-	    ;(message "Got %s %s on %s" sign time machine)
-	    ;; Only count times if transitioning to/from 0.  (Note that the
-	    ;; illegal zero-to-minus-one case has already been taken care of;
-	    ;; sigma-signs is never negative.)  -- rgr, 24-Apr-96.  [changed
-	    ;; from "never positive."  -- rgr, 16-Feb-05.]
-	    (if (zerop sigma-signs)
-		(setq pending-login-time time))
-	    (setq sigma-signs (+ sign sigma-signs))
-	    (if (zerop sigma-signs)
-		;; Accumulate this interval.
-		(let ((delta (subtract-time time pending-login-time)))
-		  (setq total (if total (add-time total delta) delta))
-		  (setq pending-login-time nil)))
-	    ;; (message "%S => %S total" time total)
-	    ))))
+	  (setq time (date-to-time
+		       (buffer-substring
+		         (point)
+		         (progn (end-of-line) (point)))))
+	  (message "Got %s%s %s on %s"
+		   sign (if effectively-p " (eff)" "") time machine)
+	  ;; Perform state transition.  We only count times if transitioning
+	  ;; between I0 and I1, or I_n and O_n for n>0.  (Note that the
+	  ;; illegal zero-to-minus-one case has already been taken care of;
+	  ;; sigma-signs is never negative.)  -- rgr, 24-Apr-96.  [changed
+	  ;; from "never positive."  -- rgr, 16-Feb-05.]
+	  (cond (effectively-p
+		  (if (and (> sigma-signs 0) (= sign +1))
+		      ;; O_n => I_n for n>0.
+		      (setq pending-login-time time))
+		  (setq effectively-out (not effectively-out))
+		  ;; check for I_n => O_n for n>0.
+		  (setq accumulate-p (and (= sign -1) (> sigma-signs 0))))
+		(t
+		  (if (zerop sigma-signs)
+		      ;; I0 => I1.
+		      (setq pending-login-time time))
+		  (setq sigma-signs (+ sign sigma-signs))
+		  (if (zerop sigma-signs)
+		      ;; I1 => I0.
+		      (setq accumulate-p t))))
+	  (if accumulate-p
+	      ;; Accumulate this interval.
+	      (let ((delta (subtract-time time pending-login-time)))
+		(setq total (if total (add-time total delta) delta))
+		(setq pending-login-time nil)))
+	  ;; (message "%S => %S total" time total)
+	  )))
     (goto-char end)
     (cond ((not (or total pending-login-time))
 	    (error "No intervals."))
-	  ((not (zerop sigma-signs))
+	  ((zerop sigma-signs))
+	  (pending-login-time
 	    ;; Assume the current time.
 	    (let ((delta (subtract-time (current-time) pending-login-time)))
-	      (setq total (if total (add-time total delta) delta)))))
+	      (setq total (if total (add-time total delta) delta))))
+	  ((not effectively-out)
+	    (message "[oops; no %S or %S, but %S is %S.]"
+		     'pending-login-time 'effectively-out
+		     'sigma-signs sigma-signs)
+	    (sit-for 2)))
     ;; (message "total %S" total)
     (let ((interval (rgr-print-interval (round (time-to-seconds total)))))
       (message "%s%s" interval
-	       (if (zerop sigma-signs)
+	       (if (or (zerop sigma-signs)
+		       effectively-out)
 		   ""
 		   " (assuming the last interval ends now)."))
       (and insert-p (insert interval))
