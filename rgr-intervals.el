@@ -2,7 +2,7 @@
 ;;;
 ;;;;   Miscellaneous interval commands.
 ;;;
-;;;    Modification history:
+;;;    [old] Modification history:
 ;;;
 ;;; added rgr-print-interval, rgr-parse-date.  -- rgr, 2-Mar-94.
 ;;; make rgr-insert-computed-interval use discus-parse-date.  -- rgr, 28-Mar-94.
@@ -20,6 +20,7 @@
 ;;; rgr-date-lines-today: new fn.  -- rgr, 12-Dec-02.
 ;;; rgr-date-lines-today: add autoload.  -- rgr, 9-Jan-03.
 ;;;
+;;; $Id$
 
 (defun rgr-make-interval-field (value)
   ;; returns a 2-digit string.  value must be < 100!
@@ -308,37 +309,5 @@ indentation of the rest of the line."
 	    (beginning-of-line)
 	    (insert (rgr-print-time delta-time) "\t")
 	    (forward-line)))))))
-
-;; Summing printed intervals.
-
-(defun rgr-sum-region-intervals (start end)
-  "Sum and insert intervals reflecting 8-hour days."
-  (interactive "r")
-  (let* ((digits "\\([0-9]+\\)")
-	 (interval-regexp (concat digits ":" digits ":" digits))
-	 (secs-per-day (* 24 60 60))
-	 (sum nil))
-    (save-excursion
-      (goto-char start)
-      (while (re-search-forward interval-regexp end t)
-	(let ((time (discus-parse-time (match-string 0))))
-	  (setq sum (if sum
-			(discus-date+ sum time)
-			(cons (floor time secs-per-day)
-			      (mod time secs-per-day)))))))
-    (cond ((null sum)
-	    (message "No intervals in the region."))
-	  (t
-	    (let ((secs-per-day (* 8 60 60))
-		  (days (car sum))
-		  (secs (cdr sum)))
-	      (setq days (* days 3))
-	      (if (> secs secs-per-day)
-		  (setq days (+ days (floor secs secs-per-day))
-			secs (mod secs secs-per-day)))
-	      (insert (if (> days 0)
-			  (format "%d-" days)
-			  "")
-		      (discus-print-time secs)))))))
 
 (provide 'rgr-intervals)
