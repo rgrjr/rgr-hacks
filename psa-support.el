@@ -188,8 +188,8 @@ the lost.htm page, install it at 'http://bmerc-www.bu.edu/psa/lost.htm',
 and bring this page up in a browser."
   (interactive)
   (psa-require-psa-server)
-  (let* ((web-dir "/usr/local/etc/httpd/htdocs/psa-new/")
-	 (web-install-dir (expand-file-name "../psa" web-dir))
+  (let* ((web-dir (expand-file-name "~psa/psa-test/html"))
+	 (web-install-dir "/srv/www/htdocs/psa")
 	 (web-lost-database (expand-file-name "lost.tbl" web-dir))
 	 (psa-lost-database (expand-file-name "~psa/lost.tbl")))
     (switch-to-buffer (find-file-noselect web-lost-database))
