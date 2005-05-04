@@ -247,7 +247,7 @@ if (e.g.) the pathname does not indicate a server."
 (defun rgr-fasta-goto-start-with-offset ()
   (cond ((save-excursion
 	   (beginning-of-line)
-	   (looking-at "^[ \t]*\\([^ \t\n:]+:[ \t]*\\)\\([0-9]+\\) *"))
+	   (looking-at "^[ \t]*\\([^ \t\n:]+:[ \t]*\\)?\\([0-9]+\\) *"))
 	  (goto-char (match-end 0))
 	  (1- (string-to-int (match-string 2))))
 	((or (looking-at "^>")
