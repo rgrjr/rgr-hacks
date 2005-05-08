@@ -443,38 +443,27 @@ keys at all."
 	 (match-string 1))))
 
 (defun vm-maildir-date-string (date)
-  ;; Returns the Discus date as a string, in "Day Mon dd hh:mm:ss yyyy" format.
-  ;; All fields are fixed width, so the string returned is always 24 characters
+  ;; Convert the date to a string in "Day Mon dd hh:mm:ss yyyy" format.  All
+  ;; fields are fixed width, so the string returned is always 24 characters
   ;; long.
-  (let* ((days (car date))
-	 (seconds (cdr date))
-	 (day days) (year 0) (leap-year-p nil) (year-length 365) (ndays 0)
-	 (month-tail discus-month-lengths))
-    ;; Get the year right, decrementing day.
-    (while (>= day year-length)
-      (setq day (- day year-length))
-      (setq year (1+ year))
-      (setq leap-year-p (zerop (% year 4)))
-      (setq year-length (if leap-year-p 366 365)))
-    ;; Now get the month right.
-    (while (and month-tail
-		(>= day
-		    (setq ndays (+ (cdr (car month-tail))
-				   (if (and leap-year-p
-					    (eq (car (car month-tail)) 'Feb))
-				       1 0)))))
-      (setq day (- day ndays))
-      (setq month-tail (cdr month-tail)))
-    (concat (symbol-name (car (car month-tail))) " " (format "%2d" (1+ day)) " "
-	    (discus-print-time seconds) " " (format "%d" (+ 1900 year)))))
+  (require 'timezone)
+  (let* ((l (decode-time date))
+	 ;(time (+ (car l) (* 60 (+ (car (cdr l)) (* 60 (car (cdr (cdr l))))))))
+	 (h (car l)) (m (car (cdr l))) (s (car (cdr (cdr l))))
+	 (l (cdr (cdr (cdr l))))
+	 (day (car l)) (month (car (cdr l))) (year (car (cdr (cdr l))))
+	 (l (cdr (cdr (cdr l))))
+	 (dow (car l)) (dst (car (cdr l))) (timezone (car (cdr (cdr l)))))
+    ;; (timezone-make-arpa-date year month day time (/ timezone 3600))
+    (format "%s %s %02d %04d %02d:%02d:%02d"
+	    (aref ["Sun" "Mon" "Tue" "Wed" "Thu" "Fri" "Sat"] dow)
+	    (capitalize (car (rassq month timezone-months-assoc)))
+	    day year h m s)))
 
 (defun vm-maildir-file-date (file)
-  (condition-case error
-      (progn (require 'discus-unix-date)
-	     (let ((date (nth 5 (file-attributes file))))
-	       (and date
-		    (vm-maildir-date-string (discus-convert-unix-date date)))))
-    (error nil)))
+  (let ((date (nth 5 (file-attributes file))))
+    (and date
+	 (vm-maildir-date-string date))))
 
 (defun vm-maildir-insert-message (file)
   (insert-file-contents file)
