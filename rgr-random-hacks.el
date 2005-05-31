@@ -244,8 +244,26 @@ if (e.g.) the pathname does not indicate a server."
 ;; By looking for offsets at the start of the line, this sometimes works for
 ;; random sequence alignments as well.
 
+(defvar rgr-fasta-subscripted-locus-re
+        (let ((captured-digits "\\([0-9]+\\)"))
+	  (concat "^[ \t]*\\([^][ \t\n:]+\\["
+		  captured-digits ":" captured-digits "\\]:?\\) *")))
+
 (defun rgr-fasta-goto-start-with-offset ()
   (cond ((save-excursion
+	   (beginning-of-line)
+	   (looking-at rgr-fasta-subscripted-locus-re))
+	  ;; This captures lines that start "foo[287:503]:  178 PRXSQGL...",
+	  ;; where the 178 is relative to the 287 subsequence starting index.
+	  ;; The offset is (+ (1- 287) (1- 178)) = 463 here, so P is 464.
+	  (let ((offset (1- (string-to-int (match-string 2)))))
+	    (goto-char (match-end 0))
+	    (cond ((looking-at "\\([0-9]+\\) *")
+		    (goto-char (match-end 0))
+		    (+ offset (1- (string-to-int (match-string 1)))))
+		  (t
+		    offset))))
+	((save-excursion
 	   (beginning-of-line)
 	   (looking-at "^[ \t]*\\([^ \t\n:]+:[ \t]*\\)?\\([0-9]+\\) *"))
 	  (goto-char (match-end 0))
