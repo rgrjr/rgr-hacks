@@ -15,6 +15,8 @@
 	  ("\\.ppt$" "OOo-impress")
 	  ("\\.doc$" "abiword")
 	  ("\\.pdf$" "acroread")
+	  ("\\.dia$" "dia")
+	  ;; ("\\.vsd$" "dia")		;; [doesn't work.  -- rgr, 27-Apr-05.]
 	  ;; [this doesn't work; ffap hacks it.  -- rgr, 24-Dec-04.]
 	  ;; ("^view:///.*\.html" "mozilla")
 	  ;; image extensions.
