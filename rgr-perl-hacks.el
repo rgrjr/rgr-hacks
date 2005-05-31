@@ -356,7 +356,6 @@ the page."
   (rgr-relearn-buffer-definition-names)
   ;; Standard modification history.
   (define-key perl-mode-map "\M-*" 'rgr-add-to-perl-modification-history)
-  ;; This is also inherited from the global map, but define it here for sure.
   (define-key perl-mode-map "\M-q" 'rgr-fill-script-comment)
   ;; Put in interpreter magic.  -- rgr, 29-Apr-97.  [but not in library modules.
   ;; -- rgr, 16-May-97.]  [/usr/bin/perl is more standard, so prefer that.  --
