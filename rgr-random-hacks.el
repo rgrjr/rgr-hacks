@@ -32,48 +32,6 @@
 
 ;;;; Autoload-generating commands.
 
-(defvar rgr-hacks-public-autoloads
-	(expand-file-name "rgr-public-hacks.el" rgr-emacs))
-(defvar rgr-hacks-public-files
-	'("bmerc-hacks.el"
-	  "rgr-html-hacks.el" "rgr-html-head.el" "rgr-html-nest.el"
-	  "rgr-html-boilerplate.el" "rgr-html-tags.el")
-  "Files in the same directory as rgr-hacks-public-autoloads that are
-considered public.  rgr-update-public-autoloads puts their autoload
-forms there.")
-
-;;;###autoload
-(defun rgr-update-public-autoloads ()
-  ;; Update rgr-hacks-public-autoloads with all the current autoloads in the
-  ;; rgr-hacks-public-files set, and no old ones.  [based on the
-  ;; update-autoloads-from-directory function (19.31 version), which it can't
-  ;; call because it needs just a subset of files.  -- rgr, 23-Mar-98.]
-  ;; [updated slightly to match 20.7 (and 20.4) version.  -- rgr, 21-Dec-00.]
-  (interactive) 
-  (require 'autoload)
-  (let ((files (append rgr-hacks-public-files nil))
-	(autoloads-file rgr-hacks-public-autoloads)
-	(dir (file-name-directory rgr-hacks-public-autoloads)))
-    (save-excursion
-      (set-buffer (find-file-noselect autoloads-file))
-      (save-excursion
-	(goto-char (point-min))
-	(while (search-forward generate-autoload-section-header nil t)
-	  (let* ((form (autoload-read-section-header))
-		 (file (nth 3 form)))
-	    (cond ((not (stringp file)))
-		  ((not (file-exists-p (expand-file-name file dir)))
-		    ;; Remove the obsolete section.
-		    (let ((begin (match-beginning 0)))
-		      (search-forward generate-autoload-section-trailer)
-		      (delete-region begin (point))))
-		  (t
-		    (update-file-autoloads file)))
-	    (setq files (delete file files)))))
-      ;; Elements remaining in FILES have no existing autoload sections.
-      (mapcar 'update-file-autoloads files)
-      (save-buffer))))
-
 (defun rgr-update-directory-autoloads (directory &optional file)
   ;; internal grinder for the rgr-update-autoloads and
   ;; rgr-batch-update-autoloads fns.  -- rgr, 21-Dec-00.
