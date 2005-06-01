@@ -12,12 +12,11 @@
   ;; change "*" to "." for backups obsoleted by this one.
   (let ((other-level nil))
     (beginning-of-line)
-    (while (and (looking-at "^[ \t]*\\([.*]\\)")
-		(setq other-level (save-excursion
-				    (goto-char (match-end 0))
-				    (- (current-column) 3)))
+    (while (and (looking-at "^[ \t]*\\([^ \t\n]\\)[ \t]*\\([0-9]\\) ")
+		(setq other-level (string-to-int (match-string 2)))
 		(<= level other-level))
-      ;; (message "[other-level %s]" other-level)
+      ;; [normally, the flag char is one of ".*x".  -- rgr, 1-Jun-05.]
+      ;; (message "[other-level %s, flag char %S]" other-level (match-string 1))
       (if (equal (match-string 1) "*")
 	  (replace-match "." t t nil 1))
       (forward-line -1))))
