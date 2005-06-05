@@ -123,14 +123,20 @@ inboxes/maildirs (so be careful of . and ..!).")
     (while directory-tail
       (let* ((entry (car directory-tail))
 	     (directory (if (consp entry) (car entry) entry))
-	     (tail (cond ((file-directory-p directory)
+	     (tail (cond ((not (file-readable-p directory))
+			   nil)
+			 ((not (file-directory-p directory))
+			   (list directory))
+			 ((file-directory-p (expand-file-name "new" directory))
+			   ;; maildir
+			   (list directory))
+			 (t
+			   ;; normal directory of inboxes.
 			   (directory-files directory t
 					    ;; extract regexp
 					    (if (consp entry)
 						(car (cdr entry))
-						v+q-mbox-regexp)))
-			 ((file-readable-p directory)
-			   (list directory))))
+						v+q-mbox-regexp)))))
 	     (dir-printed-p nil))
 	(while tail
 	  ;; See if there's any mail in inbox.
