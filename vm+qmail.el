@@ -127,7 +127,12 @@ inboxes/maildirs (so be careful of . and ..!).")
 			   nil)
 			 ((not (file-directory-p directory))
 			   (list directory))
-			 ((file-directory-p (expand-file-name "new" directory))
+			 ((and (file-directory-p
+				 (expand-file-name "new" directory))
+			       ;; [kludge to rule out maildirs named "new".  --
+			       ;; rgr, 6-Jun-05.]
+			       (not (file-directory-p
+				      (expand-file-name "new/new" directory))))
 			   ;; maildir
 			   (list directory))
 			 (t
