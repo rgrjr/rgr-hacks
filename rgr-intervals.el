@@ -129,7 +129,7 @@
 		       (buffer-substring
 		         (point)
 		         (progn (end-of-line) (point)))))
-	  (message "Got %s%s %s on %s"
+	  '(message "Got %s%s %s on %s"
 		   sign (if effectively-p " (eff)" "") time machine)
 	  ;; Perform state transition.  We only count times if transitioning
 	  ;; between I0 and I1, or I_n and O_n for n>0.  (Note that the
