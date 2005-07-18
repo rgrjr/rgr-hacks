@@ -278,6 +278,17 @@ if (e.g.) the pathname does not indicate a server."
 (defun rgr-seqaln-find-match-point (point)
   (save-excursion
     (goto-char point)
+    (while (and (not (eobp))
+		(looking-at "^$\\|Score:"))
+      (forward-line))
+    (cond ((eobp)
+	    ;; Oops; we are at the end.  Move backward to the end of the last
+	    ;; nonblank line.
+	    (while (and (not (bobp)) (eolp))
+	      (forward-line -1))
+	    (if (bobp)
+		(error "Empty buffer."))
+	    (end-of-line)))
     (let ((col (current-column)))
       (if (< col 6)
 	  (setq col 6))
@@ -294,7 +305,7 @@ if (e.g.) the pathname does not indicate a server."
 	    (t
 	      (goto-char point)
 	      (message "This does not appear to be in seqaln output.")
-	      (sit-for 1)
+	      '(sit-for 1)
 	      nil)))))
 
 ;;;###autoload
@@ -304,7 +315,7 @@ if (e.g.) the pathname does not indicate a server."
   (let ((match-start (rgr-seqaln-find-match-point start))
 	(match-end (rgr-seqaln-find-match-point end))
 	(n-matches 0) (n-positions 0))
-    (message "[got %S and %S.]" match-start match-end)
+    ;; (message "[got %S and %S.]" match-start match-end)
     (if (and match-start match-end)
 	(save-excursion
 	  (goto-char match-start)
@@ -320,8 +331,22 @@ if (e.g.) the pathname does not indicate a server."
 		(setq n-matches (1+ n-matches)))
 	    (setq n-positions (1+ n-positions))
 	    (forward-char))
-	  (message "%d/%d matches, %.1f%%"
-		   n-matches n-positions (/ (* n-matches 100) n-positions))))))
+	  (message "%s:  %d/%d matches, %.1f%%"
+		   (buffer-name) n-matches n-positions
+		   (/ (* n-matches 100) n-positions))))))
+
+'(defun rgr-foo ()
+  ;; Batch percent identity computation.
+  (interactive)
+  (let ((files (directory-files
+		"/home/shared/monsanto/rogers/icp/profile/collin"
+		t "\\.seqaln$")))
+    (while files
+      (let ((file (car files)))
+	(save-excursion
+	  (set-buffer (find-file-noselect file))
+	  (rgr-seqaln-percent-homology (point-min) (point-max))))
+      (setq files (cdr files)))))
 
 ;;;; Done.
 
