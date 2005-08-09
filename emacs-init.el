@@ -40,6 +40,7 @@
 ;;; oops; mail-default-headers is bound by sendmail.el.  -- rgr, 24-Mar-03. 
 ;;; clear imenu-scanning-message.  -- rgr, 25-Mar-03.
 ;;;
+;;; $Id$
 
 (defvar rgr-emacs (expand-file-name
 		    ;; use explicit user id so su works.
@@ -47,14 +48,6 @@
 (or (member rgr-emacs load-path)
     (setq load-path (cons rgr-emacs load-path)))
 (load (expand-file-name "rgr-hacks-autoloads.el" rgr-emacs))
-;; For Discus.  [disabled.  -- rgr, 15-Feb-05.]
-'(let* ((discus (expand-file-name "../discus" rgr-emacs))
-       (loaddefs (expand-file-name "loaddefs.el" discus)))
-  (cond ((file-readable-p loaddefs)
-	  (or (member discus load-path)
-	      (setq load-path (cons discus load-path)))
-	  (load loaddefs)
-	  t)))
 ;; For other packages.
 (defvar rgr-imported-packages (expand-file-name "../imported" rgr-emacs)
   "Directory for other private emacs packages.")
@@ -238,7 +231,7 @@
 (add-hook 'text-mode-hook 'rgr-text-mode-hook)
 (add-hook 'c-mode-hook 'rgr-c-mode-hook)
 (setq rgr-c-use-electric-dash-p t)
-;; [this rules out files in the CVS directory, TAGS files, normal emacs backup
+;; [this rules out files in CVS/SVN directories, TAGS files, normal emacs backup
 ;; and autosave files, and CVS ".#file.version" files.  -- rgr, 28-Feb-05.]
 (setq grep-find-command (concat "find . -type f "
 				"| grep -Ev '/\\.?#|~$|/TAGS$|/\.svn/|/CVS/' "
@@ -298,16 +291,20 @@
 		  '("rogers@modulargenetics.dnsalias.com"))
 	      '("rogers@huxley.bu.edu")))
 (if (eq rgr-site 'home)
-    ;; Enable tunnelling to make the MGI database and intranet Web server
+    ;; Enable tunnelling to make the MGI database and intranet Web servers
     ;; available from home.  This requires corresponding ~/.mgi.conf and
     ;; /usr/sbin/redirect.pl hacks to make it work.  -- rgr, 29-Feb-04.
     (setq ssh-per-host-option-alist
 	  '(("modulargenetics\\.dnsalias\\.com$"
-	     "-L" "9123:carthage:3306" "-L" "8081:alexandria:80"))))
+	     "-L" "9123:carthage:3306"
+	     "-L" "8081:alexandria:80" "-L" "8082:karnak:80"))))
 
 ;; cvs hacks.  -- rgr, 6-Aug-04.
 (define-key text-mode-map "\C-c+" 'rgr-cvs-plus)
 (add-hook 'log-edit-mode-hook 'rgr-cvs-log-edit-hook)
+;; svn hacks.  -- rgr, 1-May-05.
+(and (eq rgr-site 'home)
+     (require 'local-vc-svn))
 
 ;; Change TERM=emacs into something that Tru64 "man" can deal with.  It refuses
 ;; to run if it can't recognize the terminal type, which is broken; it should
