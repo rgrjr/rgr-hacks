@@ -12,6 +12,7 @@
 ;;;###autoload
 (defun rgr-pir-mode-hook ()
   (setq pir-blink-matching-block nil)	;; this is buggy.
+  (setq pir-electric-colon-p 'newline)	;; enable newline insertion
   (define-key pir-mode-map "\M-q" 'rgr-fill-comment)
   (modify-syntax-entry ?_ "_" pir-mode-syntax-table))
 
