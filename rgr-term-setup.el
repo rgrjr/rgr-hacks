@@ -55,13 +55,7 @@
   ;; C-M-f, which is consistent between X11 and terminals.  -- rgr, 23-Jan-99.]
   '(cond ((rgr-emacs-version-p 19 30)
 	  (global-set-key "\C-x\C-f" 'find-file-at-point)
-	  (global-set-key "\C-x4\C-f" 'ffap-other-window)))
-  ;; Now set up a mail peeker, since I don't have xbiff at home.  --
-  ;; rgr, 7-Feb-96.  [but don't do this when su.  -- rgr, 30-Mar-96.]
-  ;; [don't do this at all until we can teach it about maildirs.  -- rgr,
-  ;; 3-Oct-04.]
-  '(if (equal (user-login-name) (user-real-login-name))
-      (run-at-time "60 sec" 120 'rgr-check-mail)))
+	  (global-set-key "\C-x4\C-f" 'ffap-other-window))))
 
 (defun rgr-vt200-term-setup ()
   ;; vt200 emulation from NCSA Telnet.

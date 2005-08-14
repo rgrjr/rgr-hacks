@@ -36,8 +36,6 @@ rgr-hacks-compile-module (see below).")
 	  ;; file is supposed to do.  -- rgr, 23-Apr-03.
 	  ("rgr-allegro" load-p nil)
 	  "rgr-bib"
-	  ;; [should try to remove this dependency.  -- rgr, 26-Apr-03.]
-	  ("rgr-check-mail" require (discus-date))
 	  "rgr-compile-hacks"
 	  "rgr-dired"
 	  "rgr-elisp-hacks"

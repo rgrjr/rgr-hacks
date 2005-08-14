@@ -2,7 +2,6 @@ ange-ftp-hacks.el
 c-hacks.el
 emacs-init.el
 rgr-abbrev-completion.el
-rgr-check-mail.el
 rgr-compile-hacks.el
 rgr-dired.el
 rgr-elisp-hacks.el
