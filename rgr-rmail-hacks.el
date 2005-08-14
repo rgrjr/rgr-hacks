@@ -8,9 +8,7 @@
 ;;;
 ;;; Actually, this still leaves an undefined function warning for the
 ;;; rgr-install-rmail-commands function, defined by rgr-rmail-18.el, which can't
-;;; be loaded in emacs 19.  -- rgr, 25-Jan-95.  And for jan-mail-message-rgr,
-;;; which refers to rmail-buffer freely (which is not declared by rmail).  --
-;;; rgr, 28-Mar-96.  [got rid of jan-mail-message-rgr.  -- rgr, 18-Nov-98.]
+;;; be loaded in emacs 19.  -- rgr, 25-Jan-95.
 ;;;
 ;;;    Modification history:
 ;;;
@@ -27,6 +25,7 @@
 ;;; rgr-rmail-mode-hook: move mail-yank-ignored-headers stuff to site-start.el
 ;;;	file.  -- rgr, 16-Feb-99.
 ;;;
+;;; $Id$
 
 ;; Load rmailsum, because I'm going to use it anyway, and because I will want to
 ;; define commands in rmail-summary-mode-map.  (can't require this, because the
@@ -52,97 +51,6 @@ buffer visiting that file."
 	(while (> n 0)
 	  (rmail-summary-delete-forward)
 	  (setq n (1- n))))))
-
-;;;; Old stuff.
-
-;; [no longer needed.  -- rgr, 18-Nov-98.]
-'(defun jan-mail-message-rgr ()
-  "Append the current RMAIL message to the ~/mail/jan.text file.
-Named so I can type 'M-x jan' to invoke this."
-  (interactive)
-  (let ((local-rmail-buffer (if (eq major-mode 'rmail-summary-mode)
-				rmail-buffer
-				(current-buffer))))
-    (save-excursion
-      (set-buffer (find-file-noselect "~/mail/jan.text"))
-      (goto-char (point-max))
-      (insert "------------------------------------"
-	      "------------------------------------\n")
-      (insert-buffer local-rmail-buffer)
-      ;; insert-buffer leaves point at the beginning, and pushes the mark at the
-      ;; end, so we need to do C-u Space to get to the end.
-      (goto-char (mark))
-      (pop-mark)
-      (insert "\n"))))
-
-(defun rgr-snarf-line (tag)
-  (save-excursion
-    (if (re-search-forward tag nil t)
-	(progn
-	  (beginning-of-line)
-	  (buffer-substring (point)
-			    (progn
-			      (forward-line)
-			      (point)))))))
-
-(defun psa-send-label-bug-reply ()
-  "In rmail, generates an explanatory reply to an 'Expected a label' response.
-Heuristicates the message body, and leaves you in mail mode, as via
-rmail-reply."
-  (interactive)
-  (cond ((eq major-mode 'rmail-mode)
-	 (rmail-reply t))
-	((eq major-mode 'rmail-summary-mode)
-	 (rmail-summary-reply t))
-	(t
-	 (error "Must be in rmail for this to work.")))
-  (let (;; (*psa-bindings* nil) (request-id nil)
-	(message nil) (to-address nil))
-    ;; Get the headers and "interesting" part of the body.
-    (save-excursion 
-      (set-buffer mail-reply-buffer)
-      (goto-char (point-min))
-      (save-excursion
-	(re-search-forward "^To: *\\(.*\\)$")
-	(setq to-address (buffer-substring (match-beginning 1) (match-end 1))))
-      (setq message (concat (rgr-snarf-line "^Date: ")
-			    (rgr-snarf-line "^From: ")
-			    (rgr-snarf-line "^To: ")
-			    "\n"))
-      (search-forward "We regret")
-      (beginning-of-line)
-      (let ((start (point)))
-	(search-forward "\"" nil nil 2)
-	(setq message (concat message
-			      (buffer-substring start (point))
-			      " . . .\n")))
-      (search-forward "Syntax errors")
-      (beginning-of-line)
-      (let ((start (point)))
-	(forward-paragraph)
-	(setq message (concat message "\n"
-			      (buffer-substring start (point))
-			      "\n"))))
-    (progn
-      ;; Fixup reply headers.
-      (goto-char (point-min))
-      (replace-regexp "^To: .*$" (concat "To: " to-address))
-      (replace-regexp "^Subject: .*$"
-		      "Subject: Bug in psa-request WWW interface")
-      (goto-char (point-max))
-      (let ((start (point)))
-	(insert message)
-	(indent-rigidly start (point) 4))
-      (insert "Your request was rejected by the mail server due to a bug in the
-psa-request WWW interface, which failed to require you to fill in the
-\"Subject\" field.  Please resubmit your request, adding a short \"Subject\"
-string, which will be used to label plots and graphs.  We apologize for
-the inconvenience, and hope you find our server useful.
-
-					-- Bob Rogers
-					   rogers@darwin.bu.edu
-					   BMERC, 617-353-7123
-"))))
 
 ;;;; Hook function.
 
