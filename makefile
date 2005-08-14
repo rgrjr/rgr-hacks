@@ -16,7 +16,6 @@ public-source = matlab-hacks.el bmerc-hacks.el \
 		rgr-html-hacks.el rgr-html-head.el rgr-html-nest.el \
 		rgr-html-boilerplate.el rgr-html-tags.el
 public-bins = ${public-source:%.el=%.elc}
-public-autoloads = rgr-public-hacks.el
 # Install source, autoloads, and compiled files.
 install-files = ${public-source} ${public-bins}
 
@@ -46,7 +45,7 @@ bootcamp-compile-files = ange-ftp-hacks.el c-hacks.el html-helper-mode.el \
 	rgr-mouse.el rgr-perl-hacks.el \
 	rgr-shell-hacks.el rgr-tcl.el rgr-term-setup.el sql.el tcl.el
 bootcamp-source-files = ${bootcamp-compile-files} dot-emacs.el emacs-init.el \
-	from-site-start.el rgr-mouse-18.el rgr-mouse-lemacs19.el \
+	from-site-start.el rgr-mouse-18.el \
 	discus/discus-compile.el
 # Note that we have to trust that everything is compiled correctly, since not
 # everything has the right eval-when-compile forms.  -- rgr, 3-Oct-99.
