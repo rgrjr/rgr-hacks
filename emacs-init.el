@@ -107,7 +107,8 @@
 
 (defun rgr-ange-ftp-load-hook ()
   ;; [may need cleaning up, should probably go elsewhere.  -- rgr, 13-Apr-00.]
-  (require 'ange-ftp-hacks)
+  ;; [the ange-ftp-hacks stuff is no longer very useful.  -- rgr, 13-Aug-05.]
+  ;; (require 'ange-ftp-hacks)
   (and (string-match (regexp-quote "\\|\\.ps$")
 		     ange-ftp-binary-file-name-regexp)
        ;; Don't treat PostScript as binary.
