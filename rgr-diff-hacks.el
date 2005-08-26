@@ -23,7 +23,7 @@
 
 (require 'diff)
 
-(defun rgr-diff-internal (old new &optional switches)
+(defun rgr-diff-internal (old new &optional switches new-file-is-temp-p)
   ;; based on the discus-diff function, with a few tricks from the diff
   ;; function.
   (let* ((old-alt (file-local-copy old))
@@ -42,6 +42,17 @@
       (apply (function call-process) diff-command nil (current-buffer) t args)
       (if old-alt
 	  (delete-file old-alt))
+      (if new-file-is-temp-p
+	  ;; Replace the "new" file name with the old file name in the output.
+	  ;; Since the new file is a temporary file, this is necessary to get
+	  ;; diff-mode commands to operate on the correct file.  [bug:  this
+	  ;; regexp only works for "diff -u".  -- rgr, 24-Aug-05.]
+	  (save-excursion
+	    (goto-char (point-min))
+	    (while (re-search-forward (concat "^\\+\\+\\+ "
+					      (regexp-quote new) "\t")
+				      nil t)
+	      (replace-match (concat "+++ " old "\t") t t))))
       (diff-mode)
       (current-buffer))))
 
@@ -49,23 +60,19 @@
 (defun rgr-quick-source-compare ()
   "Run diff on a buffer and the disk version of the file."
   (interactive)
-  (let ((file (or (buffer-file-name)
-		  (error "Not a file buffer.")))
-	(tmp (make-temp-name "/tmp/rgr-diff-"))
-	(result nil) (finished-p nil))
+  (let* ((file (or (buffer-file-name)
+		   (error "Not a file buffer.")))
+	 (tmp-dir (or temporary-file-directory (getenv "TMPDIR")
+		      (getenv "TMP") "/tmp"))
+	 (tmp (make-temp-name (expand-file-name "rgr-diff-" tmp-dir))))
     (unwind-protect
 	(progn (save-restriction
 		 (widen)
 		 (write-region (point-min) (point-max) tmp))
-	       (setq result (rgr-diff-internal file tmp))
-	       (setq finished-p t))
-      ;; If rgr-diff-internal returned, then we can (and must) rely on the
-      ;; compilation-finish-function to clean up the temp file.
-      (if (not finished-p)
-	  (condition-case ignore
-	      (delete-file tmp)
-	    (error nil))))
-    result))
+	       (rgr-diff-internal file tmp nil t))
+      (condition-case ignore
+	  (delete-file tmp)
+	(error nil)))))
 
 ;;;###autoload
 (defun rgr-diff-mode-hook ()
