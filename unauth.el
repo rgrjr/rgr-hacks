@@ -298,17 +298,41 @@ start at most one emacs per day."
 	      last-year (1- last-year)))
     (format "/var/log/messages.%04d%02d.log" last-year last-month)))
 
+(defun rgr-unauth-parse-date (date)
+  ;; [it's a pain that we have to do this, but date-to-time can't deal with
+  ;; dates that are incompletely specified.  (timezone-parse-date completely
+  ;; punts.)  -- rgr, 7-May-05.]
+  (cond ((string-match (concat "^[1-3]?[0-9] [a-zA-Z][a-zA-Z][a-zA-Z] "
+			       "[0-9][0-9][0-9][0-9]$")
+		       date)
+	  ;; This is the format that rgr-unauth-scarf-report-date attempts to
+	  ;; produce.  [for some reason, it doesn't get the date right unless
+	  ;; there is also a time.  -- rgr, 14-Aug-05.]
+	  (date-to-time (concat date " 12:00:01")))
+	((string-match "^\\([^ ][^ ][^ ]\\) +\\([0-9]+\\)$" date)
+	  ;; horrible kludge
+	  (date-to-time (concat (match-string 2 date) " " (match-string 1 date)
+				" 2005 12:00:01")))
+	(t
+	  (error "foo"))))
+
+;; (date-to-time "8 Aug 2005") (14445 17280)
+;; (date-to-time "8 Aug 2005 12:00:01") (17143 18692)
+
 (defun rgr-unauth-relative-date-phrase (date)
   (if (stringp date)
-      (let* ((day (car (discus-parse-date date 'past)))
-	     (today (car (discus-parse-date (current-time-string))))
+      (let* ((day (time-to-days (rgr-unauth-parse-date date)))
+	     (today (time-to-days (current-time)))
 	     (delta (- today day)))
+	'(message "[date %S => day %S, today => %S, delta = %S]"
+		 date day today delta)
 	(cond ((= delta -1) "tomorrow")
 	      ((< delta 0) "some time in the near future")
 	      ((= delta 0) "today")
 	      ((= delta 1) "yesterday")
 	      ((= delta 2) "the day before yesterday")
-	      (t "several days ago")))
+	      ((< delta 7) "several days ago")
+	      (t "recently")))
       ;; say something reasonable if the caller couldn't find a date in the log.
       "recently"))
 
@@ -611,9 +635,38 @@ so it generally keeps time within a fraction of a second."))
 		(car data)))
 
 (defun rgr-unauth-scarf-report-date ()
+  ;; Get the day of the year for the current block of text.  We try to return
+  ;; the form "15 Aug 2005" if possible, but we may have to settle for "Aug 15"
+  ;; instead.  May also return nil if we're in a wierd place.
   (save-excursion
-    (if (re-search-backward "^[A-Z][a-z][a-z] [ 0-9][0-9]:" nil t)
-	(buffer-substring (match-beginning 0) (1- (match-end 0))))))
+    (let ((raw-date
+	    (and (re-search-backward "^\\([A-Z][a-z][a-z]\\) +\\([0-9]+\\):"
+				     nil t)
+		 (buffer-substring (match-beginning 1) (match-end 2))))
+	  (message-date
+	    (save-match-data
+	      ;; don't erase the raw-date match data.
+	      (and (let ((case-fold-search t))
+		     (re-search-backward "^Date: +\\(.*\\)" nil t))
+		   (match-string 1)))))
+      (cond ((and raw-date message-date)
+	      ;; Use the message date to figure out the year, and add that to
+	      ;; the raw report date.
+	      (let* ((raw-month (match-string 1))	;; from raw-date match.
+		     (raw-day (match-string 2))
+		     (parsed-date (parse-time-string message-date))
+		     (message-year (nth 5 parsed-date))
+		     (report-year (if (and (= (nth 4 parsed-date) 1)
+					   (string-match raw-date "Dec"))
+				      ;; January message for December log entry.
+				      (1- message-year)
+				      ;; Same year for both.
+				      message-year)))
+		;; (message "Date %S => %S" message-date report-year)
+		(format "%s %s %d" raw-day raw-month report-year)))
+	    (t
+	      ;; Can't do much about this.
+	      raw-date)))))
 
 (defun rgr-unauth-summarize-attempt-alist (attempt-alist)
   ;; make a string that summarized the name and counts of each attempt alist
