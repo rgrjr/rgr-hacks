@@ -65,8 +65,7 @@ rgr-hacks-compile-module (see below).")
 	  "rgr-log-view"
 	  "rgr-rmail-hacks"
 	  "rgr-shell-hacks"
-	  ;; [should try to remove this dependency.  -- rgr, 26-Apr-03.]
-	  ("rgr-squid-log" require (discus-date))
+	  "rgr-squid-log"
 	  "rgr-tcl"
 	  "rgr-tripwire-minus-rpm"
 	  ("rgr-w3-hacks" require (w3))
