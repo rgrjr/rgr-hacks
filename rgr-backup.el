@@ -35,9 +35,10 @@
       (and (looking-at " *DUMP: Date of this level \\([0-9]\\) dump: \\(.*\\)")
 	   (setq level (string-to-int (match-string 1))
 		 date (match-string 2)))
-      (and (save-excursion
-	     (re-search-forward "blocks (\\([0-9.]+\\)MB) on " nil t))
-	   (setq size (car (read-from-string (match-string 1)))))
+      (if (save-excursion
+	    (re-search-forward "blocks (\\([0-9.]+\\)MB) on " nil t))
+	  (setq size (car (read-from-string (match-string 1))))
+	  (error "Can't find backup size; did it complete successfully?"))
       '(message "[got level %S date %S size %S for part %S]"
 	       level date size partition)
       (save-excursion
