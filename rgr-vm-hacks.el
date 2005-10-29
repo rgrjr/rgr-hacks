@@ -337,7 +337,7 @@ goals and use them to compose today's message."
   (let ((start (point))
 	end buffer-size)
     (message "Inlining text/html, be patient...")
-    (vm-with-unibyte-buffer
+    (progn ;; vm-with-unibyte-buffer
      ;; We need to keep track of where the end of the
      ;; processed text is.  Best way to do this is to
      ;; avoid markers and save-excursion, and just use
