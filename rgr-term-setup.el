@@ -193,25 +193,6 @@
   )
 
 ;;;###autoload
-(defun rgr-vt100-hack-ie ()
-  ;; internet explorer terminal emulation sucks.  can't do C-_, can't do C-spc,
-  ;; and the function keys are broken; most of them don't send.  -- rgr,
-  ;; 7-Jul-99.
-  (interactive)
-  ;; The recipe below was cribbed from the "Keyboard translation" entry in the
-  ;; Emacs info file.  -- rgr, 8-Dec-95.  [re-cribbed from the vt102 setup.  --
-  ;; rgr, 7-Jul-99.]
-  ;; Translate `C-h' to DEL.
-  (keyboard-translate ?\C-h ?\C-?)
-  ;; Translate DEL to `C-h'.
-  (keyboard-translate ?\C-? ?\C-h)
-  ;; Function key mappings (only the first four are sent!)
-  (define-key function-key-map "\eOP" [f1])
-  (define-key function-key-map "\eOQ" [f2])
-  (define-key function-key-map "\eOR" [f3])
-  (define-key function-key-map "\eOS" [f4]))
-
-;;;###autoload
 (defun rgr-term-setup ()
   ;; This isn't really a terminal setup as used by term-setup-hook, since it
   ;; mostly defines key bindings based on what's easy to type on a given
