@@ -217,6 +217,10 @@ noted as such."
 	(forward-line 1))
     commented-files))
 
+(defun rgr-makefile-definition-name ()
+  (if (re-search-backward "^\\([^: \t\n]+\\):" nil t)
+      (match-string 1)))
+
 (defun rgr-mode-definition-name ()
   ;; Total kludge.
   (save-excursion
@@ -226,6 +230,8 @@ noted as such."
 	    (rgr-lisp-def-name t))
 	  ((eq major-mode 'perl-mode)
 	    (rgr-perl-definition-name))
+	  ((eq major-mode 'makefile-mode)
+	    (rgr-makefile-definition-name))
 	  ((eq major-mode 'pir-mode)
 	    (and (re-search-backward "^\\.sub[ \t]+\\([^ \t\n]+\\)" nil t)
 		 (match-string 1)))
