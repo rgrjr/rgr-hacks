@@ -47,16 +47,32 @@
     (nreverse result)))
 
 ;; (rgr-comment-buffers)
+
+(defvar (setq rgr-vc-backend-to-log-command
+	'((CVS "cvs -q log -d '>%s' | cvs-chrono-log.pl")
+	  (SVN "svn log --xml --revision '{%s}:HEAD' | svn-chrono-log.pl")))
+  "Alist mapping backend names to log summary commands for handled
+version control back ends.")
  
 ;;;###autoload
-(defun rgr-cvs-recent-changes (&optional number-of-days)
-  "Show a summary of 'cvs log' output for the last three days.  If you
-give a C-u, it shows the last week's worth; if C-u C-u, then the last
-month (30 days, actually).  Any other numeric argument shows the log for
-that many days."
+(defun rgr-vc-recent-changes (&optional number-of-days)
+  "Show a reverse-chronological summary of 'cvs log' or 'svn log' with
+changed files added where possible.  By default it covers the last three
+days.  If you give a C-u, it shows the last week's worth; if C-u C-u,
+then the last month (30 days, actually).  Any other numeric argument
+shows the log for that many days."
   (interactive "P")
   (require 'time-date)		;; part of gnus
-  (let* ((number-of-days
+  (let* ((backend (vc-responsible-backend default-directory))
+	 (command-format
+	   (cond ((null backend)
+		   (error "The directory %S is not under version control."
+			  default-directory))
+		 ((car (cdr (assoc backend rgr-vc-backend-to-log-command))))
+		 (t
+		   (error "Don't know how to deal with backend '%S'."
+			  backend))))
+	 (number-of-days
 	   (cond ((integerp number-of-days) number-of-days)
 		 ((not number-of-days) 3)
 		 ((equal number-of-days '(4))
@@ -71,10 +87,11 @@ that many days."
 				    (seconds-to-time
 				      (* number-of-days 24 60 60))))
 	 (n-days-ago-string
+	   ;; this is an easy-to-parse format that is understood by all the VC
+	   ;; backends I use.  -- rgr, 26-Nov-05.
 	   (format-time-string "%Y-%m-%d %H:%M" n-days-ago)))
     ;; (error "Date '%s'." n-days-ago-string)
-    (shell-command (format "cvs -q log -d '>%s' | cvs-chrono-log.pl"
-			   n-days-ago-string))))
+    (shell-command (format command-format n-days-ago-string))))
 
 ;;;###autoload
 (defun rgr-vc-project-diff ()
