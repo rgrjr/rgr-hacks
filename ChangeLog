@@ -1,3 +1,705 @@
+2005-11-27  Bob Rogers  <rogers@rgrjr.dyndns.org>
+
+	* rgr-cvs-hacks.el:
+	   + (rgr-vc-backend-to-log-command):  Fix stupid syntax error.
+	   + (rgr-vc-recent-changes):  Rename from rgr-cvs-recent-changes to
+	     reflect new SVN capability.
+
+2005-11-19  Bob Rogers  <rogers@rgrjr.dyndns.org>
+
+	* rgr-cvs-hacks.el:
+	   + (rgr-mode-definition-name):  Hacked to handle makefile-mode.
+
+2005-10-29  Bob Rogers  <rogers@rgrjr.dyndns.org>
+
+	* rgr-vm-hacks.el:
+	   + (rgr-vm-w3-layout):  VM no longer has a
+	     vm-with-unibyte-buffer macro.
+
+	* rgr-term-setup.el:
+	   + Flush obsolete rgr-vt100-hack-ie command.
+
+2005-09-29  Bob Rogers  <rogers@rgrjr.dyndns.org>
+
+	* rgr-backup.el:
+	   + (rgr-add-backup-log-entry):  Fail with an appropriate message
+	     if we can't find the dump size.
+
+2005-09-27  Bob Rogers  <rogers@rgrjr.dyndns.org>
+
+	* rgr-vm-hacks.el:
+	   + (rgr-stuff-to-do):  Emit an error message if we can't find a
+	     "to do" list.
+
+2005-09-18  Bob Rogers  <rogers@rgrjr.dyndns.org>
+
+	* compile-rgr-hacks.el:
+	   + (rgr-hacks-source-files):  "rgr-squid-log.el" no longer
+	     depends on Discus.  This removes the last reference to Discus
+	     in the code.
+
+	* unauth.el:
+	   + (rgr-unauth-parse-date):  Non-Discus version (uses date-to-time).
+	   + (rgr-unauth-relative-date-phrase):  Use the above.
+	   + (rgr-unauth-scarf-report-date):  Try to do better than "Aug 15".
+
+2005-08-26  Bob Rogers  <rogers@rgrjr.dyndns.org>
+
+	* rgr-unauth-db.el:
+	   + (rgr-unauth-host-exceptions):  Add new ModGen IP address.
+
+2005-08-26  Bob Rogers  <rogers@rgrjr.dyndns.org>
+
+	* rgr-diff-hacks.el:
+	   + (rgr-quick-source-compare):  Two bug fixes:  Always delete
+	     the temp file now that we are not running diff in the
+	     background, and put it in a temporary directory (e.g. from
+	     temporary-file-directory).
+	   + (rgr-diff-internal):  Replace the "new" file name in the output.
+
+2005-08-14  Bob Rogers  <rogers@rgrjr.dyndns.org>
+
+	* emacs-init.el:
+	   + (rgr-ange-ftp-load-hook):  Disable (require 'ange-ftp-hacks).
+
+	* rgr-bib.el (deleted), rgr-dot-emacs.el (deleted),
+	rgr-mouse-lemacs19.el (deleted), vm-spam-filter.el (deleted):
+	   + Flush unused/untested/obsolete stuff.
+	* rgr-public-hacks.el (deleted):
+	   + This was auto-generated anyway.
+	* compile-rgr-hacks.el:
+	   + Nuke rgr-bib.el reference.
+	* distributed-files.text:
+	   + Nuke rgr-mouse-lemacs19.el reference.
+	* makefile:
+	   + Nuke rgr-mouse-lemacs19.el, rgr-public-hacks.el references.
+
+	* rgr-rmail-hacks.el:
+	   + Remove lots of useless stuff.
+
+	* rgr-check-mail.el (deleted):
+	   + Flush the rgr-check-mail command, which depended on discus-date,
+	     and didn't support Maildir format in any case.  I prefer using
+	     v+q-mbox-status instead.
+	* compile-rgr-hacks.el, distributed-files.text, makefile,
+	rgr-term-setup.el:
+	   + References to same.
+
+2005-08-09  Bob Rogers  <rogers@rgrjr.dyndns.org>
+
+	* rgr-pir-hacks.el:
+	   + (rgr-pir-mode-hook):  Set pir-electric-colon-p to "newline".
+
+	* emacs-init.el:
+	   + Add karnak tunnel to ssh-per-host-option-alist for MGI.
+	   + Load local-vc-svn at home.
+	   + Plus miscellaneous cleanup.
+
+2005-07-18  Bob Rogers  <rogers@rgrjr.dyndns.org>
+
+	* rgr-random-hacks.el:
+	   + (rgr-seqaln-find-match-point):  Handle start/end more gracefully.
+
+2005-07-06  Bob Rogers  <rogers@rgrjr.dyndns.org>
+
+	* rgr-ffap.el:
+	   + (rgr-ffap-file-to-application-map):  Prefer OOo-writer over
+	     abiword for *.doc files, since OOo-writer seems to crash
+	     less.
+
+	* rgr-intervals.el:	
+	   + (rgr-compute-region-interval):  Oops; forgot to disable
+	     debugging message.
+
+2005-06-06  Bob Rogers  <rogers@rgrjr.dyndns.org>
+
+	* vm+qmail.el:
+	   + (v+q-mbox-status-internal):  Added a kludge to handle
+	     maildirs named "new" -- otherwise, we'll treat the parent as
+	     a maildir.
+
+2005-06-05  Bob Rogers  <rogers@rgrjr.dyndns.org>
+
+	* vm+qmail.el:
+	   + (v+q-mbox-status-internal):  Handle explicit maildirs.
+	     Before, maildirs could only be included by wildcarding their
+	     parent dirs.
+
+2005-06-01  Bob Rogers  <rogers@rgrjr.dyndns.org>
+
+	* rgr-random-hacks.el:
+	   + (rgr-update-public-autoloads):  Flush.
+
+	* rgr-backup.el:
+	   + (rgr-backup-change-stars-to-dots):  Handle arbitrary "flag chars."
+
+2005-05-31  Bob Rogers  <rogers@rgrjr.dyndns.org>
+
+	* rgr-makefile-hacks.el:
+	   + (rgr-fill-makefile-comment):  New, complains if not in a comment.
+	* rgr-perl-hacks.el:
+	   + (rgr-perl-mode-install-extra-hacks):  Remove incorrect comment.
+
+	* rgr-ffap.el:
+	   + Handle *.dia files.
+
+	* rgr-random-hacks.el:
+	   + (rgr-fasta-goto-start-with-offset):  Handle subscripted names.
+
+2005-05-27  Bob Rogers  <rogers@rgrjr.dyndns.org>
+
+	* rgr-squid-log.el:
+	   + (rgr-show-squid-log-date):  Non-discus implementation.
+
+2005-05-08  Bob Rogers  <rogers@rgrjr.dyndns.org>
+
+	* vm+qmail.el:
+	   + (vm-maildir-date-string):  Remove discus dependence.
+
+2005-05-04  Bob Rogers  <rogers@rgrjr.dyndns.org>
+
+	* rgr-random-hacks.el:
+	   + (rgr-fasta-goto-start-with-offset):  Bug fix:  Add a "?", because
+	     the seq name for MSA is optional.
+
+	* emacs-init.el:
+	   + Configure html-helper-mode here, since huxley no longer has it.
+
+2005-05-04  Bob Rogers  <rogers@rgrjr.dyndns.org>
+
+	* psa-support.el:
+	   + (psa-update-lost-requests-page):  Update web-dir and
+	     web-install-dir to reflect new PSA build & live locations.
+
+2005-05-02  Bob Rogers  <rogers@rgrjr.dyndns.org>
+
+	* rgr-intervals.el:
+	   + (rgr-sum-region-intervals):  Flush this legacy routine that still
+	     relies on the discus-date package (rather than update it).
+
+	* rgr-intervals.el:
+	   + (rgr-compute-region-interval):  Implement a state machine that
+	     tracks "effectively in" and "effectively out" independently,
+	     giving them greater weight.  It also imposes consistency rules.
+
+2005-04-29  Bob Rogers  <rogers@rgrjr.dyndns.org>
+
+	* rgr-cvs-hacks.el:
+	   + (rgr-comment-buffers):  Bug fix:  Check dir length before
+	     substring.
+
+	* rgr-elisp-hacks.el:
+	   + (rgr-mean-and-sd):  New, put here for lack of a better place.
+	   + (rgr-make-tags-table-list-internal):  Add PIMA and pima-profile
+	     source directories (at MGI).
+
+2005-04-29  Bob Rogers  <rogers@rgrjr.dyndns.org>
+
+	* rgr-shell-hacks.el:
+	   + (rgr-comint-mode-hook):  Add comint-watch-for-password-prompt
+	     to comint-output-filter-functions, so that it's always there.
+
+	* emacs-init.el:
+	   + (grep-find-command):  Also skip .svn dirs.
+
+2005-04-22  Bob Rogers  <rogers@rgrjr.dyndns.org>
+
+	* rgr-random-hacks.el: * rgr-random-hacks.el:
+	   + (rgr-fasta-goto-start-with-offset):  Extend to support MSA.
+	   + (rgr-seqaln-percent-homology):  New:  "With point and mark in
+	     the same alignment, report the pct identity between."
+
+	* rgr-perl-hacks.el:
+	   + (rgr-perl-mode-install-extra-hacks):  Make
+	     rgr-definition-line-regexp insist on "^sub", in order to skip
+	     forward decls; allow all versions >18 for the
+	     rgr-comment-region-lisp binding.
+
+	* emacs-init.el: * emacs-init.el:
+	   + Use rgr-install-diff-hacks.
+
+2005-03-29  Bob Rogers  <rogers@rgrjr.dyndns.org>
+
+	* rgr-vm-hacks.el:
+	   + (vm-dired-attach-file):  Oops; need buffer-name instead of
+	     buffer-file-name.
+
+2005-03-24  Bob Rogers  <rogers@rgrjr.dyndns.org>
+
+	* rgr-elisp-hacks.el:
+	   + (rgr-make-tags-table-list-internal):  Initialize tags-table-list
+	     with the first tags-table-set-list entry.
+
+2005-03-17  Bob Rogers  <rogers@rgrjr.dyndns.org>
+
+	* rgr-vm-hacks.el:
+	   + (vm-dired-attach-file):  Smarter buffer defaulting.
+
+2005-03-08  Bob Rogers  <rogers@rgrjr.dyndns.org>
+
+	* rgr-fill-comment.el:
+	   + (rgr-find-lisp-fill-prefix):  Kludge around perl-mode wierdness;
+	     comment-start-skip won't match comments that don't start at BOL.
+
+2005-03-07  Bob Rogers  <rogers@rgrjr.dyndns.org>
+
+	* rgr-cvs-hacks.el, rgr-diff-hacks.el: * rgr-cvs-hacks.el:
+	   + (rgr-mode-definition-name):  Wrap save-excursion around
+	     everything.
+	   + (rgr-add-definition-comment-internal):  Common code.
+	   + (rgr-diff-add-definition-comment):  Use above, fix src/dst
+	     confusion (may still fail if the other-file flag is true).
+	   + (rgr-add-definition-comment):  Non-diff-mode version.
+	* rgr-diff-hacks.el:
+	   + (rgr-install-diff-hacks):  Bind rgr-add-definition-comment to
+	     C-c ! globally.
+
+	* rgr-ffap.el:
+	   + (rgr-ffap-file-to-application-map):  Add *.sxc => OOo-calc.
+
+2005-03-05  Bob Rogers  <rogers@rgrjr.dyndns.org>
+
+	* rgr-fill-comment.el:
+	   + (rgr-find-lisp-fill-prefix):  Smarter implementation that uses
+	     comment-start-skip if available.
+	* rgr-pir-hacks.el:
+	   + (rgr-pir-mode-hook):  Bind M-q to rgr-fill-comment.
+
+	* rgr-log-view.el:
+	   + (rgr-log-view-mode-hook):  Fix a strange problem with
+	     log-view-mode buffers being read-only; for some reason, this
+	     doesn't fail at work.
+
+	* emacs-init.el:    + Add PIR support.
+
+2005-03-04  Bob Rogers  <rogers@rgrjr.dyndns.org>
+
+	* rgr-vm-hacks.el:
+	   + (rgr-message-dow-string):  Oops; must require mail-parse.
+
+2005-02-28  Bob Rogers  <rogers@rgrjr.dyndns.org>
+
+	* emacs-init.el:
+	   + Make grep-find-command smarter about CVS version files.
+
+2005-02-25  Bob Rogers  <rogers@rgrjr.dyndns.org>
+
+	* rgr-cvs-hacks.el:
+	   + (rgr-comment-buffers):  New.
+	   + (rgr-diff-add-definition-comment):  Use above to help find the
+	     right comment buffer.
+	   + (rgr-cvs-insert-log-skeleton):  Identify "extra" files.
+
+2005-02-24  Bob Rogers  <rogers@rgrjr.dyndns.org>
+
+	* rgr-cvs-hacks.el:
+	   + (rgr-cvs-diff-skeleton-entry-regexp):  New.
+	   + (rgr-cvs-insert-log-skeleton):  Use above, handle remote
+	     diffs (which seem to have a different output format, even
+	     with identical config), use rgr-vc-all-comment-files to do a
+	     better job of avoiding duplicates.
+
+2005-02-19  Bob Rogers  <rogers@rgrjr.dyndns.org>
+
+	* rgr-pir-hacks.el:
+	   + Disable buggy pir-blink-matching-block feature.
+
+2005-02-16  Bob Rogers  <rogers@rgrjr.dyndns.org>
+
+	* emacs-init.el:
+	   + Don't use discus any more.  (Sigh.)
+	   + Use the official rgr-log-view-mode-hook fn.
+	   + Add rgr-diff-mode-hook.
+	* rgr-cvs-hacks.el:
+	   + (rgr-vc-commit-with-comments):  New command, performs a commit
+	     driven by a comment text file.
+	   + (rgr-vc-comment-file-names):  Split out parsing utility.
+	   + (rgr-vc-current-comment-files):  Use above.
+	   + (rgr-vc-all-comment-files):  New, harvest all commented files.
+	   + (rgr-diff-add-definition-comment):  Use
+	     rgr-vc-current-comment-files to handle joined comments.
+	   + (rgr-diff-mode-hook):  Moved elsewhere.
+	* rgr-html-hacks.el:
+	   + (rgr-html-helper-mode-hook):  Use rgr-quick-source-compare
+	     instead of discus-quick-source-compare.
+	* rgr-log-view.el:
+	   + (rgr-log-view-mode-hook):  New.
+
+	* rgr-intervals.el:
+	   + (rgr-compute-region-interval):  Use time-date instead of
+	     discus date routines, flush print-daily-p, greatly simplified
+	     as a result.
+	   + (add-time):  For some reason, time-date doesn't have this.
+	   + (rgr-weekly-intervals):  Flushed, plus lots of support fns.
+
+2005-02-15  Bob Rogers  <rogers@rgrjr.dyndns.org>
+
+	* rgr-elisp-hacks.el:
+	   + Flush ancient stuff that used discus-date, rather than update it.
+
+	* rgr-diff-hacks.el:
+	   + Created from discus-diff and discus-quick-source-compare, but
+	     uses diff-mode instead of compilation-mode (which isn't as
+	     featureful for diffs).  Probably not yet ready for prime time.
+
+2005-02-14  Bob Rogers  <rogers@rgrjr.dyndns.org>
+
+	* rgr-pir-hacks.el: New hack.
+
+	* rgr-cvs-hacks.el:
+	   + (rgr-mode-definition-name):  Add pir-mode, lisp-mode.
+
+2005-02-10  Bob Rogers  <rogers@rgrjr.dyndns.org>
+
+	* rgr-elisp-hacks.el:
+	   + (rgr-make-tags-table-list-internal):  Use tags-table-set-list,
+	     define an alternate set for Web development at MGI.
+
+	* rgr-cvs-hacks.el:
+	   + (rgr-find-more-recent-buffer):  Look for one most recently
+	     visited.
+	   + (rgr-cvs-insert-log-skeleton):  Use the above. 
+	   + (rgr-vc-find-file-comment, rgr-vc-current-comment-file,
+	     rgr-diff-add-definition-comment):  Try to put the comment in
+	     the right place.
+
+2005-02-08  Bob Rogers  <rogers@rgrjr.dyndns.org>
+
+	* rgr-vm-hacks.el:
+	   + (rgr-stuff-to-do):  New hack for office use.
+
+	* rgr-elisp-hacks.el:    + Add Id: line.
+	   + (rgr-make-tags-table-list-internal):  Update Bioperl entries.
+
+	* rgr-cvs-hacks.el:
+	   + (rgr-cvs-recent-changes):  Use time-date instead of discus in
+	     order to produce the start time for 'cvs log'.
+	   + (rgr-vc-project-diff):  Need (require 'vc) here.
+	   + (rgr-mode-definition-name):  New hack, not well tested yet.
+	   + (rgr-cvs-plus):  Made behavior more intuitive.
+
+2005-01-06  Bob Rogers  <rogers@rgrjr.dyndns.org>
+
+	* rgr-cvs-hacks.el:  Do (require 'vc) so that rgr-vc-project-diff
+	doesn't have to.
+
+2004-12-25  Bob Rogers  <rogers@rgrjr.dyndns.org>
+
+	* rgr-ffap.el:
+	   + (rgr-ffap-file-finder):  Offer each matching application in
+	     turn, funcall an "app" that is fboundp, pass additional data
+	     to fns and progs.
+
+2004-12-21  Bob Rogers  <rogers@rgrjr.dyndns.org>
+
+	* unauth.el: Set rgr-unauth-minimum-attempts to 5.
+
+	* emacs-init.el: Define tmda-default-blacklist.
+
+	* rgr-html-hacks.el:
+	   + (rgr-html-helper-new-buffer-template):  Template for home Web
+	     pages.
+
+2004-12-20  Bob Rogers  <rogers@rgrjr.dyndns.org>
+
+	* rgr-cvs-hacks.el:
+	   + (rgr-cvs-insert-log-skeleton):  Don't insert a duplicate line.
+
+2004-12-16  Bob Rogers  <rogers@rgrjr.dyndns.org>
+
+	* rgr-cvs-hacks.el:
+	   + (rgr-vc-project-diff):  New command, equivalent to "cvs diff
+	     -u" in PWD, creates the *vc-project-diff* buffer.
+	   + (rgr-cvs-insert-log-skeleton):  Prefer *vc-project-diff*.
+	   + (rgr-cvs-join-consecutive-file-headings):  Auto-fill joined lines.
+
+2004-11-17  Bob Rogers  <rogers@rgrjr.dyndns.org>
+
+	* rgr-intervals.el:  Flush rgr-compute-t-fares and
+	rgr-compute-region-t-fares, plus supporting stuff.  This was out
+	of date, and not worth updating.
+
+2004-11-13  Bob Rogers  <rogers@rgrjr.dyndns.org>
+
+	* rgr-cvs-hacks.el:
+	   + (rgr-cvs-insert-log-skeleton):  Remove debugging message call.
+
+2004-11-12  Bob Rogers  <rogers@rgrjr.dyndns.org>
+
+	* psa-support.el:  Allow psa-update-lost-requests-page to do page
+	update and installation separately.
+
+	* rgr-random-hacks.el: Also update ~/emacs/imported/ autoloads.
+
+	* emacs-init.el:  Oops; load "loaddefs.el" from
+	rgr-imported-packages dir.
+
+2004-11-07  Bob Rogers  <rogers@rgrjr.dyndns.org>
+
+	* unauth.el:
+	   + (rgr-unauth-too-few-attempts-p):  Added separate accounting for
+	     "evil" protocols.
+	   + New rgr-unauth-evil-protocol-regexp and
+	     rgr-unauth-minimum-evil-attempts vars to control the above;
+	     has the effect of reporting all SSH attempts, no matter how
+	     few.
+
+2004-11-01  Bob Rogers  <rogers@rgrjr.dyndns.org>
+
+	* rgr-cvs-hacks.el, rgr-hacks.el:
+	   + (rgr-change-log-indent-relative-maybe):  New fn.
+	   + (rgr-do-auto-fill):  Use the above in change-log-mode.
+	   + (rgr-auto-fill-mode):  Now obsolete.
+	   + (rgr-text-mode-hook):  Set normal-auto-fill-function instead of
+	     using the rgr-do-auto-fill hack.
+	* rgr-cvs-hacks.el:
+	   + (rgr-change-log-insert-plus):  New fn, bound to C-c + in
+	     change-log-mode.
+
+2004-10-30  Bob Rogers  <rogers@rgrjr.dyndns.org>
+
+	* rgr-enumerate.el:
+	   + (rgr-renumber-region-paragraphs):  Handle multiple components
+	     separated by dots, e.g. 3.5.7 comes after 3.5.6.
+
+2004-10-27  Bob Rogers  <rogers@rgrjr.dyndns.org>
+
+	* rgr-ffap.el: Added OOo-impress for *.ppt files.
+
+2004-10-04  Bob Rogers  <rogers@rgrjr.dyndns.org>
+
+	* rgr-term-setup.el:
+	   + (rgr-dialup-term-setup):  Disable mail peeker.
+
+2004-09-18  Bob Rogers  <rogers@rgrjr.dyndns.org>
+
+	* emacs-init.el:
+	   + Set tmda-default-whitelist.
+	   + Connect tunnelled MGI DB connection to the test version.
+
+2004-09-17  Bob Rogers  <rogers@rgrjr.dyndns.org>
+
+	* rgr-vm-hacks.el:
+	   + (vm-dired-attach-files-to-message):  Fix prompts.
+	   + (vm-dired-attach-file):  Fix buffer default.
+
+2004-09-13  Bob Rogers  <rogers@rgrjr.dyndns.org>
+
+	* emacs-init.el:
+	   + Moved rgr-dired-load-hook to rgr-dired.el.
+	   + Bind rgr-cvs-plus to "C-c +" in log-edit mode, add
+	     rgr-cvs-log-edit-hook.
+	* rgr-vm-hacks.el:
+	   + New vm-dired-attach-file command.
+	* rgr-dired.el:
+	   + New dired-do-flush-spaces command.
+	   + New rgr-dired-load-hook, binds vm-dired-attach-file to "C-c
+	     a" and dired-do-flush-spaces to "C-c SPC" in dired mode.
+
+	* rgr-cvs-hacks.el:
+	   + Add installation comments.
+	   + New rgr-cvs-join-consecutive-file-headings command.
+	   + New rgr-cvs-log-edit-hook fn.
+
+	* rgr-ffap.el: * rgr-ffap.el:
+	   + Prefer OOo-calc to gnumeric for *.xls files.
+
+	* rgr-random-hacks.el: * rgr-random-hacks.el:
+	   + New rgr-fasta-what-base command.
+	   + New rgr-fasta-goto-start-with-offset helper allows
+	     rgr-fasta-goto-base and rgr-fasta-what-base to work on
+	     alignment output.
+
+	* rgr-html-servers.el:
+	   + Hack for alexandria.
+
+2004-08-30  Bob Rogers  <rogers@rgrjr.dyndns.org>
+
+	* rgr-cvs-hacks.el:
+	   + (rgr-cvs-insert-log-skeleton):  Remote connection says "cvs
+	     server:" instead of "cvs diff:".
+
+2004-08-23  Bob Rogers  <rogers@rgrjr.dyndns.org>
+
+	* rgr-enumerate.el:
+	   + (rgr-enumerate-region-sentences):  Deal with leading blank
+	     lines.
+
+2004-08-06  Bob Rogers  <rogers@rgrjr.dyndns.org>
+
+	* rgr-cvs-hacks.el:  New rgr-cvs-insert-log-skeleton and
+	rgr-cvs-plus hacks.
+
+2004-08-05  Bob Rogers  <rogers@rgrjr.dyndns.org>
+
+	* unauth.el:
+	   + (rgr-unauth-insert-local-host-ip):  Don't hardwire the
+	     interface name.
+
+2004-06-28  Bob Rogers  <rogers@rgrjr.dyndns.org>
+
+	* rgr-backup.el (rgr-add-backup-log-entry):  Handle dump 0.4b34
+	messages.
+
+2004-06-15  Bob Rogers  <rogers@rgrjr.dyndns.org>
+
+	* rgr-elisp-hacks.el:
+	   + (rgr-make-tags-table-list-internal):  Updated to reflect new
+	     preferred oligo tools source location.
+
+2004-06-05  Bob Rogers  <rogers@rgrjr.dyndns.org>
+
+	* rgr-backup.el: Comment out debugging message calls.
+
+2004-05-31  Bob Rogers  <rogers@rgrjr.dyndns.org>
+
+	* rgr-ffap.el: Invoke gimp on image extensions.
+
+2004-05-27  Bob Rogers  <rogers@rgrjr.dyndns.org>
+
+	* rgr-random-hacks.el:
+	   + (rgr-fasta-goto-base):  Better handling of bases that are
+	     first on the line, and non-bases just past the end of the
+	     sequence.
+
+2004-05-26  Bob Rogers  <rogers@rgrjr.dyndns.org>
+
+	* rgr-html-hacks.el:
+	   + (rgr-html-matched-tag-name):  Insist on whitespace before
+	     "name=", so as not to be fooled by URL contents.
+
+2004-05-25  Bob Rogers  <rogers@rgrjr.dyndns.org>
+
+	* rgr-hacks.el, rgr-random-hacks.el:  New rgr-fasta-goto-base
+	command.
+
+2004-05-24  Bob Rogers  <rogers@rgrjr.dyndns.org>
+
+	* vm+qmail.el:  Make v+q-mbox-status-internal require vm-undo, to
+	squash a "Loading..." message.
+
+2004-05-23  Bob Rogers  <rogers@rgrjr.dyndns.org>
+
+	* rgr-backup.el: rgr-backup-change-stars-to-dots fn.
+
+2004-05-20  Bob Rogers  <rogers@rgrjr.dyndns.org>
+
+	* rgr-enumerate.el:
+	   + (rgr-renumber-region-paragraphs):  Accept leading tabs.
+
+2004-05-11  Bob Rogers  <rogers@rgrjr.dyndns.org>
+
+	* rgr-enumerate.el: rgr-enumerate-region-sentences:
+	   + Use a marker for end so that it stays valid.
+	   + Don't number an empty sentence at the end of the region.
+
+2004-05-01  Bob Rogers  <rogers@rgrjr.dyndns.org>
+
+	* rgr-backup.el: New rgr-add-backup-log-entry hack.
+
+2004-04-08  Bob Rogers  <rogers@rgrjr.dyndns.org>
+
+	* rgr-ffap.el: send *.doc files to abiword.
+
+2004-04-04  Bob Rogers  <rogers@rgrjr.dyndns.org>
+
+	* vm+qmail.el:  Cleanups that allow v+q-set-return-address to be
+	invoked a second time in a given mail buffer.
+
+	* unauth.el: rgr-unauth-minimum-attempts, initially 10.
+
+2004-03-30  Bob Rogers  <rogers@rgrjr.dyndns.org>
+
+	* rgr-hacks.el:
+	   + (rgr-install-global-editing-hacks):  C-c g l for goto-line,
+	     and C-c g c for goto-char.
+
+2004-03-27  Bob Rogers  <rogers@rgrjr.dyndns.org>
+
+	* unauth.el:  In rgr-unauth-extract-previous-attempts, skip all
+	entries matching the specified last-reported-entry-date.
+
+2004-03-25  Bob Rogers  <rogers@rgrjr.dyndns.org>
+
+	* psa-support.el:  New psa-require-psa-server function, so that we
+	can compile and load this thing outside of BMERC.
+
+2004-03-25  Bob Rogers  <rogers@rgrjr.dyndns.org>
+
+	* rgr-hacks.el:
+	Allow for the fact that the manpath program may not exist.
+
+	* rgr-x11-hacks.el:
+	Tweak the rgr-x11-preferred-font-name value.  This is not actually
+	used, so the benefit is mostly to document the value I put in
+	.Xdefaults.
+
+2004-03-25  Bob Rogers  <rogers@rgrjr.dyndns.org>
+
+	* rgr-x11-hacks.el: Also allow "21.3" as a 'standard' version.
+
+2004-03-20  Bob Rogers  <rogers@rgrjr.dyndns.org>
+
+	* emacs-init.el: Change bg/fg colors to fix lame SuSE scheme.
+
+2004-03-12  Bob Rogers  <rogers@rgrjr.dyndns.org>
+
+	* rgr-shell-hacks.el:
+	New ssh-emacs command.  [Not terribly satisfactory, though.]
+
+	* rgr-enumerate.el:
+	New rgr-renumber-region-paragraphs and
+	rgr-enumerate-region-sentences hacks.
+
+2004-03-03  Bob Rogers  <rogers@rgrjr.dyndns.org>
+
+	* vm+qmail.el: Use version 20 kludge for emacs 21.2 and earlier.
+	This restores the alternative mail-self-blind feature.
+
+2004-02-29  Bob Rogers  <rogers@rgrjr.dyndns.org>
+
+	* emacs-init.el: Initialize ssh-per-host-option-alist for home use.
+
+	* rgr-shell-hacks.el: New ssh-per-host-option-alist feature.
+
+	* rgr-lisp-hacks.el:
+	   + Flush pointless cmulisp-local-source-directory init.
+	   + Use FSF-compliant keys.
+
+2004-02-06  Bob Rogers  <rogers@rgrjr.dyndns.org>
+
+	* rgr-ffap.el:
+	.xls and .pdf, make rgr-ffap-file-finder compatible with find-file.
+
+2004-02-05  Bob Rogers  <rogers@rgrjr.dyndns.org>
+
+	* emacs-init.el:
+	Flush backups, tags, and CVS files in grep-find-command.
+
+	* rgr-cvs-hacks.el: Use "cvs -q" for rgr-cvs-recent-changes.
+
+2004-01-16  Bob Rogers  <rogers@rgrjr.dyndns.org>
+
+	* vm+qmail.el:
+	Flush verbose "got files" message from vm-maildir-move-mail-internal fn.
+
+2004-01-09  Bob Rogers  <rogers@rgrjr.dyndns.org>
+
+	* emacs-init.el:
+	Now that we use TMDA, go back to mail-self-blind at home.
+
+2004-01-01  Bob Rogers  <rogers@rgrjr.dyndns.org>
+
+	* ChangeLog: Brought up-to-date.
+
+	* emacs-init.el:
+	Ignore common SBCL and CLISP binary extentions in completion.
+
+	* rgr-unauth-db.el: Misc address updates.
+
+	* unauth.el:
+	Fix rgr-unauth-relative-date-phrase bug:  Log dates are in the past.
+
 2004-01-01  Bob Rogers  <rogers@rgrjr.dyndns.org>
 
 	* Fix rgr-unauth-relative-date-phrase bug:  Log dates are in the
