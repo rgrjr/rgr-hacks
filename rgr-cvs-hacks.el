@@ -148,8 +148,11 @@ Only those files mentioned explicitly in the buffer in style of the
 	(save-buffer))
     ;; (error "Going to commit %S with %S" files-to-commit (current-buffer))
     (let ((comment (buffer-string)))
-      (when (or (ring-empty-p vc-comment-ring)
-		(not (equal comment (ring-ref vc-comment-ring 0))))
+      ;; [this is called log-edit-comment-ring in later versions of emacs.  --
+      ;; rgr, 8-Dec-05.]
+      (when (and (boundp 'vc-comment-ring)
+		 (or (ring-empty-p vc-comment-ring)
+		     (not (equal comment (ring-ref vc-comment-ring 0)))))
 	(ring-insert vc-comment-ring comment))
       (if (let ((win (get-buffer-window log-edit-files-buf)))
 	    (unwind-protect
@@ -367,10 +370,10 @@ This is useful, for instance, when a definition has been deleted."
 	 (loc (diff-find-source-location other-file rev))
 	 (source-buffer (car loc))
 	 (pos (nth 2 loc))
-	 (dst (nth 4 loc))
+	 (src (nth 3 loc))
 	 (name (save-excursion
 		 (set-buffer source-buffer)
-		 (goto-char (+ pos (cdr dst)))
+		 (goto-char (+ pos (cdr src)))
 		 (rgr-mode-definition-name))))
     (rgr-add-definition-comment-internal name source-buffer)))
 
