@@ -148,12 +148,16 @@ Only those files mentioned explicitly in the buffer in style of the
 	(save-buffer))
     ;; (error "Going to commit %S with %S" files-to-commit (current-buffer))
     (let ((comment (buffer-string)))
-      ;; [this is called log-edit-comment-ring in later versions of emacs.  --
-      ;; rgr, 8-Dec-05.]
-      (when (and (boundp 'vc-comment-ring)
-		 (or (ring-empty-p vc-comment-ring)
-		     (not (equal comment (ring-ref vc-comment-ring 0)))))
-	(ring-insert vc-comment-ring comment))
+      (let ((comment-ring
+	      (cond ((boundp 'log-edit-comment-ring)
+		      (symbol-value 'log-edit-comment-ring))
+		    ((boundp 'vc-comment-ring)
+		      ;; [old name (21.3 at least).  -- rgr, 12-Dec-05.]
+		      (symbol-value 'vc-comment-ring)))))
+	(when (and comment-ring
+		   (or (ring-empty-p comment-ring)
+		       (not (equal comment (ring-ref comment-ring 0)))))
+	  (ring-insert comment-ring comment)))
       (if (let ((win (get-buffer-window log-edit-files-buf)))
 	    (unwind-protect
 		 (or (not log-edit-confirm)
