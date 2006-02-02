@@ -111,8 +111,20 @@ somewhat system-dependent.")
 ;;;; general stuff.
 
 (defun rgr-perl-definition-name ()
-  (if (re-search-backward "^sub[ \t\n]+\\([a-zA-Z_]+\\)" nil t)
-      (match-string 1)))
+  (let ((start (point)))
+    (condition-case nil
+	(if (and (re-search-backward "^sub[ \t\n]+\\([a-zA-Z_]+\\)" nil t)
+		 (progn
+		   (skip-chars-forward "^{")
+		   (forward-sexp)
+		   (< start (point))))
+	    (let ((name (match-string 1)))
+	      (if (equal name "BEGIN")
+		  ;; not an interesting name for a sub.  [might want to filter
+		  ;; others as well.  -- rgr, 2-Feb-06.]
+		  nil
+		  name)))
+      (error nil))))
 
 (defun rgr-add-to-perl-modification-history (&optional insert-definition-name-p)
   ;; [syntax-independent version.  -- rgr, 13-Aug-96.]
