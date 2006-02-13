@@ -148,9 +148,15 @@
 		      ;; I0 => I1.
 		      (setq pending-login-time time))
 		  (setq sigma-signs (+ sign sigma-signs))
-		  (if (zerop sigma-signs)
-		      ;; I1 => I0.
-		      (setq accumulate-p t))))
+		  (cond ((not (zerop sigma-signs)))
+			(effectively-out
+			  ;; special case:  full logout when effectively out;
+			  ;; this means we shouldn't expect an "effectively in",
+			  ;; so we can just reset.
+			  (setq effectively-out nil))
+			(t
+			  ;; I1 => I0.
+			  (setq accumulate-p t)))))
 	  (if accumulate-p
 	      ;; Accumulate this interval.
 	      (let ((delta (subtract-time time pending-login-time)))
