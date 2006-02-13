@@ -608,6 +608,10 @@ M-x buffer-menu)."
   ;; Intended for .emacs calling.
   (global-set-key "\C-cgl" 'goto-line)
   (global-set-key "\C-cgc" 'goto-char)
+  ;; I keep typing "insert" by accident, and then overwrite stuff by accident.
+  ;; Unbinding this key means that I have to type "M-x overwrite-mode RET" if I
+  ;; really want to clobber myself.  -- rgr, 6-Feb-06.
+  (global-set-key [insert] nil)
   ;; Patch fill to be smarter about sentences.  -- rgr, 11-Feb-96.  [This has
   ;; been implemented as part of version 19.30, though I'm still gonna need
   ;; fill-patch functionality for HTML fill.  -- rgr, 21-Mar-96.]
