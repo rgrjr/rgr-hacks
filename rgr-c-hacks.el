@@ -6,11 +6,9 @@
 ;;; c-mode-hooks, thus getting this if and only if we look at a C source file.
 ;;;
 ;;;    May want to fix c-fill-paragraph to be smarter about not being in a
-;;; comment, or being in among multiple /* drivel */ lines.  Also, M-e and M-a
-;;; bindings of c-end-of-statement and c-beginning-of-statement are less than
-;;; ideal.
+;;; comment, or being in among multiple /* drivel */ lines.
 ;;;
-;;;    Modification history:
+;;;    [old] Modification history:
 ;;;
 ;;; created with rgr-insert-char-alias, rgr-c-mode-hook.  -- rgr, 30-Mar-95.
 ;;; set fill-column to 80.  -- rgr, 12-Apr-95.
@@ -30,6 +28,7 @@
 ;;; rgr-c-use-electric-dash-p: global enable.  -- rgr, 9-Nov-99.
 ;;; rgr-insert-char-alias: flushed.  -- rgr, 9-Nov-99.
 ;;;
+;;; $Id$
 
 (defvar rgr-c-use-electric-dash-p nil
   "*Set this to non-nil for '-' to insert '_' when typed once, and '-'
@@ -197,25 +196,40 @@ not be on the first line.  Trailing whitespace is eliminated."
       (c-indent-command)
       (insert "#ifdef OBSOLETE"))))
 
+;;;###autoload
 (defun rgr-c-def-name (&optional namep)
-  "Return the name of a C definition, assuming that you are at the start
-of the body of the code (as if moved there by \\[beginning-of-defun]).
-If the form starts with DEF, the form start and the next symbol will be
-returned.  Optional NAMEP will return only the name without the defining
-symbol."
-  ;; namep not yet supported (always acts as if t)
-  (save-excursion ;; let ((open-curly (point)))
-    (while (and (not (bobp))
-		(not (looking-at "^[ \t]*$")))
-      (forward-line -1))
-    (skip-chars-forward " \t\n")
-    (let ((start (point)))
-      (forward-sexp)
-      (skip-chars-forward " \t\n")
-      (if namep
-	  (setq start (point)))
-      (forward-sexp)
-      (buffer-substring start (point)))))
+  "Return the name of the current C definition, prefixed by any
+declaration of return type.  Optional NAMEP, if true, returns only the
+function name without the return type declaration.  (This is present
+mostly for compatibility with the rgr-lisp-def-name fn.)"
+  (save-excursion
+    (if (not (eq (car (car (c-guess-basic-syntax))) 'defun-open))
+	(beginning-of-defun))
+    (let ((bod (point))
+	  (start nil) (name-end nil))
+      (forward-sexp -1)
+      (cond ((not (looking-at "("))
+	      (error "oops; not prototyped -- syntax %S" (c-guess-basic-syntax))
+	      (sit-for 2)))
+      (setq name-end (point))
+      (cond (namep
+	      (forward-sexp -1))
+	    (t
+	      (while (and (not (bobp))
+			  (not (looking-at "^[ \t]*$")))
+		(forward-line -1))
+	      (skip-chars-forward " \t\n")))
+      (let ((result (buffer-substring (point) name-end)))
+	;; the first alternative eliminates redundant spaces, while the second
+	;; turns each tab and newline into a space.  eventually, all runs of
+	;; whitespace get turned into a single space.
+	(while (string-match "  +\\|[\t\n]" result)
+	  (setq result (replace-match " " t t result)))
+	;; Change (e.g.) "struct foo * fn" into "struct foo *fn".  (The "*" is
+	;; literal here.)
+	(while (string-match "* " result)
+	  (setq result (replace-match "*" t t result)))
+	result))))
 
 (defun rgr-add-to-c-modification-history (&optional insert-definition-name-p)
   ;; [syntax-independent version.  -- rgr, 13-Aug-96.]
@@ -231,12 +245,8 @@ for C syntax]."
   (interactive "P")
   (rgr-add-to-modification-history-internal
     "/*    " "^/\\* *" "  " "^ *\\*/$"
-    (cond (insert-definition-name-p
-	    ;; (error "Can't find C definition names yet.")
-	    (save-excursion
-	      (if (not (looking-at "^\\s("))
-		  (beginning-of-defun))
-	      (rgr-c-def-name t))))))
+    (and insert-definition-name-p
+	 (rgr-c-def-name t))))
 
 ;;;###autoload
 (defun rgr-c-mode-hook ()
@@ -256,4 +266,4 @@ for C syntax]."
   (define-key c-mode-map "\C-cl" 'rgr-c-ify-identifier)
   (define-key lisp-mode-map "\C-cl" 'rgr-c-ify-identifier))
 
-(provide 'c-hacks)
+(provide 'rgr-c-hacks)

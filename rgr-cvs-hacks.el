@@ -259,6 +259,8 @@ noted as such."
 	  ((eq major-mode 'pir-mode)
 	    (and (re-search-backward "^\\.sub[ \t]+\\([^ \t\n]+\\)" nil t)
 		 (match-string 1)))
+	  ((eq major-mode 'c-mode)
+	    (rgr-c-def-name t))
 	  (t
 	    (message "Can't find definitions for %S mode." major-mode)
 	    (sit-for 2)
