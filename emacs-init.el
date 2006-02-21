@@ -300,9 +300,9 @@
 	     "-L" "9123:carthage:3306"
 	     "-L" "8081:alexandria:80" "-L" "8082:karnak:80"))))
 
-;; cvs hacks.  -- rgr, 6-Aug-04.
-(define-key text-mode-map "\C-c+" 'rgr-cvs-plus)
-(add-hook 'log-edit-mode-hook 'rgr-cvs-log-edit-hook)
+;; VC hacks.  -- rgr, 6-Aug-04.
+(define-key text-mode-map "\C-c+" 'rgr-vc-log-plus)
+(add-hook 'log-edit-mode-hook 'rgr-vc-log-edit-hook)
 ;; svn hacks.  -- rgr, 1-May-05.
 (and (eq rgr-site 'home)
      (require 'local-vc-svn))

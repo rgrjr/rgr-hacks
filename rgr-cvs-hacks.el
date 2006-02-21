@@ -4,8 +4,8 @@
 ;;;
 ;;; Put
 ;;;
-;;;	(define-key text-mode-map "\C-c+" 'rgr-cvs-plus)
-;;;	(add-hook 'log-edit-mode-hook 'rgr-cvs-log-edit-hook)
+;;;	(define-key text-mode-map "\C-c+" 'rgr-vc-log-plus)
+;;;	(add-hook 'log-edit-mode-hook 'rgr-vc-log-edit-hook)
 ;;;
 ;;; somewhere in your .emacs to use this.
 ;;;
@@ -100,7 +100,7 @@ This would be just a shorthand for the vc-diff command (\\[vc-diff])
 when asked to compare a working directory to the original CVS version
 \(e.g. 'C-u \\[vc-diff] \".\" RET RET RET'), but it also renames the
 output buffer from '*vc-diff*' to '*vc-project-diff*'.  This is so that
-the \\[rgr-cvs-insert-log-skeleton] command can use this output."
+the \\[rgr-vc-log-insert-skeleton] command can use this output."
   (interactive)
   ;; need an explicit require, because vc-version-diff is not autoloaded.
   (require 'vc)
@@ -118,7 +118,7 @@ the \\[rgr-cvs-insert-log-skeleton] command can use this output."
   "Do the next logical version control operation (as by \\[vc-next-action]) on
 the files named in the current buffer, using its contents as the log comment.
 Only those files mentioned explicitly in the buffer in style of the
-\\[rgr-cvs-insert-log-skeleton] command will be included."
+\\[rgr-vc-log-insert-skeleton] command will be included."
   (interactive)
   (require 'vc)
   (require 'log-edit)
@@ -184,14 +184,14 @@ Only those files mentioned explicitly in the buffer in style of the
 	(concat "^\\+\\+\\+ \\([^ \t\n]*\\)\t" 
 		"\\|^cvs \\(diff\\|server\\): \\([^ \t\n]*\\) "
 		"\\(is a new entry\\|was removed\\)")
-  "Regexp matching things of interest to the rgr-cvs-insert-log-skeleton cmd.")
+  "Regexp matching things of interest to the rgr-vc-log-insert-skeleton cmd.")
 
 ;;;###autoload
-(defun rgr-cvs-insert-log-skeleton ()
+(defun rgr-vc-log-insert-skeleton ()
   "Insert a '* filename:' line for each file that appears in diff output.
 This inserts one line at the end of the current buffer for each file
 mentioned in a diff buffer that doesn't already appear in the current
-buffer (allowing for \\[rgr-cvs-join-consecutive-file-headings]).  The
+buffer (allowing for \\[rgr-vc-log-join-consecutive-file-headings]).  The
 current buffer is assumed to be something like a CVS log comment.  The
 diff buffer is the most recently visited one of '*vc-project-diff*'
 \(created by the \\[rgr-vc-project-diff] command\), '*VC-diff*' (created
@@ -353,7 +353,7 @@ noted as such."
 	    (t
 	      ;; assume we should add a new entry here.
 	      (beginning-of-line))))
-    (rgr-cvs-plus)
+    (rgr-vc-log-plus)
     (if name
 	(insert "(" name "):  "))
     name))
@@ -384,7 +384,7 @@ This is useful, for instance, when a definition has been deleted."
     (rgr-add-definition-comment-internal name source-buffer)))
 
 ;;;###autoload
-(defun rgr-cvs-plus ()
+(defun rgr-vc-log-plus ()
   "Insert a '  + ' at point, starting a new line if not at BOL."
   (interactive)
   (cond ((and (eolp) (bolp))
@@ -400,7 +400,7 @@ This is useful, for instance, when a definition has been deleted."
 	  (insert "\n")))
   (insert "   + "))
 
-(defun rgr-cvs-join-consecutive-file-headings ()
+(defun rgr-vc-log-join-consecutive-file-headings ()
   "Join consecutive '* foo:' lines with a comma."
   (interactive)
   (save-excursion
@@ -415,8 +415,10 @@ This is useful, for instance, when a definition has been deleted."
       (forward-char -1))))
 
 ;;;###autoload
-(defun rgr-cvs-log-edit-hook ()
-  (define-key log-edit-mode-map "\C-c+" 'rgr-cvs-plus))
+(defun rgr-vc-log-edit-hook ()
+  (define-key log-edit-mode-map "\C-cj"
+    'rgr-vc-log-join-consecutive-file-headings)
+  (define-key log-edit-mode-map "\C-c+" 'rgr-vc-log-plus))
 
 ;;;###autoload
 (defun rgr-change-log-insert-plus ()
@@ -438,4 +440,7 @@ This is useful, for instance, when a definition has been deleted."
 (defun rgr-change-log-edit-hook ()
   (define-key change-log-mode-map "\C-c+" 'rgr-change-log-insert-plus))
 
+;; [historical . . . ]
 (provide 'rgr-cvs-hacks)
+;; [ . . . and modern.  -- rgr, 15-Feb-06.]
+(provide 'rgr-vc-hacks)
