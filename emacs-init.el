@@ -304,8 +304,13 @@
 (define-key text-mode-map "\C-c+" 'rgr-vc-log-plus)
 (add-hook 'log-edit-mode-hook 'rgr-vc-log-edit-hook)
 ;; svn hacks.  -- rgr, 1-May-05.
-(and (eq rgr-site 'home)
-     (require 'local-vc-svn))
+(defvar rgr-new-vc-file "/shared/emacs/site-lisp/new-vc/new-vc.el")
+(cond ((and rgr-new-vc-file
+	    (file-readable-p rgr-new-vc-file))
+        (load-file rgr-new-vc-file))
+      ((eq rgr-site 'home)
+        ;; old solution.  -- rgr, 3-Dec-05.
+        (require 'local-vc-svn)))
 
 ;; Change TERM=emacs into something that Tru64 "man" can deal with.  It refuses
 ;; to run if it can't recognize the terminal type, which is broken; it should
