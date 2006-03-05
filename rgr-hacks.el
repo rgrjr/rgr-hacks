@@ -608,6 +608,7 @@ M-x buffer-menu)."
   ;; Intended for .emacs calling.
   (global-set-key "\C-cgl" 'goto-line)
   (global-set-key "\C-cgc" 'goto-char)
+  (global-set-key "\C-cgs"'rgr-view-sequence-at-point)
   ;; I keep typing "insert" by accident, and then overwrite stuff by accident.
   ;; Unbinding this key means that I have to type "M-x overwrite-mode RET" if I
   ;; really want to clobber myself.  -- rgr, 6-Feb-06.

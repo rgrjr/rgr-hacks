@@ -335,6 +335,26 @@ if (e.g.) the pathname does not indicate a server."
 		   (buffer-name) n-matches n-positions
 		   (/ (* n-matches 100) n-positions))))))
 
+;;;###autoload
+(defun rgr-view-sequence-at-point ()
+  (interactive)
+  (let ((string (ffap-string-at-point 'url))
+	(host "localhost"))
+    (if (and string
+	     (string-match "^\\(.+\\)@\\(.+\\)$" string))
+	(setq host (match-string 2 string)
+	      string (match-string 1 string)))
+    ;; groES-var-1 and OPH%@alexandria and groES-v% and exp14%@localhost:8082
+    (and string
+	 (let ((url 
+		 (concat "http://" host "/cgi-bin/mgi/db/"
+			 (if (string-match "%" string)
+			     "find-sequence.cgi?seq_name="
+			     "view-sequence.cgi?sequence_id=")
+			 ;; [this should be escaped.  -- rgr, 22-Dec-05.]
+			 string)))
+	   (rgr-browse-url-netscape url)))))
+
 '(defun rgr-foo ()
   ;; Batch percent identity computation.
   (interactive)
