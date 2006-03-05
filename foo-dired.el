@@ -134,6 +134,7 @@ Reverts the dired buffer."
   (define-key dired-mode-map "\C-cr" 'rgr-dired-rename-file-and-versions)
   ;; some still newer hacks.  -- rgr, 13-Sep-04.
   (define-key dired-mode-map "\C-c " 'dired-do-flush-spaces)
-  (define-key dired-mode-map "\C-ca" 'vm-dired-attach-file))
+  (define-key dired-mode-map "\C-ca" 'vm-dired-attach-file)
+  (define-key dired-mode-map "U" 'browse-url-of-dired-file))
 
 (provide 'rgr-dired)
