@@ -6,24 +6,30 @@
 
 (require 'ffap)
 
-(defun ffap-url-decode-string (string)
-  ;; [based on the vm-url-decode-buffer fn, which is GPL'ed with the following
-  ;; notice: "Copyright (C) 1989-1997 Kyle E. Jones".  -- rgr, 9-Aug-03.]
+(defun ffap-url-encode-hex (string)
+  ;; Convert a hex string to an integer.  Breaks if given non-hex chars.
   (let ((hex-digit-alist '((?0 .  0)  (?1 .  1)  (?2 .  2)  (?3 .  3)
 			   (?4 .  4)  (?5 .  5)  (?6 .  6)  (?7 .  7)
 			   (?8 .  8)  (?9 .  9)  (?A . 10)  (?B . 11)
 			   (?C . 12)  (?D . 13)  (?E . 14)  (?F . 15)))
-	(pos 0))
+	(result 0) (i 0))
+    (while (< i (length string))
+      (setq result (+ (* result 16)
+		      (cdr (assq (aref string i) hex-digit-alist))))
+      (setq i (1+ i)))
+    result))
+
+(defun ffap-url-decode-string (string)
+  ;; [based on the vm-url-decode-buffer fn, which is GPL'ed with the following
+  ;; notice: "Copyright (C) 1989-1997 Kyle E. Jones".  -- rgr, 9-Aug-03.]
+  (let ((pos 0))
     (while (string-match "%[0-9a-fA-F][0-9a-fA-F]\\|\\+" string pos)
       (setq pos (1+ (match-beginning 0)))
       (setq string (replace-match
 		     (if (= pos (match-end 0))
 			 " "
-			 (string (+ (* (cdr (assq (aref string pos)
-						  hex-digit-alist))
-				       16)
-				    (cdr (assq (aref string (1+ pos))
-					       hex-digit-alist)))))
+			 (string (ffap-url-encode-hex
+				   (substring string pos (match-end 0)))))
 		     t t string)))
     string))
 
