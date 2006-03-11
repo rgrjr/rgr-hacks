@@ -49,8 +49,8 @@
 ;; (rgr-comment-buffers)
 
 (defvar rgr-vc-backend-to-log-command
-	'((CVS "cvs -q log -d '>%s' | cvs-chrono-log.pl")
-	  (SVN "svn log --xml --revision '{%s}:HEAD' | svn-chrono-log.pl"))
+  '((CVS "cvs -q log -d '>%s' | cvs-chrono-log.pl")
+    (SVN "svn log --xml --verbose --revision '{%s}:HEAD' | svn-chrono-log.pl"))
   "Alist mapping backend names to log summary commands for handled
 version control back ends.")
  
