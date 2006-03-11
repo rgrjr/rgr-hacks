@@ -259,26 +259,7 @@
 (add-hook 'rgr-html-tags-load-hook '(lambda () (load "rgr-html-servers")))
 ;; This has some per-buffer stuff.  -- rgr, 19-Mar-96.
 (add-hook 'html-helper-mode-hook 'rgr-html-helper-mode-hook)
-;; Ensure that we can fire up netscape.  We need to make special arrangements if
-;; we are running under X11 on a non-Internet-enabled host at BMERC.
-(let ((display (getenv "DISPLAY")))
-  (if (and (eq rgr-site 'bmerc)
-	   ;; running under X11
-	   display
-	   ;; not via SSH (that would mean some other "real" display).
-	   (not (string-match ":[1-9][0-9]" display))
-	   ;; the local host can't get to the Internet by itself.
-	   (not (and (boundp 'bmerc-internet-host-regexp)
-		     (string-match bmerc-internet-host-regexp (system-name)))))
-      ;; We're not Internet-enabled; run netscape on somebody who is.  -- rgr,
-      ;; 14-Mar-96.  [bmerc-internet-host-regexp is normally set by
-      ;; /usr/local/share/emacs/site-lisp/site-start.el, but this probably won't
-      ;; work for emacs 18.  -- rgr, 19-Mar-96.] . . .  [try sewall so we can
-      ;; get matlab docs.  -- rgr, 4-Nov-98.]  [moved to mcclintock to simplify
-      ;; xhost setup.  -- rgr, 1-Jul-99.]  [added display and ssh checks.  --
-      ;; rgr, 12-Jan-01.]  [moved to feynman.  -- rgr, 8-Mar-01.]
-      (setq rgr-web-client-host "feynman"
-	    rgr-web-client-name "/usr/local/bin/netscape")))
+
 ;; Emacs/W3
 (add-hook 'w3-load-hook 'rgr-w3-load-hook)
 ;; wiki-remote stuff.
@@ -297,14 +278,15 @@
     ;; /usr/sbin/redirect.pl hacks to make it work.  -- rgr, 29-Feb-04.
     (setq ssh-per-host-option-alist
 	  '(("modulargenetics\\.dnsalias\\.com$"
-	     "-L" "9123:carthage:3306"
+	     ;; "-L" "9123:carthage:3306"
+	     "-L" "8083:thebes:80"
 	     "-L" "8081:alexandria:80" "-L" "8082:karnak:80"))))
 
 ;; VC hacks.  -- rgr, 6-Aug-04.
 (define-key text-mode-map "\C-c+" 'rgr-vc-log-plus)
 (add-hook 'log-edit-mode-hook 'rgr-vc-log-edit-hook)
 ;; svn hacks.  -- rgr, 1-May-05.
-(defvar rgr-new-vc-file "/shared/emacs/site-lisp/new-vc/new-vc.el")
+(defvar rgr-new-vc-file "/home/rogers/emacs/new-vc/new-vc.el")
 (cond ((and rgr-new-vc-file
 	    (file-readable-p rgr-new-vc-file))
         (load-file rgr-new-vc-file))
