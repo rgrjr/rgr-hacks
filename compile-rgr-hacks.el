@@ -51,10 +51,6 @@ rgr-hacks-compile-module (see below).")
 	  "rgr-lisp-hacks"
 	  "rgr-mail-hacks"
 	  "rgr-makefile-hacks"
-	  ("rgr-mouse-19"
-	   if (member rgr-emacs-major-version '(19 20))
-	   require (ilisp-mouse))
-	  ("rgr-mouse-20" if (eq rgr-emacs-major-version 20))
 	  ("rgr-mouse-21"
 	   if (eq rgr-emacs-major-version 21)
 	   require (ilisp-mouse))
