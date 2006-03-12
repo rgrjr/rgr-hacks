@@ -48,6 +48,8 @@
 
 ;; (rgr-comment-buffers)
 
+;;;; Log stuff.
+
 (defvar rgr-vc-backend-to-log-command
   '((CVS "cvs -q log -d '>%s' | cvs-chrono-log.pl")
     (SVN "svn log --xml --verbose --revision '{%s}:HEAD' | svn-chrono-log.pl"))
@@ -63,11 +65,12 @@ then the last month (30 days, actually).  Any other numeric argument
 shows the log for that many days."
   (interactive "P")
   (require 'time-date)		;; part of gnus
-  (let* ((backend (vc-responsible-backend default-directory))
+  (let* ((original-directory default-directory)
+	 (backend (vc-responsible-backend original-directory))
 	 (command-format
 	   (cond ((null backend)
 		   (error "The directory %S is not under version control."
-			  default-directory))
+			  original-directory))
 		 ((car (cdr (assoc backend rgr-vc-backend-to-log-command))))
 		 (t
 		   (error "Don't know how to deal with backend '%S'."
@@ -91,7 +94,14 @@ shows the log for that many days."
 	   ;; backends I use.  -- rgr, 26-Nov-05.
 	   (format-time-string "%Y-%m-%d %H:%M" n-days-ago)))
     ;; (error "Date '%s'." n-days-ago-string)
-    (shell-command (format command-format n-days-ago-string))))
+    (let ((output (get-buffer-create "*vc-recent-changes*")))
+      (shell-command (format command-format n-days-ago-string) output)
+      (save-excursion
+	(set-buffer output)
+	;; must preserve the default directory so that vc-history-diff knows
+	;; where to operate.
+	(setq default-directory original-directory)
+	(vc-history-mode)))))
 
 ;;;###autoload
 (defun rgr-vc-project-diff ()
@@ -111,6 +121,79 @@ the \\[rgr-vc-log-insert-skeleton] command can use this output."
       (and old-buf
 	   (kill-buffer old-buf)))
     (rename-buffer "*vc-project-diff*")))
+
+;;;; vc-history mode.
+
+;; This used for navigating and operating on the output of the
+;; rgr-vc-recent-changes command (q.v.).  Conceptually, it works like
+;; log-view-mode, except that each entry describes a set of changes that were
+;; committed at the same time, where as log-view-mode only works on a file at a
+;; time.
+
+(defvar vc-history-message-re "^\\([0-9]+-[0-9]+-[0-9]+ [0-9:]+\\):")
+
+(defgroup vc-history nil
+  "Major mode for browsing M-x rgr-vc-recent-changes summaries of VC history."
+  :group 'pcl-cvs
+  :prefix "vc-history-")
+
+(easy-mmode-defmap vc-history-mode-map
+  '(("q" . quit-window)
+    ("z" . kill-this-buffer)
+    ("m" . set-mark-command)
+    ("d" . vc-history-diff)
+    ;; ("f" . log-view-find-version)
+    ("n" . log-view-msg-next)
+    ("p" . log-view-msg-prev))
+  "VC-History's keymap."
+  :group 'vc-history)
+
+;;;###autoload
+(define-derived-mode vc-history-mode fundamental-mode "VC-History"
+  "Major mode for browsing VC summary log output."
+  (set (make-local-variable 'log-view-message-re) vc-history-message-re))
+
+(defun vc-history-current-tag (&optional where)
+  "Return a tag that describes the revision at point, or at WHERE if supplied.
+For Subversion, this will be the revision number; otherwise, it is the date."
+  (save-excursion
+    (when where
+      (goto-char where))
+    (forward-line 1)
+    (if (re-search-backward vc-history-message-re nil t)
+	(let ((date-tag (match-string 1)))
+	  ;; try to do better for SVN.
+	  (forward-line 1)
+	  (if (looking-at "^ *revision: *\\([0-9]+\\)")
+	      (match-string 1)
+	      date-tag)))))
+
+(defun vc-history-diff (beg end)
+  "Get the diff between two revision summaries.
+If the mark is not active or the mark is on the revision at point,
+get the diff between the revision at point and its previous revision.
+Otherwise, get the diff between the revisions where the region starts
+and ends.
+
+[This works better for Subversion than it does for CVS, simply because
+Subversion has well-defined revision numbers, and CVS has fuzzier dates.
+-- rgr, 12-Mar-06.]"
+  (interactive
+    (list (if mark-active (region-beginning) (point))
+	  (if mark-active (region-end) (point))))
+  (let ((fr (vc-history-current-tag beg))
+        (to (vc-history-current-tag end)))
+    (when (string-equal fr to)
+      (save-excursion
+        (goto-char end)
+        (log-view-msg-next)
+        (setq to (vc-history-current-tag))))
+    (message "[default dir %S backend %S]"
+	     default-directory (vc-responsible-backend default-directory))
+    ;; (message "[got tags %S and %S.]" fr to)
+    (vc-version-diff default-directory to fr)))
+
+;;;; Committing multiple files via the revision comment.
 
 ;;;###autoload
 (defun rgr-vc-commit-with-comments ()
