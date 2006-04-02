@@ -130,6 +130,8 @@ the \\[rgr-vc-log-insert-skeleton] command can use this output."
 ;; committed at the same time, where as log-view-mode only works on a file at a
 ;; time.
 
+(require 'log-view)
+
 (defvar vc-history-message-re "^\\([0-9]+-[0-9]+-[0-9]+ [0-9:]+\\):")
 
 (defgroup vc-history nil
@@ -149,7 +151,7 @@ the \\[rgr-vc-log-insert-skeleton] command can use this output."
   :group 'vc-history)
 
 ;;;###autoload
-(define-derived-mode vc-history-mode fundamental-mode "VC-History"
+(define-derived-mode vc-history-mode log-view-mode "VC-History"
   "Major mode for browsing VC summary log output."
   (set (make-local-variable 'log-view-message-re) vc-history-message-re))
 
@@ -254,12 +256,14 @@ Only those files mentioned explicitly in the buffer in style of the
 	      (or win
 		  (log-edit-hide-buf))))
 	  ;; yes!
-	  (while files-to-commit
-	    (let ((file (car files-to-commit)))
-	      (message "Processing %s..." file)
-	      (vc-next-action-on-file file nil comment)
-	      (message "Processing %s...done" file))
-	    (setq files-to-commit (cdr files-to-commit)))
+	  (if (fboundp 'vc-perform-checkin)
+	      (vc-perform-checkin files-to-commit nil comment)
+	      (while files-to-commit
+		(let ((file (car files-to-commit)))
+		  (message "Processing %s..." file)
+		  (vc-next-action-on-file file nil comment)
+		  (message "Processing %s...done" file))
+		(setq files-to-commit (cdr files-to-commit))))
 	  ;; no.
 	  (message "Oh, well!  Later maybe?")))))
 
