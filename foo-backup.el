@@ -42,6 +42,7 @@
 	  (setq size (car (read-from-string (match-string 1))))
 	  (error "Can't find backup size; did it complete successfully?"))
       ;; [foo bar.  baz.]
+      ;; [quux.]
       '(message "[got level %S date %S size %S for part %S]"
 	       level date size partition)
       (save-excursion
