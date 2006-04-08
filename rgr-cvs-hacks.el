@@ -207,8 +207,7 @@ Only those files mentioned explicitly in the buffer in style of the
   (interactive)
   (require 'vc)
   (require 'log-edit)
-  (let ((was-saved-p (not (buffer-modified-p)))
-	(files-to-commit (or (rgr-vc-all-comment-files)
+  (let ((files-to-commit (or (rgr-vc-all-comment-files)
 			     (error "Can't find any comment files in %s."
 				    (current-buffer)))))
     ;; Get rid of trailing empty lines
@@ -227,14 +226,11 @@ Only those files mentioned explicitly in the buffer in style of the
 	(save-excursion
 	  (goto-char (point-max))
 	  (insert ?\n)))
-    (if (and (buffer-modified-p)
-	     (or was-saved-p
-		 (y-or-n-p (format "Save %s? " (buffer-name)))))
-	(save-buffer))
     ;; (error "Going to commit %S with %S" files-to-commit (current-buffer))
     (let ((comment (buffer-string)))
       (let ((comment-ring
 	      (cond ((boundp 'log-edit-comment-ring)
+		      ;; [emacs 22.1 and later.]
 		      (symbol-value 'log-edit-comment-ring))
 		    ((boundp 'vc-comment-ring)
 		      ;; [old name (21.3 at least).  -- rgr, 12-Dec-05.]
