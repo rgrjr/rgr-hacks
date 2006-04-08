@@ -121,14 +121,6 @@ Reverts the dired buffer."
 	  (expand-file-name file-name directory))))
       marker-char)))
 
-;;;###autoload
-(defun dired-do-flush-spaces (&optional arg)
-  "Rename current file or all marked (or next ARG) files changing SPC to '-'."
-  (interactive "P")
-  (dired-do-flush-spaces-internal
-    'flush-spaces (function dired-rename-file)
-    "Remove spaces from" arg dired-keep-marker-rename))
-
 ;;; Tail ends.
 
 ;;;###autoload
