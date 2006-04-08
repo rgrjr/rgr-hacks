@@ -39,7 +39,7 @@
 
 (defun rgr-dired-sort-internal ()
   ;; Callback for dired sorting.
-  ;; [foo bar.]
+  ;; [foo bar.  baz.]
   (goto-char (point-min))
   (while (not (dired-get-filename 'no-dir t))
     (forward-line))
