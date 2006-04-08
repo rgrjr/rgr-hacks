@@ -18,6 +18,8 @@
 ;;; rgr-dired-do-size-sort: fix sort arg for Linux version.  -- rgr, 4-Aug-01.
 ;;;
 
+;; [another gratuitous change.  -- rgr, 7-Apr-06.]
+
 (defvar rgr-dired-desired-sort nil)
 (defvar rgr-dired-last-switches nil)
 

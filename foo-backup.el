@@ -4,6 +4,8 @@
 ;;;
 ;;; $Id$:
 
+;; (setq debug-on-error t)
+
 (defvar rgr-backup-log-file-name
         (expand-file-name "~/projects/linux/backup/backups.text")
   "*Name of file for recording backups.")
