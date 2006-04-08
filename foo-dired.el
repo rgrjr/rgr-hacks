@@ -37,24 +37,6 @@
     ;; rgr, 21-Feb-98.]  [and sort version.  -- rgr, 4-Aug-01.]
     "-nr" "+4"))
 
-(defun rgr-dired-sort-internal ()
-  ;; Callback for dired sorting.
-  ;; [foo bar.  baz.  quux.]
-  (goto-char (point-min))
-  (while (not (dired-get-filename 'no-dir t))
-    (forward-line))
-  (cond ((and rgr-dired-last-switches
-	      (not (equal rgr-dired-last-switches dired-actual-switches)))
-	  ;; The user changed the sort some other way; forget about resorting.
-	  (setq rgr-dired-desired-sort nil))
-	((eobp))
-	((eq rgr-dired-desired-sort 'size)
-	  (beginning-of-line)
-	  (rgr-dired-do-size-sort))
-	(t
-	  (message "Unknown sort type %S ?" rgr-dired-desired-sort)))
-  (setq rgr-dired-last-switches dired-actual-switches))
-
 ;;;###autoload
 (defun rgr-dired-sort-by-size ()
   "In dired mode, sort files downward by file size.
