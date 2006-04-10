@@ -9,6 +9,8 @@
 (defvar rgr-dired-desired-sort nil)
 (defvar rgr-dired-last-switches nil)
 
+;; sigh.  -- rgr, 10-Apr-06.
+
 ;;;###autoload
 (defun rgr-dired-rename-file-and-versions ()
   "Renames the current file and all versions consistently."
