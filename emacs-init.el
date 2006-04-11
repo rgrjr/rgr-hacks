@@ -189,10 +189,6 @@
 (add-hook 'vm-mail-mode-hook 'rgr-vm-mail-mode-hook)
 (if (fboundp 'vm-mail)
     (global-set-key "\C-xm" 'vm-mail))
-(global-set-key (if (eq rgr-emacs-flavor 'fsf) [s-f1] [(super f1)])
-		'v+q-mbox-status)
-;; also try f2, which is easier to type at MGI.  -- rgr, 16-Jan-03.
-(global-set-key [f2] 'v+q-mbox-status)
 (setq mail-self-blind t)
 ;; Mailcrypt stuff.
 (setq mc-default-scheme 'mc-scheme-gpg)

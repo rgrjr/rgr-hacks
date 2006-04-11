@@ -66,17 +66,7 @@ buffer visiting that file."
   (setq rmail-summary-window-size (max (/ (frame-height) 4) 6))
   ;; fix bug in output with a numeric arg.
   (define-key rmail-summary-mode-map "o"
-    'rgr-rmail-summary-output-to-rmail-file)
-  (rgr-emacs-major-version-case
-    (18
-      ;; The emacs 19.27 version of rmail supports these directly.  -- rgr,
-      ;; 17-Jan-95.
-      (load "rgr-rmail-18")
-      ;; forward ref into previously loaded file.
-      (rgr-install-rmail-commands))
-    ((19 lucid19 20)
-      (define-key rmail-summary-mode-map [f1] 'rgr-reinvoke-rmail-from-summary)
-      (define-key rmail-mode-map [f1] 'rgr-reinvoke-rmail))))
+    'rgr-rmail-summary-output-to-rmail-file))
 
 ;; [hushes compiler warnings.  -- rgr, 16-Dec-98.]
 ;; (setq rmail-buffer nil)

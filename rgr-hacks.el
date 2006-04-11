@@ -608,7 +608,7 @@ M-x buffer-menu)."
   ;; Intended for .emacs calling.
   (global-set-key "\C-cgl" 'goto-line)
   (global-set-key "\C-cgc" 'goto-char)
-  (global-set-key "\C-cgs"'rgr-view-sequence-at-point)
+  (global-set-key "\C-cgs" 'rgr-view-sequence-at-point)
   ;; I keep typing "insert" by accident, and then overwrite stuff by accident.
   ;; Unbinding this key means that I have to type "M-x overwrite-mode RET" if I
   ;; really want to clobber myself.  -- rgr, 6-Feb-06.
@@ -682,7 +682,11 @@ M-x buffer-menu)."
   (add-hook 'find-file-hooks 'rgr-maybe-rename-buffer)
   ;; And make buffers go away on command.  -- rgr, 6-Feb-98.
   (global-set-key "\C-cb" 'bury-buffer))
- 
+
+(defun rgr-no-root-email ()
+  (interactive)
+  (error "No email for root."))
+
 ;;;###autoload
 (defun rgr-install-function-keys ()
   ;; These function keys should also be supported by the NCSA/BYU Telnet vt200
@@ -690,8 +694,17 @@ M-x buffer-menu)."
   ;; rgr-term-setup function).  -- rgr, 4-Apr-96.  [now fixed.  this used to be
   ;; part of rgr-install-x11-hacks, but now installed generally.  -- rgr,
   ;; 6-Feb-98.]
-  (global-set-key [f1] 'rgr-invoke-rmail)
-  (global-set-key [kp-f1] 'rgr-invoke-rmail)
+  (cond ((zerop (user-uid))
+	  ;; root doesn't get mail anyway, no sense in loading all of vm just to
+	  ;; find that out.
+	  (global-set-key [f1] 'rgr-no-root-email)
+	  (global-set-key [kp-f1] 'rgr-no-root-email)
+	  (global-set-key [f2] 'rgr-no-root-email))
+	(t
+	  ;; normal user.
+	  (global-set-key [f1] 'rgr-invoke-rmail)
+	  (global-set-key [kp-f1] 'rgr-invoke-rmail)
+	  (global-set-key [f2] 'v+q-mbox-status)))
   (global-set-key [f4] 'rgr-insert-symbol-abbreviation)
   ;; [ssh on Windows sends kp-f1 through kp-f4 for f1 through f4.  f5 sends
   ;; nothing, f10 is intercepted, and the others seem to be normal.  -- rgr,
