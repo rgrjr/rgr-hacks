@@ -347,10 +347,11 @@ if (e.g.) the pathname does not indicate a server."
     ;; groES-var-1 and OPH%@alexandria and groES-v% and exp14%@localhost:8082
     (and string
 	 (let ((url 
-		 (concat "http://" host "/cgi-bin/mgi/db/"
+		 (concat "http://"
+			 host
 			 (if (string-match "%" string)
-			     "find-sequence.cgi?seq_name="
-			     "view-sequence.cgi?sequence_id=")
+			     "/modest/search/find-sequence.cgi?seq_name="
+			     "/modest/tools/view-sequence.cgi?sequence_id=")
 			 ;; [this should be escaped.  -- rgr, 22-Dec-05.]
 			 string)))
 	   (rgr-browse-url-netscape url)))))
