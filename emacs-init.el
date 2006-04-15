@@ -275,8 +275,10 @@
     (setq ssh-per-host-option-alist
 	  '(("modulargenetics\\.dnsalias\\.com$"
 	     ;; "-L" "9123:carthage:3306"
-	     "-L" "8083:thebes:80"
-	     "-L" "8081:alexandria:80" "-L" "8082:karnak:80"))))
+	     "-L" "8080:alexandria:8080"
+	     "-L" "8081:alexandria:80"
+	     "-L" "8082:karnak:80"
+	     "-L" "8083:thebes:80"))))
 
 ;; VC hacks.  -- rgr, 6-Aug-04.
 (define-key text-mode-map "\C-c+" 'rgr-vc-log-plus)
