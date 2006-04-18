@@ -79,3 +79,9 @@
   (define-key dired-mode-map "U" 'browse-url-of-dired-file))
 
 (provide 'rgr-dired)
+
+;; barf.
+
+;; (setq file (directory-file-name default-directory))
+;; (vc-cvs-registered file)
+;; (vc-file-getprop (directory-file-name default-directory) 'vc-backend)
