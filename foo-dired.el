@@ -80,7 +80,7 @@
 
 (provide 'rgr-dired)
 
-;; barf.
+;; barf.  barf, barf.
 
 ;; (setq file (directory-file-name default-directory))
 ;; (vc-cvs-registered file)
