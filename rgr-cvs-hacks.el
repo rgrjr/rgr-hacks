@@ -456,13 +456,16 @@ This is useful, for instance, when a definition has been deleted."
   (interactive "P")
   (let* ((rev (not (save-excursion (beginning-of-line) (looking-at "[-<]"))))
 	 ;; loc is a list of (buf line-offset pos src dst &optional switched).
+	 ;; [up to emacs 21.3, pos is the start of the src text in buffer; in
+	 ;; emacs 22+, pos is a (buf-start . buf-end) pair.  -- rgr, 23-Apr-06.]
 	 (loc (diff-find-source-location other-file rev))
 	 (source-buffer (car loc))
 	 (pos (nth 2 loc))
+	 (src-buf-start (if (consp pos) (car pos) pos))
 	 (src (nth 3 loc))
 	 (name (save-excursion
 		 (set-buffer source-buffer)
-		 (goto-char (+ pos (cdr src)))
+		 (goto-char (+ src-buf-start (cdr src)))
 		 (rgr-mode-definition-name))))
     (rgr-add-definition-comment-internal name source-buffer)))
 
