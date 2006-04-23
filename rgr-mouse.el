@@ -252,7 +252,12 @@ additional customizations.")
 
 ;;; Load the version-specific commands.  This is why we need to be on the
 ;;; load-path.
-(load (format "rgr-mouse-%s" rgr-emacs-major-version))
+(let ((version rgr-emacs-major-version))
+  (condition-case err
+      (load (format "rgr-mouse-%s" version))
+    (error (message "Failed to load %s mouse code:  %S" version err)
+	   ;; fall back to the previous version.
+	   (load (format "rgr-mouse-%s" (1- version))))))
 
 (provide 'rgr-mouse)
 
