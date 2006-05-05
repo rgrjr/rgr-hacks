@@ -126,6 +126,17 @@
 	;; until 19.29.
 	(eval-after-load "ange-ftp" '(rgr-ange-ftp-load-hook))))
 
+(cond ((rgr-emacs-version-p 22)
+        ;; [something i'm doing seems to break font-lock in makefile-gmake-mode
+        ;; . . .  -- rgr, 4-May-06.]
+	(setq font-lock-global-modes '(not makefile-gmake-mode))
+	;; [temp hack for 22.0 debugging; this makes vm available, for one
+	;; thing.  -- rgr, 28-Apr-06.]
+	(or (member "/usr/share/emacs/site-lisp" load-path)
+	    (setq load-path (cons "/usr/share/emacs/site-lisp" load-path)))
+	(or (member "/shared/emacs/site-lisp" load-path)
+	    (setq load-path (cons "/shared/emacs/site-lisp" load-path)))))
+
 ;; This matters for certain threading applications.  -- rgr, 19-Nov-97.  [but
 ;; solaris screws it up; ONLY shows the group.  -- rgr, 27-Oct-98.]  [and "ls"
 ;; in SuSE 8.1 (part of fileutils 4.1.11) seems to *suppress* the group.  --
