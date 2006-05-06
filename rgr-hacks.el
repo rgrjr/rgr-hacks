@@ -657,10 +657,6 @@ M-x buffer-menu)."
 (defun rgr-install-miscellaneous-global-hacks ()
   (global-set-key "\C-cs" 'rgr-insert-signature)
   (global-set-key "\C-x\C-x" 'rgr-exchange-point-and-mark)
-  (cond ((not (eq rgr-emacs-flavor 'lucid))
-	  ;; The Lucid emacs version of this has hairy zmacs-activate-region
-	  ;; behavior.  -- rgr, 26-Oct-94.
-	  (global-set-key "\C-@" 'rgr-set-mark-command)))
   ;; Make these the default everywhere, in case I get used to typing them.
   (global-set-key "\C-c." 'ilisp-next-possibility)
   (global-set-key "\C-c;" 'rgr-comment-region-lisp)
@@ -668,13 +664,6 @@ M-x buffer-menu)."
   ;; need to put rgr-set-mark-command there.  -- rgr, 8-Dec-99.]
   ;; (global-set-key "\C-c " 'rgr-exchange-point-and-mark)
   (global-set-key "\C-c\e " 'rgr-exchange-point-and-mark)
-  ;; Work around braindeath in QVT/Term and ssh -- you can't tell them to send
-  ;; C-@ for C-SPC.  Rebind these everywhere, in case I get used to them.  [this
-  ;; makes rgr-vt220-term-setup redundant now.  -- rgr, 8-Dec-99.]
-  (global-set-key "\C-c " 'rgr-set-mark-command)
-  ;; [also use C-x SPC, since C-c SPC is shadowed in html-helper-mode.  -- rgr,
-  ;; 26-Nov-99.]  [and in emacs 20 comint mode.  -- rgr, 8-Dec-99.]
-  (global-set-key "\C-x " 'rgr-set-mark-command)
   ;; The standard version doesn't deal with quoted strings . . .
   (global-set-key "\C-\M-u" 'rgr-backward-up-list)
   ;; Give *helpful* unique buffer names to scores of makefile files.  -- rgr,
