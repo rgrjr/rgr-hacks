@@ -105,27 +105,6 @@
 ;; Turn off paging in subordinate shells.  -- rgr, 17-Feb-00.
 (setenv "PAGER" "cat")
 
-(defun rgr-ange-ftp-load-hook ()
-  ;; [may need cleaning up, should probably go elsewhere.  -- rgr, 13-Apr-00.]
-  ;; [the ange-ftp-hacks stuff is no longer very useful.  -- rgr, 13-Aug-05.]
-  ;; (require 'ange-ftp-hacks)
-  (and (string-match (regexp-quote "\\|\\.ps$")
-		     ange-ftp-binary-file-name-regexp)
-       ;; Don't treat PostScript as binary.
-       (setq ange-ftp-binary-file-name-regexp
-	     (replace-match "" nil nil ange-ftp-binary-file-name-regexp))))
-
-(cond ((not (rgr-emacs-version-p 19))
-	;; No ange-ftp in emacs 18.  -- rgr, 9-Aug-95.
-	(require 'rgr-emacs-18-hacks))
-      ((memq 'ange-ftp features)
-	(rgr-ange-ftp-load-hook))
-      (t
-	;; note that eval-after-load initially appeared in emacs 19.0, but the
-	;; semantics weren't changed to "evaluate immediately if already loaded"
-	;; until 19.29.
-	(eval-after-load "ange-ftp" '(rgr-ange-ftp-load-hook))))
-
 (cond ((rgr-emacs-version-p 22)
         ;; [something i'm doing seems to break font-lock in makefile-gmake-mode
         ;; . . .  -- rgr, 4-May-06.]
