@@ -387,6 +387,10 @@ the page."
 
 ;;;###autoload
 (defun rgr-perl-mode-hook ()
+  ;; First, this helps deal with stupid editors (including perl-mode, alas) that
+  ;; leave whitespace as indentation on otherwise empty lines.
+  (setq paragraph-start "[ \t]*$\\|^")
+  (setq paragraph-separate paragraph-start)
   ;; Take the whole enchilada.
   (rgr-perl-mode-fix-indentation)
   (rgr-perl-mode-install-documentation-hacks)
