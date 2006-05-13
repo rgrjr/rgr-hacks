@@ -296,6 +296,19 @@ file to read."
   (define-key map "\C-c\C-s" nil))
 
 ;;;###autoload
+(defun rgr-mail-setup-hook ()
+  ;; This is designed for munging headers.
+  (save-excursion
+    (goto-char (point-min))
+    (if (and mail-envelope-from
+	     (not (equal user-mail-address mail-envelope-from))
+	     (re-search-forward (concat "^BCC: "
+					(regexp-quote user-mail-address)
+					"$")
+				nil t))
+	(replace-match (concat "BCC: " mail-envelope-from) t t))))
+
+;;;###autoload
 (defun rgr-mail-mode-hook ()
   (rgr-text-mode-hook)
   (rgr-setup-mail-commands (current-local-map))

@@ -166,6 +166,7 @@
 
 (add-hook 'rmail-mode-hook 'rgr-rmail-mode-hook)
 (add-hook 'mail-mode-hook 'rgr-mail-mode-hook)
+(add-hook 'mail-setup-hook 'rgr-mail-setup-hook)
 (add-hook 'vm-mail-mode-hook 'rgr-vm-mail-mode-hook)
 (if (fboundp 'vm-mail)
     (global-set-key "\C-xm" 'vm-mail))
