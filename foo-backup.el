@@ -58,3 +58,5 @@
 ;; vomit, grommit.
 
 ;; somit, damit.
+
+;; yawn, retch, gag, barf.
