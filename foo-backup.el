@@ -60,3 +60,5 @@
 ;; somit, damit.
 
 ;; yawn, retch, gag, barf.
+
+;; testing multiple commits.  -- rgr, 27-May-06.
