@@ -421,7 +421,11 @@ noted as such."
   (let* ((source-buffer (or source-buffer (current-buffer)))
 	 (changed-file (buffer-file-name source-buffer)))
     (switch-to-buffer-other-window
-      (or (rgr-current-comment-buffer source-buffer)
+      (or (and (fboundp 'vc-log-buffer-for-file)
+	       (save-excursion
+		 (set-buffer source-buffer)
+		 (vc-log-buffer-for-file buffer-file-name)))
+	  (rgr-current-comment-buffer source-buffer)
 	  (find-file-noselect "comment.text")))
     (let ((current-comment-files (rgr-vc-current-comment-files))
 	  (comment-start nil))
