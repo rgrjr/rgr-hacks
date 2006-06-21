@@ -75,11 +75,14 @@
 		(canonical-host
 		  (save-match-data
 		    (rgr-canonicalize-host-name original-host)))
-		(display-host (if (equal original-host "localhost")
+		(display-host (if (or (equal original-host "")
+				      (equal original-host "localhost"))
 				  ;; don't use the official host name, because
 				  ;; that won't work for tunneled OpenSSH 3.4
 				  ;; connections, which are alway bound to the
-				  ;; loopback address.  -- rgr, 19-Oct-02.
+				  ;; loopback address.  -- rgr, 19-Oct-02.  [the
+				  ;; X11 that comes with SuSE 10.0 doesn't even
+				  ;; open port 6000.  -- rgr, 21-Jun-06.]
 				  original-host
 				  ;; otherwise, use the canonical name.
 				  canonical-host))
