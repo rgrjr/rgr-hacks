@@ -242,6 +242,8 @@ Useful in telnet/ssh sessions for propagating $XAUTHORITY."
 	 ;; client.  -- rgr, 13-Jun-03.
 	 (setq comint-password-prompt-regexp
 	       (replace-match replacement t t comint-password-prompt-regexp))))
+  ;; [introduced in emacs 22.0.  -- rgr, 7-Jun-06.]
+  (setq comint-scroll-show-maximum-output nil)
   ;; [oops; this is redundant.  -- rgr, 20-Jan-00.]
   ;; (define-key shell-mode-map "\M-\r" 'rgr-shell-insert-previous-input)
   (define-key shell-mode-map "\C-cx" 'rgr-shell-set-display)
