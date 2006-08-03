@@ -113,8 +113,9 @@
 	;; thing.  -- rgr, 28-Apr-06.]
 	(or (member "/usr/share/emacs/site-lisp" load-path)
 	    (setq load-path (cons "/usr/share/emacs/site-lisp" load-path)))
-	(or (member "/shared/emacs/site-lisp" load-path)
-	    (setq load-path (cons "/shared/emacs/site-lisp" load-path)))))
+	(cond ((not (member "/shared/emacs/site-lisp" load-path))
+	        (setq load-path (cons "/shared/emacs/site-lisp" load-path))
+	        (load "/shared/emacs/site-lisp/site-start.el")))))
 
 (add-hook 'dired-load-hook 'rgr-dired-load-hook)
 
@@ -198,6 +199,15 @@
 (rgr-define-lisp-mode-commands lisp-interaction-mode-map)
 (rgr-common-lisp-indentation)
 
+;; [this needs a better home.  -- rgr, 2-Aug-06.]
+(defun rgr-load-slime ()
+  (interactive)
+  (message "Loading slime.")
+  (add-to-list 'load-path (expand-file-name "/shared/emacs/slime"))
+  (setq inferior-lisp-program "/usr/local/bin/lisp")
+  (require 'slime)
+  (slime-setup))
+
 (rgr-install-diff-hacks)
 (add-hook 'log-view-mode-hook 'rgr-log-view-mode-hook)
 (add-hook 'ilisp-mode-hook 'rgr-ilisp-mode-hook)
@@ -259,13 +269,16 @@
 	     "-L" "8080:alexandria:8080"
 	     "-L" "8081:alexandria:80"
 	     "-L" "8082:karnak:80"
-	     "-L" "8083:thebes:80"))))
+	     "-L" "8083:thebes:80"
+	     "-L" "8084:carthage:80"))))
 
 ;; VC hacks.  -- rgr, 6-Aug-04.
 (define-key text-mode-map "\C-c+" 'rgr-vc-log-plus)
 (add-hook 'log-edit-mode-hook 'rgr-vc-log-edit-hook)
 ;; svn hacks.  -- rgr, 1-May-05.
-(defvar rgr-new-vc-file "/home/rogers/emacs/new-vc/new-vc.el")
+(defvar rgr-new-vc-file (if (= rgr-emacs-major-version 22)
+			    "/home/rogers/emacs/new-vc-22/new-vc.el"
+			    "/home/rogers/emacs/new-vc/new-vc.el"))
 (cond ((and rgr-new-vc-file
 	    (file-readable-p rgr-new-vc-file))
         (load-file rgr-new-vc-file))
