@@ -267,30 +267,35 @@ $PATH-oriented \"man\" implementation."
 	 (file-name (file-name-nondirectory file-name)))
     (concat parent-dir "/" file-name)))
 
+(defun rgr-rename-buffer-default-name ()
+  (or buffer-file-name
+      ;; this is the right thing for dired buffers, but is silly for others.
+      (and (eq major-mode 'dired-mode)
+	   (directory-file-name default-directory))))
+
 ;;;###autoload
 (defun rgr-rename-buffer (&optional new-name unique-p)
   "Change the current buffer's name to NEW-NAME (a string).
-This is just like \\[rename-buffer] except that the default comes from the
-file name and the name of its immediately containing directory."
+This is just like \\[rename-buffer] except that the interactive default
+comes from the file name (or the directory name if in dired mode) and
+the name of its immediately containing directory."
   (interactive
-    (list (read-string "New buffer name: "
-		       (if buffer-file-name
-			   (rgr-parent-dir-and-file-name buffer-file-name)
-			   ;; can't do any better.
-			   (buffer-name)))))
-  (rename-buffer (or new-name
-		     (if buffer-file-name
-			 (rgr-parent-dir-and-file-name buffer-file-name)
-			 (error "Can't default buffer name without file name")))
-		 unique-p))
+    (let ((name (rgr-rename-buffer-default-name)))
+      (list (read-string "New buffer name: "
+			 (if name
+			     (rgr-parent-dir-and-file-name name)
+			     ;; can't do any better.
+			     (buffer-name))))))
+  (rename-buffer new-name unique-p))
 
 ;;;###autoload
 (defun rgr-maybe-rename-buffer ()
   ;; This is useful as a hook function, e.g.
   ;;	(add-hook 'find-file-hooks 'rgr-maybe-rename-buffer)
-  (if (and (string-match "<[0-9]+>$" (buffer-name))
-	   buffer-file-name)
-      (rename-buffer (rgr-parent-dir-and-file-name buffer-file-name) t)))
+  (if (string-match "<[0-9]+>$" (buffer-name))
+      (let ((name (rgr-rename-buffer-default-name)))
+	(if name
+	    (rename-buffer (rgr-parent-dir-and-file-name name) t)))))
 
 ;;;###autoload
 (defun rgr-reset-buffer-backed-up (&optional query-p)
@@ -676,8 +681,7 @@ M-x buffer-menu)."
   (global-set-key "\C-c\e " 'rgr-exchange-point-and-mark)
   ;; The standard version doesn't deal with quoted strings . . .
   (global-set-key "\C-\M-u" 'rgr-backward-up-list)
-  ;; Give *helpful* unique buffer names to scores of makefile files.  -- rgr,
-  ;; 17-Dec-97.
+  ;; Try to give *helpful* unique buffer names.  -- rgr, 17-Dec-97.
   (add-hook 'find-file-hooks 'rgr-maybe-rename-buffer)
   ;; And make buffers go away on command.  -- rgr, 6-Feb-98.
   (global-set-key "\C-cb" 'bury-buffer))
