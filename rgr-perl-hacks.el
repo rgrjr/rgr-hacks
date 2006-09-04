@@ -30,16 +30,7 @@
 ;;;	(autoload 'rgr-perl-mode-install-documentation-hacks "rgr-perl-hacks")
 ;;;	(add-hook 'perl-mode-hook 'rgr-perl-mode-install-documentation-hacks)
 ;;;
-;;; You should be aware that the use of "C-z" as a prefix violates the emacs
-;;; key-binding standard.  "C-z" was chosen for compatibility with the
-;;; "traditional" ilisp bindings for the corresponding functionality for Lisp
-;;; development; these in turn were based on the MIT Lisp Machine Zmacs
-;;; implementation.  In order to avoid stepping on other bindings, a user could
-;;; choose to bind them to "C-c a", "C-c d", etc., instead.  [And even ilisp
-;;; will soon change to conform to the emacs key binding standard, though the
-;;; exact bindings are still being decided.  So stay tuned.  -- rgr, 30-Apr-03.]
-;;;
-;;;    You should also be aware that documentation lookup relies on the
+;;;    You should be aware that documentation lookup relies on the
 ;;; indentation of the "perlfunc" man page, which may vary from system to
 ;;; system.  If rgr-perl-show-documentation can't even find the documentation
 ;;; for "print", for example, you may need to tweak the value of the
@@ -330,14 +321,9 @@ the page."
 (defun rgr-perl-mode-install-documentation-hacks ()
   ;; perl-mode-hook function that installs commands to get function arguments
   ;; and documentation from the man page.  See also the rgr-perldoc command.  --
-  ;; rgr, 26-Jul-96.  [note that "C-z a" and "C-z d" are nonstandard bindings; i
-  ;; chose them for compatibility with ilisp, but even ilisp will soon change.
-  ;; a user could choose to bind them to "C-c a" and "C-c d", though.  -- rgr,
-  ;; 30-Apr-03.]
-  (define-key perl-mode-map "\C-za" 'rgr-perl-quick-arglist)
-  (define-key perl-mode-map "\C-z\C-a" 'rgr-perl-show-arglist)
-  (define-key perl-mode-map "\C-zd" 'rgr-perl-quick-documentation)
-  (define-key perl-mode-map "\C-z\C-d" 'rgr-perl-quick-documentation))
+  ;; rgr, 26-Jul-96.
+  (define-key perl-mode-map "\C-c\C-a" 'rgr-perl-quick-arglist)
+  (define-key perl-mode-map "\C-c\C-d" 'rgr-perl-quick-documentation))
 
 ;;;###autoload
 (defun rgr-perl-mode-fix-indentation ()

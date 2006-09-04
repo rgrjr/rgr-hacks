@@ -316,8 +316,10 @@ The source is found by using the \\[find-tag] command."
   (define-key map "\M-*" 'rgr-add-to-lisp-modification-history)
   (cond ((or (eq map emacs-lisp-mode-map)
 	     (eq map lisp-interaction-mode-map))
-	  (define-key map "\C-zc" 'compile-defun)
-	  (define-key map "\C-za" 'rgr-quick-show-elisp-arglist)))
+	  ;; ["C-z c" and "C-z a" are no longer ilisp-compatible, and i'm using
+	  ;; slime these days anyway.  -- rgr, 4-Sep-06.]
+	  (define-key map "\C-c\C-c" 'compile-defun)
+	  (define-key map "\C-c\C-a" 'rgr-quick-show-elisp-arglist)))
   ;; [kludge:  this is wrong, but we'll fix it later.  -- rgr, 26-Jul-01.]
   ;; [actually, xemacs doesn't seem to bind this.  -- rgr, 26-Jul-01.]
   (if (and (not (eq rgr-emacs-flavor 'xemacs))
@@ -339,7 +341,8 @@ The source is found by using the \\[find-tag] command."
 (defun rgr-debugger-mode-hook ()
   ;; debugger-mode is used in *Backtrace* buffer.  Unfortunately, debugger-mode
   ;; doesn't run a hook, so we can't install this.
-  (define-key debugger-mode-map "\C-za" 'rgr-quick-show-elisp-arglist))
+  ;; [This will be fixed in Emacs 22.  -- rgr, 4-Sep-06.]
+  (define-key debugger-mode-map "\C-c\C-a" 'rgr-quick-show-elisp-arglist))
 
 (provide 'rgr-elisp-hacks)
 
