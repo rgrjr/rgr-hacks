@@ -54,6 +54,7 @@
 ;;; really make tags case-insensitive.  -- rgr, 21-Feb-02.
 ;;; (require 'psa-defstruct) at load-time, too.  -- rgr, 16-Mar-02.
 ;;;
+;;; $Id$
 
 (require 'html-helper-mode)
 (require 'rgr-html-hacks)
@@ -1120,16 +1121,3 @@ in the same directory that is reachable from the current buffer."
 		      (princ (format "  %S\n" entry)))
 		    (setq tail (cdr tail))))))
 	      rgr-html-local-anchors)))
-
-;; (rgr-html-parse-url "http://bmerc-www.bu.edu:80/whatnew.html")
-;; (rgr-html-parse-url "http://bmerc-www.bu.edu:80/bm-mb.html#foo")
-;; (rgr-html-parse-url "http://www.perl.com/perl/index.html")
-;; (rgr-html-parse-url "http://www.eads.com/ads/pageserv.pl?softgart0102.cfg,JA04345")
-;; (setq needle-tools (rgr-html-file-url "/usr/local/etc/httpd/htdocs/needle-doc/needle-tools.html"))
-;; (rgr-html-merge-url "needle-mrf.html#foo" needle-tools)
-;; (rgr-html-merge-url "#foo" (rgr-html-parse-url "http://www.perl.com/perl/index.html"))
-;; (rgr-html-merge-url "http://bmerc-www.bu.edu:80/bm-mb.html#foo")
-;; (rgr-html-parse-url "http://bmerc-www.bu.edu")
-;; (setq debug-on-error t)
-;; [curses; there is no debugger-mode-hook.  -- rgr, 30-Jan-99.]
-;; (define-key debugger-mode-map "\C-za" 'rgr-quick-show-elisp-arglist)
