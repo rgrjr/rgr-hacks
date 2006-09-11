@@ -275,6 +275,8 @@
 ;; VC hacks.  -- rgr, 6-Aug-04.
 (define-key text-mode-map "\C-c+" 'rgr-vc-log-plus)
 (add-hook 'log-edit-mode-hook 'rgr-vc-log-edit-hook)
+;; the -N is for files being added or deleted.
+(setq vc-cvs-diff-switches '("-Nu"))
 ;; svn hacks.  -- rgr, 1-May-05.
 (defvar rgr-new-vc-file (if (= rgr-emacs-major-version 22)
 			    "/home/rogers/emacs/new-vc-22/new-vc.el"
