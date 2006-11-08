@@ -314,6 +314,9 @@ The source is found by using the \\[find-tag] command."
   ;; Install rgr command hacks, such as rgr-fill-comment.
   (define-key map "\M-q" 'rgr-fill-comment)
   (define-key map "\M-*" 'rgr-add-to-lisp-modification-history)
+  (if (eq map emacs-lisp-mode-map)
+      ;; For consistency with Common Lisp interfaces.  -- rgr, 8-Nov-06.
+      (define-key map "\C-c\C-d" 'describe-function))
   (cond ((or (eq map emacs-lisp-mode-map)
 	     (eq map lisp-interaction-mode-map))
 	  ;; ["C-z c" and "C-z a" are no longer ilisp-compatible, and i'm using
