@@ -273,6 +273,93 @@ See the rgr-perl-show-arglist command."
   (interactive)
   (rgr-perl-show-arglist (rgr-perl-get-name-around-point)))
 
+;;; Hacking POD.
+
+;;;###autoload
+(defun rgr-perl-renumber-pod-footnotes ()
+  "Renumber footnotes consecutively in POD.
+
+A footnote is labelled with a '[#]' string, where '#' is a digit string
+with an optional alphanumeric suffix.  The footnote is considered to be
+defined where this string appears on a line starting with '=item'; each
+footnote must have exactly one definition which should appear after all
+references \[though the occurrence of later references is not checked\].
+
+This command renumbers the footnotes consecutively from the first one,
+leaving the value of the first one intact if it is numeric, else
+renumbering from 1.  Definitions are renumbered to match, but no attempt
+is made to reorder the definitions to correspond to the new numbering.
+\[We should try to identify such cases and at least print a message.  --
+rgr, 8-Nov-06.\]"
+  (interactive)
+  (let ((start (point))
+	;; entries are of the form (label first-use-index use-count def-p).
+	(label-to-entry nil))
+    ;; Go through the whole document looking for labels.  This must be done in
+    ;; two nested loops, an outer loop to find the POD and an inner loop to find
+    ;; the labels within the POD, so that we don't renumber constant subscripts.
+    (goto-char (point-min))
+    (let ((current-index nil))
+      (while (re-search-forward "^=" nil t)
+	(let ((end (save-excursion
+		     (cond ((re-search-forward "^=cut" nil t)
+			     (forward-line)
+			     (point))))))
+	  (while (re-search-forward "\\[\\([0-9][0-9a-zA-Z]*\\)\\]" end t)
+	    (let* ((label (match-string-no-properties 1))
+		   (entry (assoc label label-to-entry))
+		   (definition-p (save-excursion
+				   (beginning-of-line)
+				   (looking-at "^=item"))))
+	      (cond ((and (not entry) definition-p)
+		      (message "Footnote %S is unused." label)
+		      (sit-for 1))
+		    ((not entry)
+		      (setq current-index 
+			    (cond (current-index (1+ current-index))
+				  ((string-match "^[0-9]+$" label)
+				    (string-to-number label))
+				  (t 1)))
+		      (setq entry (list label current-index 1 nil))
+		      (setq label-to-entry (cons entry label-to-entry)))
+		    (definition-p
+		      (setcar (cdr (cdr (cdr entry))) t))
+		    (t
+		      ;; subsequent reference for a known label.
+		      (setcar (cdr (cdr entry)) (1+ (nth 2 entry)))))))
+	  (goto-char end)))
+      '(message "[entries %S]" label-to-entry))
+    ;; Check for footnotes that are referenced by not defined.  [Maybe we don't
+    ;; want to renumber any in this case?  -- rgr, 8-Nov-06.]
+    (let ((tail label-to-entry))
+      (while tail
+	(let ((entry (car tail)) (label))
+	  (cond ((not (nth 3 entry))
+		  (message "Footnote %s (renumbered to %s) is undefined."
+			   (car entry) (nth 1 entry))
+		  (sit-for 1)))
+	  (setq tail (cdr tail)))))
+    ;; Now renumber.
+    (let ((n-renumbered 0) (tail label-to-entry))
+      (while tail
+	(let* ((entry (car tail))
+	       (old-label (car entry))
+	       (new-label (format "%d" (nth 1 entry))))
+	  (if (not (string-equal old-label new-label))
+	      (let ((old-label-re (regexp-quote (concat "[" old-label "]")))
+		    (new-label-replacement (concat "[" new-label "]")))
+		(goto-char (point-min))
+		(while (re-search-forward old-label-re nil t)
+		  (replace-match new-label-replacement t t))
+		(setq n-renumbered (1+ n-renumbered))))
+	  (setq tail (cdr tail))))
+      (if (= n-renumbered 0)
+	  (message "All footnotes are numbered consecutively.")
+	  (message "Renumbered %d out of %d footnotes."
+		   n-renumbered (length label-to-entry))))
+    ;; Done.
+    (goto-char start)))
+
 ;;; perldoc interface.
 
 ;;;###autoload
