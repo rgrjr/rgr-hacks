@@ -69,7 +69,8 @@ The paragraphs are numbered from 1; if you wish to change this, use the
 \\[rgr-renumber-region-paragraphs] command afterwards."
   (interactive "r")
   (save-excursion
-    (let ((index 0)
+    (let ((adaptive-fill-mode nil)
+	  (index 0)
 	  (end-of-sentence-re
 	    (concat "\\([.?!][]\"')}]*\\)\\($\\| $\\|\t\\|  \\)\\([ \t\n]*\\)"
 		    ;; this prevents us from numbering an empty sentence at the
@@ -88,7 +89,7 @@ The paragraphs are numbered from 1; if you wish to change this, use the
 			       (match-string 4))
 		       t t)
 	(save-excursion
-	  (backward-paragraph 2)
+	  (backward-paragraph 1)
 	  (fill-paragraph nil))))))
 
 (provide 'rgr-enumerate)
