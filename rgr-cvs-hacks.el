@@ -337,7 +337,7 @@ noted as such."
 	    (rgr-lisp-def-name t))
 	  ((eq major-mode 'perl-mode)
 	    (rgr-perl-definition-name))
-	  ((eq major-mode 'makefile-mode)
+	  ((member major-mode '(makefile-mode makefile-gmake-mode))
 	    (rgr-makefile-definition-name))
 	  ((eq major-mode 'pir-mode)
 	    (and (re-search-backward "^\\.sub[ \t]+\\([^ \t\n]+\\)" nil t)
