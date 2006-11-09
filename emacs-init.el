@@ -164,6 +164,9 @@
 	      completion-ignored-extensions))
 ;; Speaking of which, let's add a hook for Parrot.
 (add-hook 'pir-mode-hook 'rgr-pir-mode-hook)
+(let ((parrot "/usr/src/parrot/editor/parrot.new.el"))
+  (if (file-readable-p parrot)
+      (load-file parrot)))
 
 (add-hook 'rmail-mode-hook 'rgr-rmail-mode-hook)
 (add-hook 'mail-mode-hook 'rgr-mail-mode-hook)
@@ -271,7 +274,8 @@
 	     "-L" "8081:alexandria:80"
 	     "-L" "8082:karnak:80"
 	     "-L" "8083:thebes:80"
-	     "-L" "8084:carthage:80"))))
+	     "-L" "8084:carthage:80"
+	     "-L" "8085:granada:80"))))
 
 ;; VC hacks.  -- rgr, 6-Aug-04.
 (define-key text-mode-map "\C-c+" 'rgr-vc-log-plus)
