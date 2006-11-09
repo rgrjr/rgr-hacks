@@ -227,6 +227,7 @@
 (add-hook 'compilation-mode-hook 'rgr-compilation-mode-hook)
 (add-hook 'makefile-mode-hook 'rgr-makefile-mode-hook)
 (add-hook 'perl-mode-hook 'rgr-perl-mode-hook)
+(add-hook 'cperl-mode-hook 'rgr-cperl-mode-hook)
 (add-hook 'matlab-mode-hook 'rgr-matlab-mode-hook)
 (add-hook 'matlab-shell-mode-hook 'rgr-matlab-shell-mode-hook)
 (add-hook 'command-history-hook 'rgr-command-history-hook)
@@ -300,6 +301,8 @@
 ;; the OS upgrade.  -- rgr, 29-May-03.]
 (and (file-directory-p "/usr/local/share/man")
      (rgr-fix-manpath "/usr/local/share/man"))
+;; Prevent attempts by nroff to inflict novel Unicode characters on us.
+(setq manual-program "LANG=en_US man")
 
 ;;; Additional inits.
 (cond ((and (eq rgr-site 'bmerc)

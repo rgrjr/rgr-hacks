@@ -405,12 +405,12 @@ the page."
 ;;; Installing these commands.
 
 ;;;###autoload
-(defun rgr-perl-mode-install-documentation-hacks ()
+(defun rgr-perl-mode-install-documentation-hacks (map)
   ;; perl-mode-hook function that installs commands to get function arguments
   ;; and documentation from the man page.  See also the rgr-perldoc command.  --
   ;; rgr, 26-Jul-96.
-  (define-key perl-mode-map "\C-c\C-a" 'rgr-perl-quick-arglist)
-  (define-key perl-mode-map "\C-c\C-d" 'rgr-perl-quick-documentation))
+  (define-key map "\C-c\C-a" 'rgr-perl-quick-arglist)
+  (define-key map "\C-c\C-d" 'rgr-perl-quick-documentation))
 
 ;;;###autoload
 (defun rgr-perl-mode-fix-indentation ()
@@ -430,18 +430,18 @@ the page."
   (setq perl-nochange "\f\\|\\s(\\|\\(\\w\\|\\s_\\)+:"))
 
 ;;;###autoload
-(defun rgr-perl-mode-install-extra-hacks ()
+(defun rgr-perl-mode-install-extra-hacks (map)
   ;; These all require code defined in other rgr-*-hacks.el files.
   ;; Try to avoid shifting.  -- rgr, 20-Dec-96.
-  (define-key perl-mode-map "-" 'rgr-c-electric-dash)
+  (define-key map "-" 'rgr-c-electric-dash)
   ;; Learn subroutine names.  -- rgr, 14-Dec-98.  [insist on an open curly so
   ;; that we don't pick up forward decls.  -- rgr, 22-Apr-05.]
   (make-local-variable 'rgr-definition-line-regexp)
   (setq rgr-definition-line-regexp "^ *sub +.*{")
   (rgr-relearn-buffer-definition-names)
   ;; Standard modification history.
-  (define-key perl-mode-map "\M-*" 'rgr-add-to-perl-modification-history)
-  (define-key perl-mode-map "\M-q" 'rgr-fill-script-comment)
+  (define-key map "\M-*" 'rgr-add-to-perl-modification-history)
+  (define-key map "\M-q" 'rgr-fill-script-comment)
   ;; Put in interpreter magic.  -- rgr, 29-Apr-97.  [but not in library modules.
   ;; -- rgr, 16-May-97.]  [/usr/bin/perl is more standard, so prefer that.  --
   ;; rgr, 22-Oct-02.]
@@ -456,7 +456,7 @@ the page."
       ;; Shadow global comment-region-lisp binding.  [but this loads ilisp,
       ;; which is a bother . . .  -- rgr, 26-Jul-96.]  [replaced with my own
       ;; hack.  -- rgr, 7-Sep-99.]
-      (define-key perl-mode-map [?\C-x ?\C-\;] 'rgr-comment-region-lisp)))
+      (define-key map [?\C-x ?\C-\;] 'rgr-comment-region-lisp)))
 
 ;;;###autoload
 (defun rgr-perl-mode-hook ()
@@ -466,8 +466,18 @@ the page."
   (setq paragraph-separate paragraph-start)
   ;; Take the whole enchilada.
   (rgr-perl-mode-fix-indentation)
-  (rgr-perl-mode-install-documentation-hacks)
-  (rgr-perl-mode-install-extra-hacks))
+  (rgr-perl-mode-install-documentation-hacks perl-mode-map)
+  (rgr-perl-mode-install-extra-hacks perl-mode-map))
+
+;;;###autoload
+(defun rgr-cperl-mode-hook ()
+  (define-key cperl-mode-map "\r" 'cperl-linefeed)
+  (define-key cperl-mode-map "\n" 'newline)
+  (setq cperl-indent-level 4)
+  (setq cperl-continued-statement-offset 4)
+  (setq cperl-close-paren-offset 0)
+  (rgr-perl-mode-install-documentation-hacks cperl-mode-map)
+  (rgr-perl-mode-install-extra-hacks cperl-mode-map))
 
 (provide 'rgr-perl-mode)
 
