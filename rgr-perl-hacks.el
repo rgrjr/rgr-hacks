@@ -275,6 +275,9 @@ See the rgr-perl-show-arglist command."
 
 ;;; Hacking POD.
 
+(defvar rgr-perl-footnote-regexp "\\[\\([0-9][0-9a-zA-Z]*\\)\\]"
+  "For matching footnotes in Perl POD documentation.")
+
 ;;;###autoload
 (defun rgr-perl-renumber-pod-footnotes ()
   "Renumber footnotes consecutively in POD.
@@ -293,8 +296,9 @@ is made to reorder the definitions to correspond to the new numbering.
 rgr, 8-Nov-06.\]"
   (interactive)
   (let ((start (point))
-	;; entries are of the form (label first-use-index use-count def-p).
-	(label-to-entry nil))
+	;; entries are of the form (orig-label new-label use-count def-p).
+	(label-to-entry nil)
+	(entries-to-renumber nil))
     ;; Go through the whole document looking for labels.  This must be done in
     ;; two nested loops, an outer loop to find the POD and an inner loop to find
     ;; the labels within the POD, so that we don't renumber constant subscripts.
@@ -305,7 +309,7 @@ rgr, 8-Nov-06.\]"
 		     (cond ((re-search-forward "^=cut" nil t)
 			     (forward-line)
 			     (point))))))
-	  (while (re-search-forward "\\[\\([0-9][0-9a-zA-Z]*\\)\\]" end t)
+	  (while (re-search-forward rgr-perl-footnote-regexp end t)
 	    (let* ((label (match-string-no-properties 1))
 		   (entry (assoc label label-to-entry))
 		   (definition-p (save-excursion
@@ -320,7 +324,8 @@ rgr, 8-Nov-06.\]"
 				  ((string-match "^[0-9]+$" label)
 				    (string-to-number label))
 				  (t 1)))
-		      (setq entry (list label current-index 1 nil))
+		      (setq entry
+			    (list label (format "%d" current-index) 1 nil))
 		      (setq label-to-entry (cons entry label-to-entry)))
 		    (definition-p
 		      (setcar (cdr (cdr (cdr entry))) t))
@@ -333,30 +338,39 @@ rgr, 8-Nov-06.\]"
     ;; want to renumber any in this case?  -- rgr, 8-Nov-06.]
     (let ((tail label-to-entry))
       (while tail
-	(let ((entry (car tail)) (label))
-	  (cond ((not (nth 3 entry))
-		  (message "Footnote %s (renumbered to %s) is undefined."
-			   (car entry) (nth 1 entry))
-		  (sit-for 1)))
-	  (setq tail (cdr tail)))))
-    ;; Now renumber.
-    (let ((n-renumbered 0) (tail label-to-entry))
-      (while tail
 	(let* ((entry (car tail))
 	       (old-label (car entry))
-	       (new-label (format "%d" (nth 1 entry))))
+	       (new-label (nth 1 entry)))
 	  (if (not (string-equal old-label new-label))
-	      (let ((old-label-re (regexp-quote (concat "[" old-label "]")))
-		    (new-label-replacement (concat "[" new-label "]")))
-		(goto-char (point-min))
-		(while (re-search-forward old-label-re nil t)
-		  (replace-match new-label-replacement t t))
-		(setq n-renumbered (1+ n-renumbered))))
-	  (setq tail (cdr tail))))
-      (if (= n-renumbered 0)
-	  (message "All footnotes are numbered consecutively.")
-	  (message "Renumbered %d out of %d footnotes."
-		   n-renumbered (length label-to-entry))))
+	      (setq entries-to-renumber (cons entry entries-to-renumber)))
+	  (cond ((not (nth 3 entry))
+		  (message "Footnote %s (renumbered to %s) is undefined."
+			   old-label new-label)
+		  (sit-for 2)))
+	  (setq tail (cdr tail)))))
+    ;; Now renumber.  This must also be done in two nested loops, and all in one
+    ;; pass so that we don't get tripped up by overlapping renumberings.
+    (cond ((null entries-to-renumber)
+	    (message "All footnotes are numbered consecutively."))
+	  (t
+	    (goto-char (point-min))
+	    (while (re-search-forward "^=" nil t)
+	      (let ((end (save-excursion
+			   (cond ((re-search-forward "^=cut" nil t)
+				   (forward-line)
+				   (point))))))
+		(while (re-search-forward rgr-perl-footnote-regexp end t)
+		  (let* ((label (match-string-no-properties 1))
+			 (entry (assoc label entries-to-renumber))
+			 (old-label (car entry))
+			 (new-label (nth 1 entry)))
+		    (cond ((and entry
+				(not (string-equal old-label new-label)))
+			    '(message "Changing %S to %S." old-label new-label)
+			    (replace-match new-label t t nil 1)))))
+		(goto-char end)))
+	    (message "Renumbered %d out of %d footnotes."
+		     (length entries-to-renumber) (length label-to-entry))))
     ;; Done.
     (goto-char start)))
 
