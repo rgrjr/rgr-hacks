@@ -909,9 +909,9 @@ contents.  Must include its own trailing newline.")
 	(last-heading nil)	;; our effective sibling.
 	)
     (while (re-search-forward rgr-heading-re nil t)
-      (let ((level (string-to-int (buffer-substring-no-properties
-				   (match-beginning 1)
-				   (match-end 1))))
+      (let ((level (string-to-number (buffer-substring-no-properties
+				       (match-beginning 1)
+				       (match-end 1))))
 	    (heading-text (buffer-substring-no-properties (match-beginning 2)
 							  (match-end 2)))
 	    (anchor-name nil) (heading nil))
@@ -1224,7 +1224,9 @@ rgr-html-define-commands as a load hook instead.  -- rgr, 14-Oct-97."
 	"[:.?!]\\(<[/a-zA-Z0-9]+>\\|[]\"')}]\\)*\\($\\| $\\|\t\\|  \\)[ \t\n]*")
   ;; This makes <li> continuation lines prettier, since I like to put a space
   ;; after the <li>.
-  (setq html-helper-item-continue-indent 5))
+  (setq html-helper-item-continue-indent 5)
+  ;; This seems to be necessary in 22.0.  -- rgr, 26-Nov-06.
+  (define-key html-helper-mode-map "\r" 'newline-and-indent))
 
 (provide 'rgr-html-hacks)
 
