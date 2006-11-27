@@ -36,10 +36,16 @@ rgr-hacks-compile-module (see below).")
 	  ;; its presence by loading it, because that's what the rgr-allegro.el
 	  ;; file is supposed to do.  -- rgr, 23-Apr-03.
 	  ("rgr-allegro" load-p nil)
+	  "rgr-backup"
 	  "rgr-compile-hacks"
+	  "rgr-cvs-hacks"
+	  "rgr-diff-hacks"
 	  "rgr-dired"
 	  "rgr-elisp-hacks"
+	  "rgr-enumerate"
+	  "rgr-ffap"
 	  "rgr-fill-comment"
+	  "rgr-genbank"
 	  ;; "rgr-geometry"
 	  "rgr-home-hacks"
 	  ("rgr-html-hacks" require (html-helper-mode))
@@ -62,12 +68,12 @@ rgr-hacks-compile-module (see below).")
 	  "rgr-mouse-doc"
 	  "rgr-perl-hacks"
 	  "rgr-rect-hacks"
-	  "rgr-genbank"
 	  "rgr-log-view"
 	  "rgr-rmail-hacks"
 	  "rgr-shell-hacks"
 	  "rgr-squid-log"
 	  "rgr-tcl"
+	  ("rgr-vm-hacks" require (vm))
 	  ("rgr-w3-hacks" require (w3))
 	  "rgr-x11-hacks"
 	  ("vm+qmail" require (vm)))
