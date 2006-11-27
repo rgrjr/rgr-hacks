@@ -44,7 +44,7 @@ are not detected."
       (goto-char start)
       (while (re-search-forward rgr-heading-markup-re end t)
 	(let ((prefix (match-string 1))
-	      (depth (+ delta-nest (string-to-int (match-string 2)))))
+	      (depth (+ delta-nest (string-to-number (match-string 2)))))
 	  (cond ((>= depth 1)
 		  (replace-match (format "%s%d" prefix depth) t t)
 		  (if (string-match "/" prefix)
@@ -85,9 +85,9 @@ are not detected."
     (goto-char (point-min))
     (let ((level-stack nil) (index-stack nil) (last-level -1))
       (while (re-search-forward rgr-heading-re nil t)
-	(let ((level (string-to-int (buffer-substring-no-properties
-				      (match-beginning 1)
-				      (match-end 1))))
+	(let ((level (string-to-number (buffer-substring-no-properties
+					 (match-beginning 1)
+					 (match-end 1))))
 	      (heading (buffer-substring-no-properties (match-beginning 2)
 						       (match-end 2))))
 	  (cond ((> level last-level)
@@ -142,9 +142,9 @@ A numeric arg means only go down to that depth."
     (save-excursion
       (goto-char (point-min))
       (while (re-search-forward rgr-heading-re nil t)
-	(let ((level (string-to-int (buffer-substring-no-properties
-				     (match-beginning 1)
-				     (match-end 1)))))
+	(let ((level (string-to-number (buffer-substring-no-properties
+					 (match-beginning 1)
+					 (match-end 1)))))
 	  (if (<= level max-depth)
 	      ;; Make an anchor if needed.
 	      (let ((heading (buffer-substring-no-properties (match-beginning 2)

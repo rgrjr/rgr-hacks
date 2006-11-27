@@ -214,18 +214,18 @@ if (e.g.) the pathname does not indicate a server."
 	  ;; This captures lines that start "foo[287:503]:  178 PRXSQGL...",
 	  ;; where the 178 is relative to the 287 subsequence starting index.
 	  ;; The offset is (+ (1- 287) (1- 178)) = 463 here, so P is 464.
-	  (let ((offset (1- (string-to-int (match-string 2)))))
+	  (let ((offset (1- (string-to-number (match-string 2)))))
 	    (goto-char (match-end 0))
 	    (cond ((looking-at "\\([0-9]+\\) *")
 		    (goto-char (match-end 0))
-		    (+ offset (1- (string-to-int (match-string 1)))))
+		    (+ offset (1- (string-to-number (match-string 1)))))
 		  (t
 		    offset))))
 	((save-excursion
 	   (beginning-of-line)
 	   (looking-at "^[ \t]*\\([^ \t\n:]+:[ \t]*\\)?\\([0-9]+\\) *"))
 	  (goto-char (match-end 0))
-	  (1- (string-to-int (match-string 2))))
+	  (1- (string-to-number (match-string 2))))
 	((or (looking-at "^>")
 	     (re-search-backward "^>" nil t))
 	  (forward-line)

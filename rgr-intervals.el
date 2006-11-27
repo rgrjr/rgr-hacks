@@ -254,7 +254,8 @@ indentation of the rest of the line."
     (concat "-?" digits ":" digits "\\(:" digits "\\)?")))
 
 (defun rgr-match-integer (field)
-  (string-to-int (buffer-substring (match-beginning field) (match-end field))))
+  (string-to-number (buffer-substring (match-beginning field)
+				      (match-end field))))
 
 (defun rgr-extract-time ()
   (let* ((minus-p (eq (char-after (match-beginning 0)) ?-))

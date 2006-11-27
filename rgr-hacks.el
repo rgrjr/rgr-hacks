@@ -36,6 +36,10 @@
 ;;;
 ;;; $Id$
 
+(eval-when-compile
+  ;; for t-mouse-run.
+  (require 't-mouse))
+
 ;;;; Variables.
 
 ;; First, functions used to initialize variables.
@@ -157,10 +161,10 @@ another machine.")
 			  (cond ((string-equal flavor "X") 'xemacs)
 				((string-equal flavor "GNU ") 'fsf)
 				(t 'unknown)))
-			(string-to-int (substring version (match-beginning 2)
-						  (match-end 2)))
-			(string-to-int (substring version (match-beginning 3)
-						  (match-end 3)))))
+			(string-to-number (substring version (match-beginning 2)
+						     (match-end 2)))
+			(string-to-number (substring version (match-beginning 3)
+						     (match-end 3)))))
 		((string-match "^Lucid" version)
 		  ;; this is historic, probably broken.
 		  '(lucid 19 0))
