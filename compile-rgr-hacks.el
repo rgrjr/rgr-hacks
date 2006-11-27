@@ -24,9 +24,10 @@ rgr-hacks-compile-module (see below).")
 	  "rgr-hacks"
 	  ;; [provides the rgr-update-autoloads command.  -- rgr, 26-Apr-03.]
 	  ("rgr-random-hacks" require (autoload chistory))
-	  "ange-ftp-hacks"
+	  ;; [no longer works.  -- rgr, 26-Nov-06.]
+	  ;; "ange-ftp-hacks"
 	  "bagels"
-	  "c-hacks"
+	  "rgr-c-hacks"
 	  ;; this requires that the PSA software be installed.  [oops; can't
 	  ;; even compile this.  -- rgr, 23-Apr-03.
 	  ("psa-support" require (psa-server))
@@ -41,20 +42,22 @@ rgr-hacks-compile-module (see below).")
 	  "rgr-fill-comment"
 	  ;; "rgr-geometry"
 	  "rgr-home-hacks"
-	  "rgr-html-boilerplate"
-	  "rgr-html-hacks"
-	  "rgr-html-head"
-	  "rgr-html-nest"
+	  ("rgr-html-hacks" require (html-helper-mode))
+	  ("rgr-html-boilerplate" require (html-helper-mode))
+	  ("rgr-html-head" require (html-helper-mode))
 	  "rgr-html-random"
-	  "rgr-html-tags"
+	  ;; [need to convert these two from psa-defstruct to the cl-macs.el
+	  ;; defstruct some day.  -- rgr, 26-Nov-06.]
+	  ("rgr-html-nest" require (psa-defstruct html-helper-mode))
+	  ("rgr-html-tags" require (psa-defstruct html-helper-mode))
 	  "rgr-intervals"
 	  "rgr-lisp-hacks"
 	  "rgr-mail-hacks"
 	  "rgr-makefile-hacks"
 	  ("rgr-mouse-21"
-	   if (eq rgr-emacs-major-version 21)
+	   if (member rgr-emacs-major-version '(21 22))
 	   require (ilisp-mouse))
-	  ("rgr-mouse" use (ilisp-mouse tex-mode) require (browse-url))
+	  ("rgr-mouse" use (tex-mode) require (ilisp-mouse browse-url))
 	  "rgr-perl-hacks"
 	  "rgr-rect-hacks"
 	  "rgr-genbank"
@@ -63,7 +66,6 @@ rgr-hacks-compile-module (see below).")
 	  "rgr-shell-hacks"
 	  "rgr-squid-log"
 	  "rgr-tcl"
-	  "rgr-tripwire-minus-rpm"
 	  ("rgr-w3-hacks" require (w3))
 	  "rgr-x11-hacks"
 	  ("vm+qmail" require (vm)))
@@ -85,9 +87,6 @@ pair of (file-stem . properties), where properties is a disembodied plist.")
 	 (need-to-load-p nil))
     (cond ((not (file-exists-p source-name))
 	    (message "Can't find %s -- not compiling." source-name))
-	  ((not (or force-p
-		    (not (file-exists-p binary-name))
-		    (file-newer-than-file-p source-name binary-name))))
 	  ((not (eval (rgr-hacks-getf options 'if t)))
 	    (setq skipped-p 'if)
 	    (message "File %S skipped because of 'if' test." source-name))
@@ -99,6 +98,9 @@ pair of (file-stem . properties), where properties is a disembodied plist.")
 	     skipped-p)
 	    (message "File %S skipped because '%s' could not be loaded."
 		     source-name skipped-p))
+	  ((not (or force-p
+		    (not (file-exists-p binary-name))
+		    (file-newer-than-file-p source-name binary-name))))
 	  (t
 	    (setq compiled-p t need-to-load-p must-load-p)
 	    (if rgr-hacks-compile-self-debug-p

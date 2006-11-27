@@ -19,8 +19,12 @@ public-bins = ${public-source:%.el=%.elc}
 # Install source, autoloads, and compiled files.
 install-files = ${public-source} ${public-bins}
 
-# We assume things are already byte-compiled.
-all:
+all:	elc-files
+elc-files:
+	emacs --batch --load compile-rgr-hacks.el -f rgr-hacks-compile-self
+
+clean:
+	rm -f *.elc
 
 install:
 	install.pl -show -m 444 ${install-files} ${install-dir}
