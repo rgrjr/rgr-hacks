@@ -42,6 +42,10 @@
 ;;;	old rgr-next-possibility version.  -- rgr, 19-Apr-03.
 ;;;
 
+(eval-when-compile
+  (require 'rgr-lisp-hacks)
+  (require 'compile))
+
 (require 'compile)
 
 (defvar compilation-buffer-compile-command nil)
@@ -58,7 +62,7 @@
        (save-buffer))
   (setq compile-command (concat "gcc -ansi -pedantic -O2 -c "
 				(file-name-nondirectory (buffer-file-name))))
-  (compile-internal compile-command "No more errors"))
+  (compilation-start compile-command))
 
 ;;;; rgr-clean-c-compilation-buffer
 
@@ -226,8 +230,6 @@ directory is used.  The warning is assumed to fit on one line."
 ;;;###autoload
 (defun rgr-grep-annotate-current-buffer (current-buffer &optional msg)
   ;; intended for compilation-finish-functions list usage.
-  ;; [but i broke it some how . . .  -- rgr, 27-Feb-02.]
-  (compile-reinitialize-errors t)
   ;; [for the rgr-lisp-def-name fn.  -- rgr, 27-Feb-02.]
   (require 'rgr-lisp-hacks)
   (let ((tail compilation-error-list) (defn-name nil)
@@ -332,7 +334,7 @@ without asking any questions."
 	  (let ((default-directory dir))
 	    (save-excursion
 	      (setq compile-command command)
-	      (compile-internal compile-command "No more errors"))))
+	      (compilation-start compile-command))))
 	;; Invoke compile afresh.
 	(compile (if (or compilation-read-command current-prefix-arg)
 		     (read-from-minibuffer "Compile command: "
