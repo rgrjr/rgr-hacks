@@ -54,10 +54,12 @@ rgr-hacks-compile-module (see below).")
 	  "rgr-lisp-hacks"
 	  "rgr-mail-hacks"
 	  "rgr-makefile-hacks"
+	  "ilisp-mouse"
 	  ("rgr-mouse-21"
 	   if (member rgr-emacs-major-version '(21 22))
 	   require (ilisp-mouse))
 	  ("rgr-mouse" use (tex-mode) require (ilisp-mouse browse-url))
+	  "rgr-mouse-doc"
 	  "rgr-perl-hacks"
 	  "rgr-rect-hacks"
 	  "rgr-genbank"
