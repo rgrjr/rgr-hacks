@@ -3,20 +3,11 @@
 ;;;    Useful stuff in here is rgr-dired-rename-file-and-versions and
 ;;; rgr-dired-sort-by-size (but the latter is buggy).
 ;;;
-;;;    To compile this (almost) without error, do the following:
-;;;
-;;;	(mapcar 'require '(dired dired-aux))
-;;;
-;;;    Modification history:
-;;;
-;;; rgr-dired-sort-by-size: new, but semi-kludgey, fix
-;;;	rgr-exchange-point-and-mark C-u bug.  -- rgr, 21-Feb-98.
-;;; rgr-dired-sort-by-size: made sticky.  -- rgr, 26-Feb-98.
-;;; rgr-dired-rename-file-and-versions: new hack.  -- rgr, 2-Feb-99.
-;;; split out of the rgr-hacks.el file.  -- rgr, 10-Sep-99.
-;;; rgr-dired-rename-file-and-versions: require dired-aux.  -- rgr, 16-Jan-01.
-;;; rgr-dired-do-size-sort: fix sort arg for Linux version.  -- rgr, 4-Aug-01.
-;;;
+;;; $Id:$
+
+(eval-when-compile
+  (require 'dired)
+  (require 'dired-aux))
 
 (defvar rgr-dired-desired-sort nil)
 (defvar rgr-dired-last-switches nil)

@@ -27,6 +27,10 @@
 ;;;	-- rgr, 24-Jul-02.
 ;;;
 
+(eval-when-compile
+  (require 'sendmail)
+  (require 'message))
+
 ;; [disabled, so we can leave rmail-mbox-status here.  -- rgr, 13-May-03.]
 ;; (require 'vm)
 

@@ -2,7 +2,7 @@
 ;;;
 ;;;; Hacking perl mode.
 ;;;
-;;; Copyright (C) 1996-2003  Robert G. Rogers Jr
+;;; Copyright (C) 1996-2006  Robert G. Rogers Jr
 ;;;
 ;;; This file is not part of GNU Emacs, but it customizes perl-mode, which is.
 ;;; Accordingly, it is distributed under the same terms as GNU Emacs:
@@ -71,6 +71,11 @@
 ;;; rgr-perl-newline-and-maybe-indent: new POD hack.  -- rgr, 8-Nov-02.
 ;;;
 ;;; $Id$
+
+(eval-when-compile
+  (require 'man)
+  (require 'perl-mode)
+  (require 'cperl-mode))
 
 ;;;; variables.
 
