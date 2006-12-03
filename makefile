@@ -19,9 +19,18 @@ public-bins = ${public-source:%.el=%.elc}
 # Install source, autoloads, and compiled files.
 install-files = ${public-source} ${public-bins}
 
-all:	elc-files
+all:	elc-files rgr-hacks-autoloads.el
 elc-files:
 	emacs --batch --load compile-rgr-hacks.el -f rgr-hacks-compile-self
+
+rgr-hacks-autoloads.el:		.
+	if [ ! -r $@ ]; then \
+	    echo ';;; Autoloads for the rgr-hacks library.' > $@; \
+	    echo >> $@; \
+	    echo '' >> $@; \
+	fi
+	emacs --batch --load rgr-random-hacks.el \
+		-f rgr-batch-update-autoloads $^ rgr-hacks-autoloads.el
 
 clean:
 	rm -f *.elc
