@@ -100,7 +100,10 @@ pair of (file-stem . properties), where properties is a disembodied plist.")
 	    (message "File %S skipped because of 'if' test." source-name))
 	  ((let ((tail requirements))
 	     (while tail
-	       (if (require (car tail) nil t)
+	       (if (condition-case error (require (car tail) nil t)
+		     (error
+		       (message "Error loading %S:  %S" (car tail) error)
+		       nil))
 		   (setq tail (cdr tail))
 		   (setq skipped-p (car tail) tail nil)))
 	     skipped-p)
