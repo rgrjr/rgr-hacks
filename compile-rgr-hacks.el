@@ -2,12 +2,9 @@
 ;;;
 ;;; Compile rgr-hacks code.
 ;;;
+;;; [created.  -- rgr, 23-Apr-03.]
+;;;
 ;;; $Id$
-;;;
-;;;    Modification history:
-;;;
-;;; created.  -- rgr, 23-Apr-03.
-;;;
 
 (defvar rgr-hacks-compiled-modules nil
   "Alist of (name-stem-string . mod-time) of loaded versions.  Modules
@@ -17,6 +14,10 @@ rgr-hacks-compile-module (see below).")
   "Internal flag for debugging compiles.")
 (defvar rgr-hacks-compile-self-n-files-compiled 0
   "Count of files compiled this time; not valid globally.")
+
+(if (file-directory-p "/shared/emacs/site-lisp")
+    ;; This makes it possible to find html-helper-mode at home.
+    (setq load-path (cons "/shared/emacs/site-lisp" load-path)))
 
 (defvar rgr-hacks-source-files
 	'(;; [this comes first because it has some emacs version stuff.
@@ -54,7 +55,7 @@ rgr-hacks-compile-module (see below).")
 	  "rgr-html-random"
 	  ;; [need to convert these two from psa-defstruct to the cl-macs.el
 	  ;; defstruct some day.  -- rgr, 26-Nov-06.]
-	  ("rgr-html-nest" require (psa-defstruct html-helper-mode))
+	  ("rgr-html-nest" require (html-helper-mode))
 	  ("rgr-html-tags" require (psa-defstruct html-helper-mode))
 	  "rgr-intervals"
 	  "rgr-lisp-hacks"

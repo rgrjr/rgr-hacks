@@ -4,11 +4,7 @@
 ;;; are in ./rgr-html-hacks, where they are also used by the
 ;;; rgr-html-forward-markup command.
 ;;;
-;;;    Do (require 'psa-defstruct) to get this to compile without errors.  [done
-;;; below via eval-when-compile, but that doesn't work for interactive use.  --
-;;; rgr, 4-Dec-97.]
-;;;
-;;;    Modification history:
+;;;    [old] Modification history:
 ;;;
 ;;; . . .
 ;;; rgr-html-check-tag-nesting: second implementation.  -- rgr, 6-Mar-96.
@@ -25,9 +21,13 @@
 ;;; rgr-html-parse-tags: eql -> eq.  -- rgr, 1-May-00.
 ;;; rgr-html-collect-tag-data: implicit tag closing.  -- rgr, 6-Aug-02.
 ;;;
+;;; $Id:$
 
 (require 'rgr-html-hacks)
-(eval-when-compile (require 'psa-defstruct))
+(require 'thingatpt)
+(eval-when-compile
+  (require 'cl)
+  (require 'thingatpt))
 
 (defvar rgr-html-n-tag-nest-errors 0
   "Internal counter for rgr-html-check-tag-nesting command.")
@@ -41,7 +41,7 @@
 	  (cons (car list) (rgr-remq-once element (cdr list))))))
 
 ;; Data structure describing tag nesting status within this buffer.
-(psa-defstruct (rgr-html-tag-data (:conc-name rgr-htd-) (:predicate nil))
+(defstruct (rgr-html-tag-data (:conc-name rgr-htd-) (:predicate nil))
   (tag-name nil)                ;; symbolic name
   (unmatched-opens nil)		;; list of points
   ;; [these are now unused.  -- rgr, 24-Mar-98.]
@@ -94,7 +94,8 @@
 (defun rgr-html-report-tag-errors (buffer nesting-tags)
   ;; Now generate messages for all tags that have had some problem, doing the
   ;; simple thing if there's only a single problem.
-  (let ((tail nesting-tags))
+  (let ((tail nesting-tags)
+	(emacs-22-p (fboundp 'compilation-next-error-function)))
     (while tail
       (rgr-html-tag-entry-make-report (car tail))
       (setq tail (cdr tail)))
@@ -109,7 +110,10 @@
 	      (set-buffer buffer)
 	      (require 'compile)
 	      (compilation-mode)
-	      (setq mode-name "Tag-Errs"))))
+	      (setq mode-name "Tag-Errs")
+	      (if emacs-22-p
+		  ;; Emacs 22 setup.
+		  (setq next-error-function 'compilation-next-error-function)))))
     (cond ((= rgr-html-n-tag-nest-errors 1)
 	    ;; [somewhat kludgy; if there's only one tag error, we just go to it
 	    ;; and report it.  but there's no clean interface for this.  -- rgr,
@@ -117,7 +121,15 @@
 	    (push-mark)
 	    (save-window-excursion
 	      ;; this is from (next-error).
-	      (compilation-goto-locus (compilation-next-error-locus 1 t)))
+	      (cond (emacs-22-p
+		      ;; this doesn't work within save-excursion . . .
+		      (set-buffer buffer)
+		      (funcall next-error-function 1 t))
+		    (t
+		      ;; [Emacs 21 version -- this gets no less than two
+		      ;; compiler warnings under 22.  -- rgr, 28-Dec-06.]
+		      (compilation-goto-locus
+		        (compilation-next-error-locus 1 t)))))
 	    (setq compilation-last-buffer nil)
 	    (save-excursion
 	      (set-buffer buffer)
@@ -289,8 +301,8 @@
 							nesting-tags)))
 	      ;; [it's probably a bug if this doesn't exist.  -- rgr, 6-Aug-02.]
 	      (if closed-entry
-		  (psa-setf (rgr-htd-unmatched-opens closed-entry)
-			    (cdr (rgr-htd-unmatched-opens closed-entry)))))
+		  (setf (rgr-htd-unmatched-opens closed-entry)
+			(cdr (rgr-htd-unmatched-opens closed-entry)))))
 	    (setq tag-stack (cdr tag-stack))))
 	;; Look for placement problems.  [new; just a testing hack now.  -- rgr,
 	;; 20-Mar-98.]
@@ -309,12 +321,12 @@
 	;; Update stack.
 	(cond ((rgr-html-tag-does-not-nest-p tag-name))
 	      ((> delta-nest 0)
-		(psa-setf (rgr-htd-unmatched-opens tag-entry)
-			  (cons tag-start (rgr-htd-unmatched-opens tag-entry)))
+		(setf (rgr-htd-unmatched-opens tag-entry)
+		      (cons tag-start (rgr-htd-unmatched-opens tag-entry)))
 		(setq tag-stack (cons tag-name tag-stack)))
 	      ((memq tag-name tag-stack)
-		(psa-setf (rgr-htd-unmatched-opens tag-entry)
-			  (cdr (rgr-htd-unmatched-opens tag-entry)))
+		(setf (rgr-htd-unmatched-opens tag-entry)
+		      (cdr (rgr-htd-unmatched-opens tag-entry)))
 		;; [should check for inappropriate nesting here, i.e. having to
 		;; skip an ol to pop a ul.  -- rgr, 24-Mar-98.]
 		(setq tag-stack (rgr-remq-once tag-name tag-stack)))
@@ -370,6 +382,7 @@ first nested case as being in error."
     ;; initialize error buffer
     (save-excursion
       (set-buffer buffer)
+      (setq buffer-read-only nil)
       (erase-buffer)
       (insert "HTML tag nesting errors in " orig-buffer-name "\n\n"))
     (let* ((start (point))
