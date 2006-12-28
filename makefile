@@ -24,7 +24,8 @@ elc-files:
 	emacs --batch --load compile-rgr-hacks.el -f rgr-hacks-compile-self
 
 rgr-hacks-autoloads.el:		.
-	if [ ! -r $@ ]; then \
+	@if [ ! -r $@ ]; then \
+	    echo Creating new $@ file.; \
 	    echo ';;; Autoloads for the rgr-hacks library.' > $@; \
 	    echo >> $@; \
 	    echo '' >> $@; \
