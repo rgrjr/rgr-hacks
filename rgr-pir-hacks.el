@@ -14,6 +14,7 @@
   (setq pir-blink-matching-block nil)	;; this is buggy.
   (setq pir-electric-colon-p 'newline)	;; enable newline insertion
   (define-key pir-mode-map "\M-q" 'rgr-fill-comment)
+  (define-key pir-mode-map "-" 'rgr-c-electric-dash)
   (modify-syntax-entry ?_ "_" pir-mode-syntax-table))
 
 (provide 'rgr-pir-hacks)
