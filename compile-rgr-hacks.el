@@ -33,6 +33,7 @@ rgr-hacks-compile-module (see below).")
 	  ;; even compile this.  -- rgr, 23-Apr-03.
 	  ("psa-support" require (psa-server))
 	  "rgr-abbrev-completion"
+	  "tags-grep"
 	  ;; this requires that ACL be installed, and we don't want to test for
 	  ;; its presence by loading it, because that's what the rgr-allegro.el
 	  ;; file is supposed to do.  -- rgr, 23-Apr-03.
