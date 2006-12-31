@@ -242,14 +242,18 @@
   (or (member entry auto-mode-alist)
       (setq auto-mode-alist (cons entry auto-mode-alist))))
 
-;; Add my HTML code hacks.  (Only need to do this once.)
+;; Add html-helper-mode plus my HTML code hacks.
 (autoload 'html-helper-mode "html-helper-mode" "Yay HTML" t)
-;; [not needed in 22?  -- rgr, 28-Dec-06.]
-(setq auto-mode-alist (cons '("\\.html$" . html-helper-mode) auto-mode-alist))
-;; [in emacs 22, magic-mode-alist trumps auto-mode-alist.  -- rgr, 28-Dec-06.]
-(let ((cell (rassoc 'html-mode magic-mode-alist)))
-  (if cell
-      (setcdr cell 'html-helper-mode)))
+(cond ((boundp 'magic-mode-alist)
+	;; [in emacs 22, magic-mode-alist trumps auto-mode-alist.  -- rgr,
+	;; 28-Dec-06.]
+	(let ((cell (rassoc 'html-mode magic-mode-alist)))
+	  (if cell
+	      (setcdr cell 'html-helper-mode))))
+      (t
+	;; [not needed in 22?  -- rgr, 28-Dec-06.]
+	(setq auto-mode-alist
+	      (cons '("\\.html$" . html-helper-mode) auto-mode-alist))))
 (add-hook 'html-helper-load-hook 'rgr-html-define-commands)
 (add-hook 'html-helper-load-hook 'rgr-html-fix-regexps)
 (add-hook 'rgr-html-tags-load-hook '(lambda () (load "rgr-html-servers")))
