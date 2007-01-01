@@ -117,9 +117,11 @@ pair of (file-stem . properties), where properties is a disembodied plist.")
 		    (file-newer-than-file-p source-name binary-name))))
 	  (t
 	    (setq compiled-p t need-to-load-p must-load-p)
-	    (if rgr-hacks-compile-self-debug-p
-		(message "Need to compile %s" source-name)
-		(byte-compile-file source-name))
+	    (cond (rgr-hacks-compile-self-debug-p
+		    (message "Need to compile %s" source-name))
+		  (t
+		    (message "Compiling %s ..." source-name)
+		    (byte-compile-file source-name)))
 	    (setq rgr-hacks-compile-self-n-files-compiled
 		  (1+ rgr-hacks-compile-self-n-files-compiled))))
     (if skipped-p
