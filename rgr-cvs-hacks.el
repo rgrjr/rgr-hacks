@@ -14,7 +14,8 @@
 (require 'vc)
 
 (eval-when-compile
-  ;; (require 'change-log-mode)
+  (require 'add-log)
+  (require 'log-edit)
   (require 'vc))
 
 (defun rgr-find-more-recent-buffer (&rest buffers)
