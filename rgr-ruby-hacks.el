@@ -19,7 +19,7 @@ comments, and regular expressions, so it often gets lost."
   (let ((original-start (point))
 	(block-start-re
 	  "\\(def\\|class\\|module\\|while\\|do\\|{\\|if\\|elsif\\)"))
-    (while (plusp arg)
+    (while (> arg 0)
       (cond ((bobp)
 	      ;; Don't let this affect point.
 	      (goto-char original-start)
