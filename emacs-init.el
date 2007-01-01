@@ -317,6 +317,12 @@
 ;; Prevent attempts by nroff to inflict novel Unicode characters on us.
 (setq manual-program "LANG=en_US man")
 
+;; Ruby hacks.
+(let ((entry '("\\.rb$" . ruby-mode)))
+  (or (member entry auto-mode-alist)
+      (setq auto-mode-alist (cons entry auto-mode-alist))))
+(add-hook 'ruby-mode-hook 'rgr-ruby-mode-hook)
+
 ;;; Additional inits.
 (cond ((and (eq rgr-site 'bmerc)
 	    (not (equal (user-real-login-name) "rogers")))

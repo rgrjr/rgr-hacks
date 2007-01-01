@@ -13,6 +13,10 @@
 
 (require 'vc)
 
+(eval-when-compile
+  ;; (require 'change-log-mode)
+  (require 'vc))
+
 (defun rgr-find-more-recent-buffer (&rest buffers)
   ;; buffers is a list of buffers, some of which may be nil.  if there is more
   ;; than one non-nil buffer, pick the one that the user visited more recently.
@@ -51,8 +55,8 @@
 ;;;; Log stuff.
 
 (defvar rgr-vc-backend-to-log-command
-  '((CVS "cvs -q log -d '>%s' | cvs-chrono-log.pl")
-    (SVN "svn log --xml --verbose --revision '{%s}:HEAD' | svn-chrono-log.pl"))
+  '((CVS "cvs -q log -d '>%s' | vc-chrono-log.rb")
+    (SVN "svn log --xml --verbose --revision '{%s}:HEAD' | vc-chrono-log.rb"))
   "Alist mapping backend names to log summary commands for handled
 version control back ends.")
  
@@ -344,6 +348,8 @@ noted as such."
 		 (match-string 1)))
 	  ((eq major-mode 'c-mode)
 	    (rgr-c-def-name t))
+	  ((eq major-mode 'ruby-mode)
+	    (rgr-ruby-def-name))
 	  (t
 	    (message "Can't find definitions for %S mode." major-mode)
 	    (sit-for 2)

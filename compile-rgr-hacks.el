@@ -69,6 +69,7 @@ rgr-hacks-compile-module (see below).")
 	  ("rgr-mouse" use (tex-mode) require (ilisp-mouse browse-url))
 	  "rgr-mouse-doc"
 	  "rgr-perl-hacks"
+	  ("rgr-ruby-hacks" require (ruby-mode))
 	  "rgr-rect-hacks"
 	  "rgr-log-view"
 	  "rgr-rmail-hacks"
