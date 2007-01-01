@@ -133,6 +133,7 @@ A Lisp code line is one that is nonblank and not entirely a comment."
 	(list
 	  (rgr-make-tags-table-list
 	    (append (list "/shared/mgi/oligo" "~/projects/mgi/oligo"
+			  "~/projects/system/scripts"
 			  "/usr/local/src/rogers/bmerc/pima-profile-0.1/src"
 			  "/usr/local/src/rogers/bmerc/PIMA-0.6_2"
 			  ;; [this works for SuSE 9.0.  -- rgr, 28-Jan-05.]
