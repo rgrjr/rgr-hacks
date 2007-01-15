@@ -268,10 +268,9 @@
 ;; M-x ssh.  -- rgr, 1-Aug-03.
 (setq ssh-host-history
       (append (if (eq rgr-site 'mgi)
-		  '("rogers@rgrjr.dyndns.org"
-		    "mgi@www.modulargenetics.com")
+		  nil
 		  '("rogers@modulargenetics.dnsalias.com"))
-	      '("rogers@huxley.bu.edu")))
+	      '("rogers@rgrjr.dyndns.org" "rogers@huxley.bu.edu")))
 (if (eq rgr-site 'home)
     ;; Enable tunnelling to make the MGI database and intranet Web servers
     ;; available from home.  This requires corresponding ~/.mgi.conf and
