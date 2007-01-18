@@ -6,7 +6,7 @@
 ;;;
 ;;; [created.  -- rgr, 1-Jan-07.]
 ;;;
-;;; $Id:$
+;;; $Id$
 
 (defun ruby-backward-up-list (&optional arg)
   "Like backward-up-list, but handles nested Ruby constructs.
@@ -76,9 +76,10 @@ are supported:
 	      ;; Class or module body.
 	      (concat (match-string 1) " " (match-string 2)))
 	    ((< (save-excursion
-		  (beginning-of-line)
-		  (ruby-forward-sexp 1)
-		  (point))
+		  (save-match-data
+		    (beginning-of-line)
+		    (ruby-forward-sexp 1)
+		    (point)))
 		start-point)
 	      ;; This def doesn't contain the starting point, so we must be at
 	      ;; top level (i.e. between defs) in the class.
