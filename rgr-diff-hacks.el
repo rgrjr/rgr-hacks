@@ -75,7 +75,25 @@
 	(error nil)))))
 
 ;;;###autoload
+(defun rgr-diff-patch-directory (dir)
+  "In a patch-mode buffer, apply it to a specified directory."
+  (interactive "DDirectory to patch: ")
+  (let ((patch-file (expand-file-name (format "foo-%d.patch" (emacs-pid)) dir)))
+    (write-region (point-min) (point-max) patch-file nil nil nil 'excl)
+    (save-excursion
+      (set-buffer (get-buffer-create "*patch*"))
+      (setq default-directory dir)
+      ;; (message "in %S" default-directory)
+      (toggle-read-only -1)
+      (erase-buffer)
+      (display-buffer (current-buffer) t)
+      (call-process "/bin/bash" patch-file t t "-c" "patch -p0")
+      (toggle-read-only 1))
+    (delete-file patch-file)))
+
+;;;###autoload
 (defun rgr-diff-mode-hook ()
+  (define-key diff-mode-map "\C-cp" 'rgr-diff-patch-directory)
   (define-key diff-mode-map "\C-c!" 'rgr-diff-add-definition-comment))
 
 ;;;###autoload
