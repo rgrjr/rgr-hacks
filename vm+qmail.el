@@ -461,19 +461,7 @@ keys at all."
   ;; Convert the date to a string in "Day Mon dd hh:mm:ss yyyy" format.  All
   ;; fields are fixed width, so the string returned is always 24 characters
   ;; long.
-  (require 'timezone)
-  (let* ((l (decode-time date))
-	 ;(time (+ (car l) (* 60 (+ (car (cdr l)) (* 60 (car (cdr (cdr l))))))))
-	 (h (car l)) (m (car (cdr l))) (s (car (cdr (cdr l))))
-	 (l (cdr (cdr (cdr l))))
-	 (day (car l)) (month (car (cdr l))) (year (car (cdr (cdr l))))
-	 (l (cdr (cdr (cdr l))))
-	 (dow (car l)) (dst (car (cdr l))) (timezone (car (cdr (cdr l)))))
-    ;; (timezone-make-arpa-date year month day time (/ timezone 3600))
-    (format "%s %s %02d %04d %02d:%02d:%02d"
-	    (aref ["Sun" "Mon" "Tue" "Wed" "Thu" "Fri" "Sat"] dow)
-	    (capitalize (car (rassq month timezone-months-assoc)))
-	    day year h m s)))
+  (format-time-string "%a %b %d %H:%M:%S %Y" date))
 
 (defun vm-maildir-file-date (file)
   (let ((date (nth 5 (file-attributes file))))
