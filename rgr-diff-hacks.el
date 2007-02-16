@@ -78,7 +78,12 @@
 (defun rgr-diff-patch-directory (dir)
   "In a patch-mode buffer, apply it to a specified directory."
   (interactive "DDirectory to patch: ")
-  (let ((patch-file (expand-file-name (format "foo-%d.patch" (emacs-pid)) dir)))
+  (if (not (file-directory-p dir))
+      (error "Must have a directory."))
+  (let* ((dir (file-name-as-directory dir))
+	 ;; [bug: predictable file name.  -- rgr, 15-Feb-07.]
+	 (patch-file (expand-file-name (format "foo-%d.patch" (emacs-pid))
+				       dir)))
     (write-region (point-min) (point-max) patch-file nil nil nil 'excl)
     (save-excursion
       (set-buffer (get-buffer-create "*patch*"))
@@ -91,10 +96,24 @@
       (toggle-read-only 1))
     (delete-file patch-file)))
 
+(defun rgr-diff-hunk-next (&optional count)
+  "Move to the next hunk, and show it at the top of the window."
+  (interactive "P")
+  (diff-hunk-next count)
+  (recenter 0))
+
+(defun rgr-diff-hunk-prev (&optional count)
+  "Move to the previous hunk, and show it at the top of the window."
+  (interactive "P")
+  (diff-hunk-prev count)
+  (recenter 0))
+
 ;;;###autoload
 (defun rgr-diff-mode-hook ()
   (define-key diff-mode-map "\C-cp" 'rgr-diff-patch-directory)
-  (define-key diff-mode-map "\C-c!" 'rgr-diff-add-definition-comment))
+  (define-key diff-mode-map "\C-c!" 'rgr-diff-add-definition-comment)
+  (define-key diff-mode-map "\M-P" 'rgr-diff-hunk-prev)
+  (define-key diff-mode-map "\M-N" 'rgr-diff-hunk-next))
 
 ;;;###autoload
 (defun rgr-install-diff-hacks ()
