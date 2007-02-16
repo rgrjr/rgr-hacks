@@ -141,7 +141,6 @@
 (condition-case () (require 'ilisp-possibilities)
   (error nil))
 
-(rgr-make-tags-table-list-hook)
 ;; Zmacs binds this to C-M-., but that's find-tag-regexp in GNU emacs.  -- rgr,
 ;; 17-Dec-00.
 (global-set-key "\C-c\M-." 'rgr-elisp-find-tag-for-emacs-key)
@@ -300,6 +299,9 @@
       ((eq rgr-site 'home)
         ;; old solution.  -- rgr, 3-Dec-05.
         (require 'local-vc-svn)))
+
+;; Run this after all load-path directories are set up.
+(rgr-make-tags-table-list-hook)
 
 ;; Change TERM=emacs into something that Tru64 "man" can deal with.  It refuses
 ;; to run if it can't recognize the terminal type, which is broken; it should
