@@ -106,6 +106,28 @@ next (and subsequent) line if the current (previous) line ends in '\\'."
 	(end-of-line 2))
       (buffer-substring start (point)))))
 
+;; Truncating output to the last "uptime" command.
+
+(defun rgr-shell-truncate-output ()
+  "Delete from point back to the command after the last \"uptime\" command."
+  (interactive)
+  (let* ((end (point))
+	 (last end)
+	 (start nil))
+    (while (and (not start)
+		(progn (comint-previous-prompt 1)
+		       (< (point) last)))
+      (cond ((looking-at "uptime")
+	      (comint-next-prompt 1)
+	      (setq start (point))))
+      (setq last (point)))
+    (if (not start)
+	(error "Couldn't find \"uptime\" command landmark."))
+    (delete-region start end)
+    (message "Removed %d characters." (1+ (- end start)))))
+
+;;;; SSH support.
+
 (defvar rgr-secure-shell-program "ssh")
 (defvar ssh-host-history nil
   "*History of recent SSH hosts.")
@@ -193,30 +215,6 @@ Useful in telnet sessions for propagating $DISPLAY."
     (goto-char (process-mark proc))
     (insert (format "setenv %s %s" variable-name display))))
 
-(defun rgr-shell-define-environment-variable (variable-name value)
-  (let ((proc (or (get-buffer-process (current-buffer))
-		  (error "Current buffer has no process"))))
-    ;; a cleverer version would figure out which shell it had, and pick the
-    ;; syntax accordingly.  -- rgr, 20-Jan-00.
-    (goto-char (process-mark proc))
-    (insert (format (if nil
-			"setenv %s %S"
-			"export %s=%S")
-		    variable-name value))))
-
-(defun rgr-shell-set-xauthority ()
-  "Insert an 'export' command that sets the XAUTHORITY variable.
-Useful in telnet/ssh sessions for propagating $XAUTHORITY."
-  (interactive)
-  (let* ((variable-name "XAUTHORITY")
-	 (xauthority
-	   (or (getenv variable-name)
-	       (expand-file-name
-		 (concat "~" (getenv "LOGNAME") "/.Xauthority")))))
-    (cond ((not (file-readable-p xauthority))
-	    (message "Note:  %s is not readable." xauthority)))
-    (rgr-shell-define-environment-variable variable-name xauthority)))
-
 ;;;###autoload
 (defun rgr-comint-mode-hook ()
   "comint-mode is what shell-mode and telnet-mode are built on."
@@ -247,7 +245,6 @@ Useful in telnet/ssh sessions for propagating $XAUTHORITY."
   ;; [oops; this is redundant.  -- rgr, 20-Jan-00.]
   ;; (define-key shell-mode-map "\M-\r" 'rgr-shell-insert-previous-input)
   (define-key shell-mode-map "\C-cx" 'rgr-shell-set-display)
-  (define-key shell-mode-map "\C-cy" 'rgr-shell-set-xauthority)
   ;; Set this to the same thing ange-ftp-gateway-prompt-pattern will use (after
   ;; default.el gets loaded).  [And allow csh "? " prompts (e.g. "foreach? ").
   ;; -- rgr, 20-Aug-97.]  [the telnet-mode runs comint-mode-hook before
@@ -263,7 +260,6 @@ Useful in telnet/ssh sessions for propagating $XAUTHORITY."
 (defun rgr-telnet-mode-hook ()
   "telnet-mode is for running a shell under emacs via M-x rsh or M-x telnet."
   (define-key telnet-mode-map "\C-cx" 'rgr-shell-set-display)
-  (define-key shell-mode-map "\C-cy" 'rgr-shell-set-xauthority)
   ;; [oops; this is redundant.  -- rgr, 20-Jan-00.]
   ;; (define-key telnet-mode-map "\M-\r" 'rgr-shell-insert-previous-input)
   ;; See the comment in rgr-shell-mode-hook, above.  -- rgr, 24-Mar-99.
