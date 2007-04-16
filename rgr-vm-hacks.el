@@ -549,13 +549,6 @@ directory."
   ;; (define-key (lookup-key vm-mail-mode-map "\C-c") "\C-s" nil)
   (define-key vm-mail-mode-map "\C-c\C-s" nil))
 
-;;; Invoking Netscape
-
-(defun rgr-vm-mouse-send-url-to-netscape (url &optional new-netscape new-window)
-  ;; forget the fancies; just be sure we use the right browser on the right
-  ;; network-accessible machine.  -- rgr, 15-Dec-98.
-  (rgr-find-url url))
-
 ;;; Installation hook.
 
 ;;;###autoload

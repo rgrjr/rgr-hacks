@@ -242,13 +242,10 @@ additional customizations.")
 	(t
 	  (message "Aborted."))))
 
-(setq browse-url-browser-function 'rgr-browse-url-netscape)
-
-(defun rgr-find-url (url)
-  ;; New version that interfaces to the browse-url package.  [something of a
-  ;; legacy function, kept to avoid changing old code.  -- rgr, 9-Apr-03.]
-  (require 'browse-url)
-  (funcall browse-url-browser-function url))
+;; [The default is browse-url-default-browser, which seems to be
+;; enough at present; the remote browser hacks are no longer needed.
+;; -- rgr, 15-Apr-07.]
+;; (setq browse-url-browser-function 'rgr-browse-url-netscape)
 
 ;;; Load the version-specific commands.  This is why we need to be on the
 ;;; load-path.
