@@ -56,8 +56,15 @@
 ;;;; Log stuff.
 
 (defvar rgr-vc-backend-to-log-command
-  '((CVS "cvs -q log -d '>%s' | vc-chrono-log.rb")
-    (SVN "svn log --xml --verbose --revision '{%s}:HEAD' | vc-chrono-log.rb"))
+  (let ((cvs-command "cvs -q log -d '>%s' | ")
+	(svn-command "svn log --xml --verbose --revision '{%s}:HEAD' | "))
+    ;; Prefer the Ruby version if Ruby is available, else fall back to the Perl
+    ;; scripts.
+    (if (executable-find "ruby")
+      `((CVS ,(concat cvs-command "vc-chrono-log.rb"))
+	(SVN ,(concat svn-command "vc-chrono-log.rb")))
+      `((CVS ,(concat cvs-command "cvs-chrono-log.pl"))
+	(SVN ,(concat svn-command "svn-chrono-log.pl")))))
   "Alist mapping backend names to log summary commands for handled
 version control back ends.")
  
