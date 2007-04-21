@@ -259,6 +259,18 @@
 ;; This has some per-buffer stuff.  -- rgr, 19-Mar-96.
 (add-hook 'html-helper-mode-hook 'rgr-html-helper-mode-hook)
 
+;; Prefer mozilla, then firefox, then whatever browse-url-default-browser turns
+;; up.  [Which does not always work; on carthage it's browse-url-gnome-moz,
+;; which doesn't work without installing Gnome.  -- rgr, 18-Apr-07.]
+(setq browse-url-browser-function
+      (cond ((executable-find "mozilla")
+	      'browse-url-netscape)
+	    ((and (executable-find "firefox")
+		  ;; Not available in Emacs 21.*.
+		  (fboundp 'browse-url-firefox))
+	      'browse-url-firefox)
+	    (t browse-url-browser-function)))
+
 ;; Emacs/W3
 (add-hook 'w3-load-hook 'rgr-w3-load-hook)
 ;; wiki-remote stuff.
