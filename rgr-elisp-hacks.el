@@ -313,7 +313,9 @@ The source is found by using the \\[find-tag] command."
 ;;;###autoload
 (defun rgr-define-lisp-mode-commands (map)
   ;; Install rgr command hacks, such as rgr-fill-comment.
-  (define-key map "\M-q" 'rgr-fill-comment)
+  ;; [But use the default in Emacs 22.  -- rgr, 21-Apr-07.]
+  (if (not (rgr-emacs-version-p 22))
+      (define-key map "\M-q" 'rgr-fill-comment))
   (define-key map "\M-*" 'rgr-add-to-lisp-modification-history)
   (if (eq map emacs-lisp-mode-map)
       ;; For consistency with Common Lisp interfaces.  -- rgr, 8-Nov-06.
