@@ -210,97 +210,33 @@ region."
 		  (forward-line 1)))))
       (set-marker comment-marker nil))))
 
-;;;; CMU-CL specific stuff
-
-(defun rgr-cmucl-flush-noise (string)
-  ;; Take uninteresting boilerplate out of Python (CMU-CL) compiler messages.
-  (cond ((string-match "Compiling LAMBDA NIL: *\nCompiling Top-Level Form: *\n"
-		       string)
-	  ;; Got a compiler message.  If both string-match'es hit, this should
-	  ;; leave just the compiled function name.
-	  (setq string (replace-match "" t t string))
-	  (if (string-match "Converted .+\\.\n" string)
-	      (setq string (replace-match "" t t string)))))
-  ;; Now flush leading whitespace.
-  (if (string-match "\\`[ \t\n]+" string)
-      (setq string (replace-match "" t t string)))
-  string)
-
-(defun rgr-cmucl-ilisp-9-display-output (string)
-  ;; use the default display technique, but flush noise first.  [for ilisp
-  ;; version 9 and earlier.  -- rgr, 29-Dec-00.]
-  (ilisp-display-output-default (rgr-cmucl-flush-noise string)))
-
-(defun rgr-cmucl-ilisp-10-display-output (string output-sink)
-  ;; use the default display technique, but flush noise first.  [for ilisp
-  ;; version 10 and later.  -- rgr, 29-Dec-00.]
-  (ilisp-display-output-default (rgr-cmucl-flush-noise string) output-sink))
-
-;;;; ilisp hackery.
-
-(defun rgr-cmulisp-mode-hook ()
-  ;; Fix source file recording braindeath.
-  (setq ilisp-source-directory-fixup-alist
-	'(;; [need to suss out CLC source file recording.  -- rgr, 1-Sep-02.]
-	  ("/usr/lib/common-lisp/cmucl-normal/clsql/\\(.*\\)/bin/\\(.*\\)\\.x86f"
-	   . "/usr/share/common-lisp/repositories/clsql-0.7.1/\\1/\\2.cl")
-	  ;; [this is probably due to moving something around after compiling.
-	  ;; -- rgr, 1-Sep-02.]
-	  ("/usr/share/common-lisp/source/clsql/"
-	   . "/usr/share/common-lisp/repositories/clsql-0.7.1/")
-	  ;; [this is necessary because PCL in 18d remembers *load-truename*
-	  ;; instead of *load-pathname* when defining things.  -- rgr,
-	  ;; 28-Aug-02.]
-	  ("/prj/cmucl/release-18d/linux/\\(.*\\)\\.x86f"
-	   . "/usr/local/src/cmucl-18d/src/\\1.lisp"))))
-
-(add-hook 'cmulisp-hook 'rgr-cmulisp-mode-hook)
+;;;; Slime stuff.
 
 ;;;###autoload
-(defun rgr-ilisp-mode-hook ()
-  (setq ilisp-mode-hook nil)
-  (setq lisp-mode-hook nil)
-  (setq ilisp-*prefix* "\C-c")
-  (setq ilisp-*use-fsf-compliant-keybindings* t))
-
-(defun rgr-old-ilisp-mode-hook ()
-  ;; [this disables the annoying hack where ilisp grovels through all buffers if
-  ;; the lisp doesn't know where to find the definition.  though, since cmucl
-  ;; loses interactive definition source files, this may cause trouble.  -- rgr,
-  ;; 30-Jul-02.]  [no longer true; patched in ilisp.  -- rgr, 28-Aug-02.]
-  ;; [ilisp M-. now ignores this setting.  -- rgr, 27-Dec-03.]
-  ;; (setq lisp-edit-files nil)
-  ;; [this doesn't seem to work -- ilisp-mode-map is nil.  -- rgr, 5-Apr-94.]
-  ;; [so we need this incantation to build it.  (ilisp-mode-map contains key
-  ;; bindings for the inferior lisp.)  -- rgr, 22-Dec-99.]  [no; put it on
-  ;; ilisp-mode-hook instead.  -- rgr, 28-Jan-00.]
-  (or ilisp-mode-map
-      (ilisp-bindings))
-  (define-key ilisp-mode-map "\M-q" 'rgr-fill-comment)
-  ;; get rid of shadowing C-M-l binding.  [in ilisp 5.9.  -- rgr, 22-Dec-99.]
-  (define-key ilisp-mode-map "\C-\M-l" 'comint-show-output)
-  (define-key ilisp-mode-map "\C-c\r" 'comint-copy-old-input)
-  ;; don't know why i need this too . . .
-  (define-key ilisp-mode-map [?\C-c return] 'comint-copy-old-input)
-  ;; [this needs better installation; we don't need it for allegro, for
-  ;; instance.  -- rgr, 28-Feb-00.]  [it also breaks ilisp version 5.10.1, in
-  ;; which ilisp-display-output-default requires two args.  -- rgr, 6-Dec-00.]
-  (setq ilisp-display-output-function
-	(if (and (boundp 'ilisp-*version*)
-		 (string-match "^5\\.[1-9][0-9]" ilisp-*version*))
-	    'rgr-cmucl-ilisp-10-display-output
-	    'rgr-cmucl-ilisp-9-display-output)))
+(defun rgr-load-slime ()
+  (interactive)
+  (let ((slime-dir nil)
+	(tail '("/usr/local/emacs/slime-2.0" "/shared/emacs/slime")))
+    (while tail
+      (if (file-directory-p (car tail))
+	  (setq slime-dir (car tail) tail nil)
+	  (setq tail (cdr tail))))
+    (if (not slime-dir)
+	(error "Can't find slime."))
+    (message "Loading slime.")
+    (add-to-list 'load-path (expand-file-name slime-dir)))
+  (setq inferior-lisp-program "/usr/local/bin/lisp")
+  (require 'slime)
+  (slime-setup))
 
 ;;;###autoload
 (defun rgr-lisp-mode-hook ()
   (rgr-define-lisp-mode-commands lisp-mode-map)
   ;; Undo these, which don't add much, and can shadow good find-file-at-point
-  ;; things (when running at home).  -- rgr, 6-Feb-98.  [bug: ilisp-mode-map is
-  ;; not defined until ilisp is loaded.  -- rgr, 8-Feb-98.]
+  ;; things (when running at home).  -- rgr, 6-Feb-98.
   (define-key lisp-mode-map "\C-x\C-f" nil)
-  ;(define-key ilisp-mode-map "\C-x\C-f" nil)
-  ;; ilisp, curse its soul, bashes this to the wrong thing.
-  (rgr-define-lisp-mode-commands emacs-lisp-mode-map)
+  ;; Indent comments to 80 characters.
+  (setq fill-column 80)
   ;; Fix lisp indentation.  Don't know why lisp-indent-hook defaults to
   ;; lisp-indent-hook, which clearly does the wrong thing.
   (rgr-common-lisp-indentation))

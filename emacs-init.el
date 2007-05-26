@@ -77,9 +77,6 @@
 ;; disable transient-mark-mode (seems to be on by default in the SuSE 20.7
 ;; version).  -- rgr, 27-Jun-01.
 (setq transient-mark-mode nil)
-;; turn off annoying "Scanning buffer for index" messages under ilisp.  -- rgr,
-;; 25-Mar-03.
-(setq imenu-scanning-message nil)
 ;; get command bindings in apropos.  -- rgr, 9-Apr-03.
 (setq apropos-do-all t)
 ;; use unified diffs.  -- rgr, 6-Jul-03.
@@ -201,15 +198,6 @@
 (rgr-define-lisp-mode-commands lisp-interaction-mode-map)
 (rgr-common-lisp-indentation)
 
-;; [this needs a better home.  -- rgr, 2-Aug-06.]
-(defun rgr-load-slime ()
-  (interactive)
-  (message "Loading slime.")
-  (add-to-list 'load-path (expand-file-name "/shared/emacs/slime"))
-  (setq inferior-lisp-program "/usr/local/bin/lisp")
-  (require 'slime)
-  (slime-setup))
-
 (rgr-install-diff-hacks)
 (add-hook 'log-view-mode-hook 'rgr-log-view-mode-hook)
 (add-hook 'ilisp-mode-hook 'rgr-ilisp-mode-hook)
@@ -294,7 +282,11 @@
 	     "-L" "8082:karnak:80"
 	     "-L" "8083:thebes:80"
 	     "-L" "8084:carthage:80"
-	     "-L" "8085:granada:80"))))
+	     "-L" "8085:granada:80")
+	    ;; This must be in the "home" list because lap on the road currently
+	    ;; thinks its at home.
+	    ("rgrjr\\.dyndns\\.org$"
+	     "-L" "9143:localhost:143"))))
 
 ;; VC hacks.  -- rgr, 6-Aug-04.
 (define-key text-mode-map "\C-c+" 'rgr-vc-log-plus)
