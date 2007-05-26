@@ -138,23 +138,10 @@ buffer."
   ;; is current.  but don't force reparsing, since the appropriate variables are
   ;; buffer local anyway.  -- rgr, 23-Dec-98.]
   (setq compilation-last-buffer (current-buffer))
-  (compile-reinitialize-errors nil (point))
+  ;(compile-reinitialize-errors nil (point))
   ;; Move to bol; the marker for the error on this line will point there.
   (beginning-of-line)
-  ;; Move compilation-error-list to the elt of compilation-old-error-list we
-  ;; want.
-  (setq compilation-error-list compilation-old-error-list)
-  (let ((last-tail compilation-error-list))
-    (while (and compilation-error-list
-		(> (point) (car (car compilation-error-list))))
-      (setq last-tail compilation-error-list)
-      (setq compilation-error-list (cdr compilation-error-list)))
-    (if (eq last-tail compilation-error-list)
-	;; Oops; this doesn't work for the first error/occurrence; next-error
-	;; will skip it & go to the second.  (compile-goto-error also has this
-	;; bug.)  Tell next-error to reparse from scratch.  That seems to be the
-	;; only way to get to the first error . . .  -- rgr, 23-Oct-95.
-	(setq compilation-error-list t))))
+  (compile-goto-error))
 
 (put 'compilation-mode 'reset-possibilities-from-point
      'ilisp-compile-mode-reset-possibilities-from-point)
