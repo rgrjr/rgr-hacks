@@ -628,6 +628,15 @@ M-x buffer-menu)."
   (global-set-key "\C-cgl" 'goto-line)
   (global-set-key "\C-cgc" 'goto-char)
   (global-set-key "\C-cgs" 'rgr-view-sequence-at-point)
+  ;; Bindings compatible with Emacs 22, which already has goto-line on "M-g M-g"
+  ;; and "M-g g".
+  (cond ((not (rgr-emacs-version-p 22))
+	  (global-set-key "\M-g\M-g" 'goto-line)
+	  (global-set-key "\M-gg" 'goto-line)))
+  (global-set-key "\M-g\M-c" 'goto-char)
+  (global-set-key "\M-gc"    'goto-char)
+  (global-set-key "\M-g\M-s" 'rgr-view-sequence-at-point)
+  (global-set-key "\M-gs"    'rgr-view-sequence-at-point)
   ;; I keep typing "insert" by accident, and then overwrite stuff by accident.
   ;; Unbinding this key means that I have to type "M-x overwrite-mode RET" if I
   ;; really want to clobber myself.  -- rgr, 6-Feb-06.
@@ -661,6 +670,8 @@ M-x buffer-menu)."
 	  (setq byte-compile-dynamic-docstrings nil)))
   ;; New rgr-fasta-goto-base command.
   (global-set-key "\C-cgb" 'rgr-fasta-goto-base)
+  (global-set-key "\M-g\M-b" 'rgr-fasta-goto-base)
+  (global-set-key "\M-gb"    'rgr-fasta-goto-base)
   ;; Re-enable random commands.
   (put 'narrow-to-region 'disabled nil)
   (put 'upcase-region 'disabled nil)
