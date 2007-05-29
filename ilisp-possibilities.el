@@ -84,18 +84,19 @@ buffer."
 	  (message "%s; C-. is now next %s possibility." message new-buffer)
 	  (message "%s; no more possibilities." message)))))
 
-(defun ilisp-goto-next-possibility ()
+(defun ilisp-goto-next-possibility (&optional n)
   "Go to the next possibility on the stack."
-  (interactive)
-  (if (ilisp-possibility-buffer-p)
-      (ilisp-push-possibility-buffer t))
+  (interactive "P")
+  (cond ((ilisp-possibility-buffer-p)
+	  (ilisp-push-possibility-buffer t)
+	  (or n (setq n 0))))
   (let* ((buffer (or (ilisp-current-possibility-buffer)
 		     (error "No more possibilities.")))
 	 (command (save-excursion
 		    (set-buffer buffer)
 		    ilisp-next-possibility))
 	 (old-point (point)) (old-buffer (current-buffer))
-	 (result (funcall command buffer)))
+	 (result (funcall command buffer n)))
     ;; (message "%s in %s returned %s." command buffer result)
     (cond ((null result)
 	    (ilisp-pop-possibilities (format "No more %s possibilities" buffer)))
@@ -104,22 +105,25 @@ buffer."
 	    ;; a message, in case the command said something useful.
 	    (push-mark old-point t)))))
 
-(defun ilisp-next-possibility (&optional prefix)
+(defun ilisp-next-possibility (&optional raw-prefix)
   "Go to the next possibility on the stack."
-  (interactive "p")
-  (cond ((< prefix 0) (ilisp-pop-possibilities))
-	((= prefix 0)
-	  (switch-to-buffer (or (ilisp-current-possibility-buffer)
-				(error "No current possibilities buffer."))))
-	((> prefix 0) (ilisp-goto-next-possibility))))
+  (interactive "P")
+  (let ((prefix (prefix-numeric-value raw-prefix)))
+    (cond ((not raw-prefix)
+	    (ilisp-goto-next-possibility))
+	  ((< prefix 0) (ilisp-pop-possibilities))
+	  ((= prefix 0)
+	    (switch-to-buffer (or (ilisp-current-possibility-buffer)
+				  (error "No current possibilities buffer."))))
+	  ((> prefix 0) (ilisp-goto-next-possibility prefix)))))
 
 ;;;; compilation-mode interface
 
-(defun ilisp-compile-next-possibility (buffer)
-  ;; [need to return a boolean.  -- rgr, 20-Jul-95.]
+(defun ilisp-compile-next-possibility (buffer &optional n)
+  ;; Returns a boolean.
   (setq compilation-last-buffer buffer)
   (condition-case error
-      (progn (next-error)
+      (progn (next-error n)
 	     t)
     (error nil)))
 
@@ -144,6 +148,8 @@ buffer."
   (compile-goto-error))
 
 (put 'compilation-mode 'reset-possibilities-from-point
+     'ilisp-compile-mode-reset-possibilities-from-point)
+(put 'grep-mode 'reset-possibilities-from-point
      'ilisp-compile-mode-reset-possibilities-from-point)
 (add-hook 'compilation-mode-hook 'ilisp-push-compile-possibility-buffer)
 (setq compilation-buffer-name-function 'ilisp-gensym-possibility-buffer-name)

@@ -62,6 +62,7 @@ rgr-hacks-compile-module (see below).")
 	  "rgr-lisp-hacks"
 	  "rgr-mail-hacks"
 	  "rgr-makefile-hacks"
+	  ("ilisp-possibilities" require (diff-mode))	;; orphaned feature.
 	  "ilisp-mouse"
 	  ("rgr-mouse-21"
 	   if (member rgr-emacs-major-version '(21 22))

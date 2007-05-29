@@ -135,8 +135,8 @@
 
 ;; New feature!  -- rgr, 20-Jul-95.  [this is now part of ilisp, distributed
 ;; separately, so don't fail if it can't be loaded.  -- rgr, 22-Apr-03.]
-(condition-case () (require 'ilisp-possibilities)
-  (error nil))
+;; [now part of rgr-hacks.  -- rgr, 26-May-07.]
+(require 'ilisp-possibilities)
 
 ;; Zmacs binds this to C-M-., but that's find-tag-regexp in GNU emacs.  -- rgr,
 ;; 17-Dec-00.
