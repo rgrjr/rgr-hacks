@@ -110,7 +110,11 @@
 	;; thing.  -- rgr, 28-Apr-06.]
 	(or (member "/usr/share/emacs/site-lisp" load-path)
 	    (setq load-path (cons "/usr/share/emacs/site-lisp" load-path)))
-	(cond ((not (member "/shared/emacs/site-lisp" load-path))
+	(cond ((and (eq rgr-site 'home)
+		    ;; [lap always thinks it's home, but /shared/emacs/site-lisp
+		    ;; is not always mounted.  -- rgr, 29-Jun-07.]
+		    (file-directory-p "/shared/emacs/site-lisp")
+		    (not (member "/shared/emacs/site-lisp" load-path)))
 	        (setq load-path (cons "/shared/emacs/site-lisp" load-path))
 	        (load "/shared/emacs/site-lisp/site-start.el")))))
 
