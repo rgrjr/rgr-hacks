@@ -215,9 +215,10 @@
 (setq rgr-c-use-electric-dash-p t)
 ;; [this rules out files in CVS/SVN directories, TAGS files, normal emacs backup
 ;; and autosave files, and CVS ".#file.version" files.  -- rgr, 28-Feb-05.]
-(setq grep-find-command (concat "find . -type f "
-				"| grep -Ev '/\\.?#|~$|/TAGS$|/\.svn/|/CVS/' "
-				"| xargs -e grep -n -e "))
+(setq grep-find-command
+      (concat "find . -type f "
+	      "| grep -Ev '/\\.?#|~$|/TAGS$|/\.svn/|/CVS/|\.patch$' "
+	      "| xargs -e grep -n -e "))
 (add-hook 'compilation-mode-hook 'rgr-compilation-mode-hook)
 (add-hook 'makefile-mode-hook 'rgr-makefile-mode-hook)
 (add-hook 'perl-mode-hook 'rgr-perl-mode-hook)
@@ -256,7 +257,11 @@
 ;; which doesn't work without installing Gnome.  -- rgr, 18-Apr-07.]
 (setq browse-url-browser-function
       (cond ((executable-find "mozilla")
-	      'browse-url-netscape)
+	      (if (eq rgr-site 'home)
+		  ;; [for some reason, "netscape" no longer works on my home
+		  ;; system.  -- rgr, 7-Jul-07.]
+		  'browse-url-gnome-moz
+		  'browse-url-netscape))
 	    ((and (executable-find "firefox")
 		  ;; Not available in Emacs 21.*.
 		  (fboundp 'browse-url-firefox))
