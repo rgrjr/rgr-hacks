@@ -105,12 +105,15 @@ signatures, based on the rgr-email-signature-strings variable."
 	(insert-tail nil))
     (cond ((null n) (setq n 1))
 	  ((< n 0) (error "Prefix arg must be non-negative.")))
+    (if (save-excursion
+	  (search-forward mail-header-separator nil t))
+	(error "Can't sign the headers."))
     (while tail
       (let ((string (car tail)))
 	(setq tail (cdr tail))
-	(if (equal string
-		   (buffer-substring (- (point) (length string))
-				     (point)))
+	(if (let ((prefix-start (- (point) (length string))))
+	      (and (>= prefix-start (point-min))
+		   (equal string (buffer-substring prefix-start (point)))))
 	    (setq insert-tail (or tail
 				  (error "No more signature strings."))
 		  tail nil))))
@@ -144,7 +147,7 @@ Prefix arg means justify as well.  This version knows not to fill headers."
     (let ((end (point)))
       (backward-paragraph)
       (cond ((= (point) (point-min))
-	      (search-forward "--text follows this line--\n")
+	      (search-forward (concat mail-header-separator "\n"))
 	      (if (>= (point) end)
 		  (error "Can't fill mail headers."))))
       (fill-region-as-paragraph (point) end arg))))
