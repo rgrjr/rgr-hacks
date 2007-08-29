@@ -11,13 +11,10 @@
 ;;;    [old] Modification history:
 ;;;
 ;;; ssh: new.  -- rgr, 13-Dec-99.
-;;; rgr-shell-set-display: new.  -- rgr, 20-Jan-00.
-;;; rgr-shell-set-display: ensure host.  -- rgr, 28-Jan-00.
 ;;; ssh: support rgr-ssh-default-destination var.  -- rgr, 31-Jan-00.
 ;;; ssh: try history, switch instead of pop.  -- rgr, 16-Jun-00.
 ;;; ssh: build on comint-mode instead of telnet-mode, so that
 ;;;	comint-watch-for-password-prompt works.  -- rgr, 2-Mar-01.
-;;; rgr-shell-set-xauthority: new hack.  -- rgr, 5-Nov-02.
 ;;; better ssh-host-history behavior.  -- rgr, 15-Jan-03.
 ;;; flush rgr-ssh-default-destination var.  -- rgr, 19-Apr-03.
 ;;;
@@ -198,23 +195,6 @@ Communication with HOST is recorded in a buffer `*ssh-HOST*'."
   (sit-for 10)
   (bury-buffer))
 
-(defun rgr-shell-set-display ()
-  "Insert a 'setenv' command that sets the DISPLAY variable.
-Useful in telnet sessions for propagating $DISPLAY."
-  (interactive)
-  (let* ((variable-name "DISPLAY")
-	 (proc (or (get-buffer-process (current-buffer))
-		   (error "Current buffer has no process")))
-	 (display (or (getenv variable-name)
-		      (error "%S is not defined." variable-name))))
-    (if (string-match "^:" display)
-	;; braindead initializations
-	(setq display (concat (system-name) display)))
-    ;; a cleverer version would figure out which shell it had, and pick the
-    ;; syntax accordingly.  -- rgr, 20-Jan-00.
-    (goto-char (process-mark proc))
-    (insert (format "setenv %s %s" variable-name display))))
-
 ;;;###autoload
 (defun rgr-comint-mode-hook ()
   "comint-mode is what shell-mode and telnet-mode are built on."
@@ -240,11 +220,11 @@ Useful in telnet sessions for propagating $DISPLAY."
 	 ;; client.  -- rgr, 13-Jun-03.
 	 (setq comint-password-prompt-regexp
 	       (replace-match replacement t t comint-password-prompt-regexp))))
-  ;; [introduced in emacs 22.0.  -- rgr, 7-Jun-06.]
+  ;; [introduced in Emacs 22.  -- rgr, 7-Jun-06.]
   (setq comint-scroll-show-maximum-output nil)
   ;; [oops; this is redundant.  -- rgr, 20-Jan-00.]
   ;; (define-key shell-mode-map "\M-\r" 'rgr-shell-insert-previous-input)
-  (define-key shell-mode-map "\C-cx" 'rgr-shell-set-display)
+
   ;; Set this to the same thing ange-ftp-gateway-prompt-pattern will use (after
   ;; default.el gets loaded).  [And allow csh "? " prompts (e.g. "foreach? ").
   ;; -- rgr, 20-Aug-97.]  [the telnet-mode runs comint-mode-hook before
@@ -259,7 +239,6 @@ Useful in telnet sessions for propagating $DISPLAY."
 ;;;###autoload
 (defun rgr-telnet-mode-hook ()
   "telnet-mode is for running a shell under emacs via M-x rsh or M-x telnet."
-  (define-key telnet-mode-map "\C-cx" 'rgr-shell-set-display)
   ;; [oops; this is redundant.  -- rgr, 20-Jan-00.]
   ;; (define-key telnet-mode-map "\M-\r" 'rgr-shell-insert-previous-input)
   ;; See the comment in rgr-shell-mode-hook, above.  -- rgr, 24-Mar-99.
