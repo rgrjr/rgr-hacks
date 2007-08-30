@@ -123,6 +123,73 @@ next (and subsequent) line if the current (previous) line ends in '\\'."
     (delete-region start end)
     (message "Removed %d characters." (1+ (- end start)))))
 
+;; Changing "diff" into "cmp" and vice versa.
+
+(defvar rgr-diff-command-re
+        (let* ((lwsp "[ \t]+")
+	       (word "[^ \t\n]+")
+	       (capture-word (concat "\\(" word "\\)")))
+	  (concat "\\(cmp\\|diff\\)" lwsp
+		  ;; optional options
+		  "\\(-" word lwsp "\\)*"
+		  ;; file name arguments
+		  capture-word lwsp capture-word))
+  "Regexp for recognizing diff and cmp commands.  Captures are (1)
+command name, (2) options, (3) first file, and (4) second file.")
+
+(defvar rgr-differ-line-re
+        (let* ((lwsp "[ \t]+")
+	       (word "[^ \t\n]+")
+	       (capture-word (concat "\\(" word "\\)")))
+	  (concat capture-word lwsp capture-word " differ:"))
+  "Regexp for recognizing the 'differ' output of cmp commands.  Captures
+are (1) first file, and (2) second file.")
+
+(defun rgr-frob-diff-remake-command (old-cmd file1 file2)
+  ;; Given parsed bits of the old command, produce the new command as a string.
+  (let* ((new-cmd (if (equal old-cmd "cmp") 'diff 'cmp))
+	 (command (if (eq new-cmd 'diff)
+		       diff-command
+		       "cmp"))
+	 (switches (if (eq new-cmd 'diff)
+		       diff-switches
+		       nil)))
+    (mapconcat 'identity
+	       (append (list command)
+		       (if (listp switches)
+			   switches
+			   (list switches))
+		       (list file1 file2))
+	       " ")))
+
+(defun rgr-frob-diff ()
+  "Change 'diff' to 'cmp' and vice versa using the current line.
+With point on a command line or the 'differ' output of cmp, changes to
+the other command, obeying diff-command and diff-switches, and inserts
+it as input at the command prompt."
+  (interactive)
+  (let* ((end (save-excursion
+		(end-of-line)
+		(point)))
+	 (command
+	   (save-excursion
+	     (beginning-of-line)
+	     (cond ((re-search-forward rgr-diff-command-re end t)
+		     (rgr-frob-diff-remake-command (match-string 1)
+						   (match-string 3)
+						   (match-string 4)))
+		   ((re-search-forward rgr-differ-line-re end t)
+		     (rgr-frob-diff-remake-command "cmp"
+						   (match-string 1)
+						   (match-string 2)))
+		   (t
+		     (error "Not on a diff or cmp command line."))))))
+    ;; (message "got command %S" command)
+    (goto-char (process-mark
+		 (or (get-buffer-process (current-buffer))
+		     (error "Current buffer has no process"))))
+    (insert command)))
+
 ;;;; SSH support.
 
 (defvar rgr-secure-shell-program "ssh")
@@ -195,6 +262,8 @@ Communication with HOST is recorded in a buffer `*ssh-HOST*'."
   (sit-for 10)
   (bury-buffer))
 
+;;;; Initialization and hook functions.
+
 ;;;###autoload
 (defun rgr-comint-mode-hook ()
   "comint-mode is what shell-mode and telnet-mode are built on."
@@ -222,6 +291,8 @@ Communication with HOST is recorded in a buffer `*ssh-HOST*'."
 	       (replace-match replacement t t comint-password-prompt-regexp))))
   ;; [introduced in Emacs 22.  -- rgr, 7-Jun-06.]
   (setq comint-scroll-show-maximum-output nil)
+  ;; New hack.  -- rgr, 11-Jul-07.
+  (define-key shell-mode-map "\C-c*d" 'rgr-frob-diff)
   ;; [oops; this is redundant.  -- rgr, 20-Jan-00.]
   ;; (define-key shell-mode-map "\M-\r" 'rgr-shell-insert-previous-input)
 
