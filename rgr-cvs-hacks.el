@@ -347,7 +347,7 @@ noted as such."
 	    (if (not (looking-at "^("))
 		(beginning-of-defun))
 	    (rgr-lisp-def-name t))
-	  ((eq major-mode 'perl-mode)
+	  ((member major-mode '(perl-mode cperl-mode))
 	    (rgr-perl-definition-name))
 	  ((member major-mode '(makefile-mode makefile-gmake-mode))
 	    (rgr-makefile-definition-name))
