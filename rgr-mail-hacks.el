@@ -65,7 +65,8 @@
   "Counter for generating mail buffer names.")
 (defvar rgr-email-signature-strings '("\t\t\t\t\t-- Bob" " Rogers" "
 					   http://rgrjr.dyndns.org/" "
-					   781-646-9215")
+					   home: 781-646-9215" "
+					   work: 617-441-6015")
   "List of strings to insert on successive rgr-sign-email calls.")
 
 (defun rgr-mail-maybe-insert-divider ()
@@ -184,20 +185,19 @@ top window.  A numeric argument prompts for an RMAIL or vm file to read."
   (let ((selected (selected-window))
 	(next (next-window))
 	(vm-p (fboundp 'vm)))
-    (cond ((and file-name-arg
-		vm-p
-		(not (string-match "\\.rmail$" file-name-arg)))
-	    ;; not rmail.
+    (cond ((null file-name-arg)
+	    ;; Use vm as the standard mail reader.  If we are in a composition
+	    ;; buffer, go to the related mail folder.
+	    (if (not vm-p)
+		(error "Oops; VM is not available."))
+	    (let ((related-folder-buffer (vm-user-composition-folder-buffer)))
+	      (if (bufferp related-folder-buffer)
+		  (vm (buffer-file-name related-folder-buffer))
+		  (vm))))
+	  ((and vm-p (not (string-match "\\.rmail$" file-name-arg)))
+	    ;; Use vm on an explicit folder.
 	    (vm-visit-folder file-name-arg))
-	  ((and (null file-name-arg)
-		vm-p
-		;; (eq rgr-site 'home)
-		(equal (user-real-login-name) "rogers"))
-	    ;; use vm as the standard mail reader at home.  -- rgr, 11-Dec-99.
-	    ;; [now do it at BMERC as well.  -- rgr, 27-Dec-99.]  [but not while
-	    ;; logged in as psa or thread.  -- rgr, 28-Dec-99.]
-	    (vm))
-	  ;; rmail possibilities.
+	  ;; Rmail possibilities.
 	  ((eq selected next)
 	    ;; One window.
 	    (rmail file-name-arg))
