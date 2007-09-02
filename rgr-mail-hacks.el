@@ -12,52 +12,7 @@
 ;;; rmail-summary-get-new-mail is not loadable via require, and xemacs also
 ;;; needs (require 'mail-abbrevs).  -- rgr, 11-Jul-02.]
 ;;;
-;;;    Modification history:
-;;;
-;;; rgr-mail-mode-hook (& rmail), . . .  -- rgr, 7-Apr-94.
-;;; *** emacs 19 update ***
-;;;	Split out ./rgr-rmail-18.el .  -- rgr, 17-Jan-95.
-;;; rgr-mail-mode-hook: (require 'mail-abbrevs) now.  -- rgr, 17-Jan-95.
-;;; rgr-mail-mode-hook rename-buffer hack.  -- rgr, 23-Jun-95.
-;;; rgr-sign-email: new.  -- rgr, 8-Sep-95.
-;;; rgr-mail-mode-hook: emacs 18 robustification.  -- rgr, 6-Oct-95.
-;;; rgr-sign-email: add email address.  -- rgr, 1-Dec-95.
-;;; rgr-sign-email: insert divider if not at eob.  -- rgr, 12-Jan-96.
-;;; rgr-sign-email: two-phase implementation.  -- rgr, 16-Feb-96.
-;;; rgr-sign-email: don't kill indentation of appendix.  -- rgr, 19-Feb-96.
-;;; rgr-mail-mode-hook: make "\C-c\C-s" do rgr-sign-email.  -- rgr, 7-Mar-96.
-;;; move out of the ./rgr-hacks.el file.  -- rgr, 29-Mar-96.
-;;; rgr-reinvoke-rmail & summary version.  -- rgr, 4-Apr-96.
-;;; rgr-import-claris-works-document: new.  -- rgr, 13-Apr-96.
-;;; rgr-reinvoke-rmail: kludge patch.  -- rgr, 17-Apr-96.
-;;; rgr-mail-mode-hook: use 19.31 fill.  -- rgr, 4-Oct-96.
-;;; rgr-mail-mode-hook: wrong.  -- rgr, 9-Oct-96.
-;;; rgr-mail-mode-hook: alpha 19.28 has no mail abbrevs.  -- rgr, 19-Jul-97.
-;;; rgr-sign-email: kill forwarding dreck.  -- rgr, 6-Feb-98.
-;;; rgr-invoke-rmail & siblings now run vm on .vm files, rgr-reinvoke-rmail
-;;;	ensures header in other window.  -- rgr, 13-Nov-98.
-;;; rgr-invoke-rmail: make smarter about subordinate emacs.  -- rgr, 18-Nov-98.
-;;; split out rmail stuff (except rgr-invoke-rmail) into the rgr-rmail-hacks.el
-;;;	file.  -- rgr, 16-Dec-98.
-;;; rgr-mail-abbrevs-setup: split out of rgr-mail-mode-hook.  -- rgr, 12-Feb-99.
-;;; rgr-sign-email: no dividers in vm mime mail buffer.  -- rgr, 22-Sep-99.
-;;; rgr-invoke-rmail: use vm as the standard at home.  -- rgr, 11-Dec-99.
-;;; rgr-invoke-rmail: use vm everywhere.  -- rgr, 27-Dec-99.
-;;; rgr-invoke-rmail: oops -- but not while "su".  -- rgr, 28-Dec-99.
-;;; move rgr-vm-mail-yank-hook to the rgr-vm-hacks.el file.  -- rgr, 12-Jan-00.
-;;; rgr-mail-mode-hook: clean up.  -- rgr, 19-Jan-00.
-;;; flush unused rgr-rmail-summary-quit command.  -- rgr, 6-Mar-00.
-;;; rgr-sign-email: generalized to N strings.  -- rgr, 3-May-00.
-;;; rgr-invoke-rmail: rmail -> vm in prompt.  -- rgr, 17-Dec-00.
-;;; new std strings, rgr-sign-email now takes numeric arg.  -- rgr, 25-May-01.
-;;; rgr-email-signature-strings: add phone numbers.  -- rgr, 18-Jul-01.
-;;; rgr-sign-email: no plusp/minusp in elisp.  -- rgr, 5-Aug-01.
-;;; rgr-mail-abbrevs-setup: made work in xemacs 21.  -- rgr, 9-Aug-01.
-;;; rgr-email-signature-strings: change port in URL.  -- rgr, 27-Aug-01.
-;;; rgr-email-signature-strings: change port back.  -- rgr, 8-Sep-01.
-;;; rgr-email-signature-strings: remove ESS.  -- rgr, 11-Jul-02.
-;;; rgr-invoke-rmail: don't try to run vm if not installed.  -- rgr, 14-Nov-02.
-;;;
+;;; $Id:$
 
 ;;;; mail mode hacks.
 
@@ -249,30 +204,6 @@ file to read."
   (if file-name-arg
       (rgr-invoke-rmail file-name-arg)
       (rmail-summary-get-new-mail)))
-
-;;;; Related hacks.
-
-(defvar rgr-claris-works-text-replacments '(("\325" . "'")
-					    ("\322" . "\"")
-					    ("\323" . "\"")))
-
-(defun rgr-import-claris-works-document ()
-  (interactive)
-  ;; Convert funny characters to regulation ASCII.
-  (mapcar (function (lambda (pair)
-	    (let ((target (car pair)) (replacement (cdr pair)))
-	      (goto-char (point-min))
-	      (while (search-forward target nil t)
-		(replace-match replacement nil t)))))
-	  rgr-claris-works-text-replacments)
-  ;; Fill paragraphs.
-  (goto-char (point-min))
-  (while (not (eobp))
-    (skip-chars-forward " \t\n")
-    (end-of-line)
-    (if (> (current-column) 80)
-	(fill-paragraph nil))
-    (forward-paragraph)))
 
 ;;;; Hook functions.
 
