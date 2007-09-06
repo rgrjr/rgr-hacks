@@ -52,21 +52,6 @@
 
 ;;;; elisp hackery.
 
-;; Should also make rgr-mapc and rgr-mapc2 as well.  -- rgr, 16-Jul-96.
-
-;;;###autoload
-(defun rgr-mapcar2 (function list1 list2)
-  "Like mapcar, but takes a function of two arguments, and does the
-obvious thing with two lists.  Stops when it gets to the end of the
-shorter list."
-  (let* ((result (make-list (min (length list1) (length list2)) nil))
-	 (result-tail result) (tail1 list1) (tail2 list2))
-    (while result-tail
-      (setcar result-tail (funcall function (car tail1) (car tail2)))
-      (setq result-tail (cdr result-tail)
-	    tail1 (cdr tail1) tail2 (cdr tail2)))
-    result))
-
 ;;;; elisp-oriented commands.
 
 ;;;###autoload

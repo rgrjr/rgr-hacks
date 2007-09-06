@@ -27,8 +27,8 @@
   (concat (list (+ (/ value 10) ?0) (+ (% value 10) ?0))))
 
 (defun rgr-print-interval (seconds &optional force-hours)
-  ;; This also gives you HH:MM if you give it a value in minutes, as
-  ;; long as hours < 60.
+  "This also gives you HH:MM if you give it a value in minutes, as
+long as hours < 60."
   (let* ((mins (/ seconds 60))
 	 (secs (% seconds 60))
 	 (hours (+ (/ mins 60)
@@ -45,6 +45,22 @@
 		(rgr-make-interval-field secs))
 	(concat (format "%s:" mins)
 		(rgr-make-interval-field secs)))))
+
+(defun rgr-print-time (seconds &optional suppress-seconds-p)
+  "Print the time as h:mm:ss, with optional minus sign."
+  (let ((minus-p (< seconds 0)))
+    (if minus-p
+	(setq seconds (- seconds)))
+    (let* ((mins (/ seconds 60))
+	   (secs (% seconds 60))
+	   (hours (/ mins 60))
+	   (mins (% mins 60)))
+      (concat (if minus-p "-" "")
+	      (format "%d" hours)
+	      ":"
+	      (rgr-make-interval-field mins)
+	      (if (not suppress-seconds-p)
+		  (concat ":" (rgr-make-interval-field secs)))))))
 
 (defun add-time (t1 t2)
   "Add two internal times."
@@ -246,75 +262,5 @@ indentation of the rest of the line."
       (setq n-lines (1+ n-lines))
       (forward-line))
     (message "Dated %d line%s." n-lines (if (= n-lines 1) "" "s"))))
-
-;;;;
-
-(defvar rgr-time-regexp
-  (let ((digits "\\([0-9]+\\)"))
-    (concat "-?" digits ":" digits "\\(:" digits "\\)?")))
-
-(defun rgr-match-integer (field)
-  (string-to-number (buffer-substring (match-beginning field)
-				      (match-end field))))
-
-(defun rgr-extract-time ()
-  (let* ((minus-p (eq (char-after (match-beginning 0)) ?-))
-	 (hours (rgr-match-integer 1))
-	 (mins (+ (* hours 60) (rgr-match-integer 2)))
-	 (secs-p (match-beginning 3))
-	 (secs (+ (* mins 60)
-		  (if secs-p
-		      (rgr-match-integer 4)
-		      0))))
-    (if minus-p (- secs) secs)))
-
-(defun rgr-print-time (seconds &optional suppress-seconds-p)
-  ;; Print the time as h:mm:ss, with optional minus sign.
-  (let ((minus-p (< seconds 0)))
-    (if minus-p
-	(setq seconds (- seconds)))
-    (let* ((mins (/ seconds 60))
-	   (secs (% seconds 60))
-	   (hours (/ mins 60))
-	   (mins (% mins 60)))
-      (concat (if minus-p "-" "")
-	      (format "%d" hours)
-	      ":"
-	      (rgr-make-interval-field mins)
-	      (if (not suppress-seconds-p)
-		  (concat ":" (rgr-make-interval-field secs)))))))
-
-(defun rgr-unlabel-time-intervals ()
-  (interactive)
-  (let ((regexp (concat "^\\(" rgr-time-regexp "\t\\)" rgr-time-regexp)))
-    (save-excursion
-      (goto-char (point-min))
-      (while (re-search-forward regexp nil t)
-	(delete-region (match-beginning 1) (match-end 1))))))
-
-(defun rgr-relabel-time-intervals ()
-  (interactive)
-  (let ((start-time nil))
-    (save-excursion
-      (goto-char (point-min))
-      (while (re-search-forward rgr-time-regexp nil t)
-	(let ((secs-p (match-beginning 3))
-	      (time (rgr-extract-time)))
-	  (or start-time
-	      (setq start-time time))
-	  (let ((delta-time (- time start-time)))
-	    '(message "%s (%d secs)."
-		     (rgr-print-time delta-time) delta-time)
-	    '(sit-for 1)
-	    (cond ((not (eq (char-after (point)) ?/)))
-		  ((progn (forward-char)
-			  (not (looking-at rgr-time-regexp)))
-		    (message "Warning:  found / but no resynch time?")
-		    (sit-for 2))
-		  (t
-		    (setq start-time (- (rgr-extract-time) delta-time))))
-	    (beginning-of-line)
-	    (insert (rgr-print-time delta-time) "\t")
-	    (forward-line)))))))
 
 (provide 'rgr-intervals)

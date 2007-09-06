@@ -1,57 +1,12 @@
-;;;; rgr-dired stuff
+;;;; Dired hacks.
 ;;;
-;;;    Useful stuff in here is rgr-dired-rename-file-and-versions and
-;;; rgr-dired-sort-by-size (but the latter is buggy).
+;;; [created.  -- rgr, 19-Apr-03.]
 ;;;
-;;; $Id:$
+;;; $Id$
 
 (eval-when-compile
   (require 'dired)
   (require 'dired-aux))
-
-(defvar rgr-dired-desired-sort nil)
-(defvar rgr-dired-last-switches nil)
-
-(defun rgr-dired-do-size-sort ()
-  ;; [debugging code.  -- rgr, 26-Feb-98.]
-  '(call-process-region
-    (point) (point-max) "cut" nil
-    (generate-new-buffer "*dir sort debug*") nil "-c33-42,56-")
-  (call-process-region
-    ;; "start end program delete buffer display &rest args"
-    (point) (point-max) "sort" t t nil
-    ;; program args.  [***kludge***: file name is traditionally just before the
-    ;; date, so we'd be much better off looking for the date & working
-    ;; backwards, than hardwiring numbers that depend on the dired switches.  --
-    ;; rgr, 21-Feb-98.]  [and sort version.  -- rgr, 4-Aug-01.]
-    "-nr" "+4"))
-
-(defun rgr-dired-sort-internal ()
-  ;; Callback for dired sorting.
-  (goto-char (point-min))
-  (while (not (dired-get-filename 'no-dir t))
-    (forward-line))
-  (cond ((and rgr-dired-last-switches
-	      (not (equal rgr-dired-last-switches dired-actual-switches)))
-	  ;; The user changed the sort some other way; forget about resorting.
-	  (setq rgr-dired-desired-sort nil))
-	((eobp))
-	((eq rgr-dired-desired-sort 'size)
-	  (beginning-of-line)
-	  (rgr-dired-do-size-sort))
-	(t
-	  (message "Unknown sort type %S ?" rgr-dired-desired-sort)))
-  (setq rgr-dired-last-switches dired-actual-switches))
-
-;;;###autoload
-(defun rgr-dired-sort-by-size ()
-  "In dired mode, sort files downward by file size.
-Reverts the dired buffer."
-  (interactive)
-  (add-hook 'dired-after-readin-hook 'rgr-dired-sort-internal)
-  (setq rgr-dired-last-switches dired-actual-switches)
-  (setq rgr-dired-desired-sort 'size)
-  (dired-revert))
 
 ;;;###autoload
 (defun rgr-dired-rename-file-and-versions ()
