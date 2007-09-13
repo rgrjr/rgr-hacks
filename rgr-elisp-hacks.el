@@ -13,42 +13,10 @@
 ;;; read-event returns (but see ./encode-key.el).  Use (e.g.) [?\C-\M-%] in
 ;;; define-key calls.
 ;;;
-;;;    To compile this (almost) without error, do the following:
-;;;
-;;; (progn (load "debug"))
-;;;
-;;;    [old] Modification history:
-;;;
-;;; started history.  -- rgr, 2-Mar-94.
-;;; rgr-show-elisp-arglist, etc.  -- rgr, 13-Apr-94.
-;;; rgr-quick-show-elisp-arglist  -- rgr, 15-Sep-94.
-;;; teach rgr-elisp-arglist about macros.  -- rgr, 22-Sep-94.
-;;; rgr-count-code-lines: new fn.  -- rgr, 2-Nov-94.
-;;; rgr-find-lisp-fill-prefix: made smarter.  -- rgr, 10-Nov-94.
-;;; *** emacs 19 update ***
-;;; rgr-guess-arglist-from-documentation, . . .  -- rgr, 25-Jan-95.
-;;; rgr-document-all-subrs: new hack.  -- rgr, 28-Jan-95.
-;;; rgr-elisp-arglist: deal with compiled macros.  -- rgr, 5-Jun-95.
-;;; split elisp stuff out of ./rgr-hacks.lisp file.  -- rgr, 26-Mar-96.
-;;; moved rgr-mapcar2 here, added autoloads.  -- rgr, 20-Jul-96.
-;;; rgr-define-lisp-mode-commands: rgr-add-to-lisp-...  -- rgr, 13-Aug-96.
-;;; rgr-make-tags-table-list-hook: add "~thread/code/stat".  -- rgr, 13-Dec-96.
-;;; rgr-make-tags-table-list-hook: add seqaln package.  -- rgr, 1-Apr-97.
-;;; rgr-define-lisp-mode-commands: tweak C-M-Spc rebinding.  -- rgr, 19-Jul-97.
-;;; rgr-debugger-mode-hook: but no way to install it.  -- rgr, 6-Aug-97.
-;;; rgr-make-tags-table-list-hook: ~psa/psa-test/bin.  -- rgr, 2-Apr-98.
-;;; rgr-make-tags-table-list-hook: add needle-doc dir.  -- rgr, 4-Nov-98.
-;;; flush some old code, clean up inits.  -- rgr, 10-Sep-99.
-;;; rgr-find-elisp-function-tag-default: smarter default.  -- rgr, 28-Dec-99.
-;;; rgr-elisp-find-tag-for-emacs-key: new.  -- rgr, 17-Dec-00.
-;;; rgr-elisp-find-tag-for-emacs-key: don't use M-. key-binding; this breaks
-;;;	under ilisp.  -- rgr, 27-Dec-00.
-;;; try to make tags hacks work for xemacs, rgr-define-lisp-mode-commands
-;;;	doesn't need to unbind C-M-Space.  -- rgr, 26-Jul-01.
-;;; rgr-make-tags-table-list-hook: correct autoload problem.  -- rgr, 20-Aug-01.
-;;; rgr-make-tags-table-list: don't expand nil.  -- rgr, 23-Aug-02.
-;;;
 ;;; $Id$
+
+(eval-when-compile
+  (require 'debug))
 
 ;;;; elisp hackery.
 
@@ -96,6 +64,28 @@ A Lisp code line is one that is nonblank and not entirely a comment."
 				(* -2 mean sigma-x)
 				(* n mean mean))
 			     (1- n)))))))))
+
+;; This is here because I don't have a better place for it.
+;;;###autoload
+(defun rgr-renumber-sharps ()
+  "From point to the end of the buffer, renumber indices between sharps.
+E.g. '#3# x #7# y #2# zz #7#' gets turned into
+'#3# x #4# y #5# zz #4#', preserving the value of the first number seen,
+and renumbering the others sequentially thereafter, while preserving 
+the correspondence of matching numbers."
+  (interactive)
+  (let ((old-to-new nil)
+	(last-used nil))
+    (while (re-search-forward "#\\([0-9]+\\)#" nil t)
+      (let* ((old (string-to-number (match-string 1)))
+	     (new (cdr (assoc old old-to-new))))
+	(unless new
+	  (setq last-used
+		(if last-used (1+ last-used) old))
+	  (setq new last-used)
+	  (setq old-to-new (cons (cons old new) old-to-new)))
+	(if (not (= old new))
+	    (replace-match (format "#%d#" new) t t))))))
 
 ;;;; Tags files and tables.
 
