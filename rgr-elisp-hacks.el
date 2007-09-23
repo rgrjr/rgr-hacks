@@ -67,15 +67,16 @@ A Lisp code line is one that is nonblank and not entirely a comment."
 
 ;; This is here because I don't have a better place for it.
 ;;;###autoload
-(defun rgr-renumber-sharps ()
+(defun rgr-renumber-sharps (&optional force-one-p)
   "From point to the end of the buffer, renumber indices between sharps.
 E.g. '#3# x #7# y #2# zz #7#' gets turned into
 '#3# x #4# y #5# zz #4#', preserving the value of the first number seen,
 and renumbering the others sequentially thereafter, while preserving 
-the correspondence of matching numbers."
-  (interactive)
+the correspondence of matching numbers.  If given a numeric argument, the
+first occurrence is always renumbered to one."
+  (interactive "P")
   (let ((old-to-new nil)
-	(last-used nil))
+	(last-used (if force-one-p 0 nil)))
     (while (re-search-forward "#\\([0-9]+\\)#" nil t)
       (let* ((old (string-to-number (match-string 1)))
 	     (new (cdr (assoc old old-to-new))))
