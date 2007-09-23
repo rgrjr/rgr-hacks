@@ -99,6 +99,9 @@ pair of (file-stem . properties), where properties is a disembodied plist.")
 	 (need-to-load-p nil))
     (cond ((not (file-exists-p source-name))
 	    (message "Can't find %s -- not compiling." source-name))
+	  ((not (or force-p
+		    (not (file-exists-p binary-name))
+		    (file-newer-than-file-p source-name binary-name))))
 	  ((not (eval (rgr-hacks-getf options 'if t)))
 	    (setq skipped-p 'if)
 	    (message "File %S skipped because of 'if' test." source-name))
@@ -113,9 +116,6 @@ pair of (file-stem . properties), where properties is a disembodied plist.")
 	     skipped-p)
 	    (message "File %S skipped because '%s' could not be loaded."
 		     source-name skipped-p))
-	  ((not (or force-p
-		    (not (file-exists-p binary-name))
-		    (file-newer-than-file-p source-name binary-name))))
 	  (t
 	    (setq compiled-p t need-to-load-p must-load-p)
 	    (cond (rgr-hacks-compile-self-debug-p
