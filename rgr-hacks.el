@@ -9,30 +9,7 @@
 ;;; (But colon-double-space is a free reference in 19.27 and prior.)  [and must
 ;;; do (require 't-mouse) under linux.  -- rgr, 9-Dec-99.]
 ;;;
-;;;    [old] Modification history:
-;;;
-;;; started history.  -- rgr, 2-Mar-94.
-;;; . . .
-;;; rgr-subordinate-emacs-p: use EMACS instead of TERM.  -- rgr, 1-May-00.
-;;; rgr-subordinate-emacs-p: oops; be cleverer about ssh.  -- rgr, 4-Jan-01.
-;;; rgr-parent-dir-and-file-name: remove unix dependence.  -- rgr, 11-Jan-01.
-;;; rgr-subordinate-emacs-p: make user-settable.  -- rgr, 6-Apr-01.
-;;; rgr-x11-display-host: new var, make rgr-install-window-system-hacks shorten
-;;;	sigler window, related hackery.  -- rgr, 10-Apr-01.
-;;; rgr-canonicalize-x11-display-and-find-display-host: oops; forgot to add the
-;;;	":" back on.  -- rgr, 18-Apr-01.
-;;; oops; was OK as is, but needed save-match-data.  -- rgr, 20-Apr-01.
-;;; update for XEmacs 21.1 (on Tru64).  -- rgr, 25-Jul-01.
-;;; change default site, move rgr-install-frame-properties here, add new
-;;;	rgr-emacs-flavor var, other support for xemacs.  -- rgr, 26-Jul-01.
-;;; rgr-install-frame-properties: use "emacs", not "fsf".  -- rgr, 30-Jul-01.
-;;; rgr-install-function-keys: rgr-toggle-frame-height cmd.  -- rgr, 20-Aug-01.
-;;; rgr-install-function-keys: insert-symbol-abbr on f7.  -- rgr, 28-Mar-02.
-;;; rgr-canonicalize-x11-display-and-find-display-host: don't canonicalize
-;;;	"localhost".  -- rgr, 19-Oct-02.
-;;; rgr-reset-buffer-backed-up: new.  -- rgr, 20-Dec-02.
-;;; rgr-install-function-keys: lose rgr-toggle-frame-height.  -- rgr, 7-Apr-03.
-;;; rgr-next-possibility -> ilisp-next-possibility rename.  -- rgr, 19-Apr-03.
+;;; [started history.  -- rgr, 2-Mar-94.]
 ;;;
 ;;; $Id$
 
@@ -174,7 +151,7 @@ another machine.")
 (defvar rgr-emacs-flavor (car rgr-emacs-version-info)
   "Type of emacs (fsf, xemacs, or lucid).")
 (defvar rgr-emacs-major-version (car (cdr rgr-emacs-version-info))
-  "Emacs version (18, 19, 20, or 21), for dealing with configuration
+  "Emacs version (18, 19, 20, ...), for dealing with configuration
 differences.  Much code will fail to work on 18, though, so it's not
 really supported.")
 (defvar rgr-emacs-minor-version (car (cdr (cdr rgr-emacs-version-info)))
@@ -736,22 +713,6 @@ M-x buffer-menu)."
   ;; Put repeat-complex-command (C-x ESC ESC) on f6.
   (global-set-key [f6] 'repeat-complex-command)
   (global-set-key [kp-f6] 'repeat-complex-command)
-  ;; [used to use F5 to select the default other-buffer in the other window,
-  ;; creating one if in one-window configuration, and leave the cursor in the
-  ;; current window.  now an alternate rubout that doesn't tweak my pinkie.  --
-  ;; rgr, 15-Mar-98.]
-  ;; (global-set-key [f5] "\C-x4b\n\C-xo")
-  ;; [gee, I had forgotten all about these.  don't use them any more, and they
-  ;; mess up xemacs.  -- rgr, 25-Jul-01.]
-  '(cond ((not (eq rgr-emacs-flavor 'xemacs))
-	  (global-set-key [f5] [delete])
-	  (global-set-key [C-f5] [C-delete])
-	  (global-set-key [M-f5] [M-delete])
-	  (global-set-key [C-M-f5] [C-M-delete])))
-  ;; [now a frame size toggler.  -- rgr, 20-Aug-01.]
-  ;; [no longer needed, and a pain in the butt to mistype.  -- rgr, 7-Apr-03.]
-  ;; (global-set-key [f5] 'rgr-toggle-frame-height)
-  ;; rgr-find-shell is a new hack.  -- rgr, 17-Apr-97.
   (global-set-key [f8] 'rgr-find-shell)
   (global-set-key [f9] 'rgr-recompile))
 

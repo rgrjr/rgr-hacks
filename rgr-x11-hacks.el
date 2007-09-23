@@ -4,33 +4,6 @@
 ;;;
 ;;; $Id$
 
-(defvar rgr-interesting-frame-heights '(58 37 28))
-(defvar rgr-x11-preferred-font-name
-	;; "-adobe-courier-medium-r-normal--*-180-*-m-*-iso8859-15"
-	"-adobe-courier-medium-r-normal--*-120-*-m-*-iso8859-15"
-  "*Font name pattern that matches what we want to install by default.
-This particular value look good on 1024x768 on the tube at work.  This
-variable is used by (rgr-install-x11-font), but it is better to use X11
-resources, as those are set up per-display; given the possibility of SSH
-tunneling, it's not easy to determine on which physical display an emacs
-frame actually appears.")
-
-(defun rgr-window-frame (&optional window)
-  ;; If given no args, this effectively returns the "current" frame, i.e. the
-  ;; frame of the current window.
-  (window-frame (or window (next-window))))
-
-;;;###autoload
-(defun rgr-toggle-frame-height ()
-  (interactive)
-  (let ((new-height
-	 (or (car (cdr (member (frame-height) rgr-interesting-frame-heights)))
-	     (car rgr-interesting-frame-heights))))
-    (message "Changing frame height to %d." new-height)
-    (set-frame-height (rgr-window-frame) new-height)))
-
-;; (global-set-key [f5] 'rgr-toggle-frame-height)
-
 (defun rgr-install-frame-properties ()
   ;; Get a decent label and a more visible mouse.  The mouse cursor is red if
   ;; you are running "su", and blue otherwise.  [shouldn't this go on a frame
@@ -53,8 +26,7 @@ frame actually appears.")
 			(if (eq rgr-emacs-flavor 'fsf)
 			    'emacs
 			    rgr-emacs-flavor)
-			(if (or (equal version "21.2")
-				(equal version "21.3"))
+			(if (equal version "22.1")
 			    ;; don't show the standard version(s).
 			    ""
 			    ;; add spacing.
@@ -70,29 +42,11 @@ frame actually appears.")
 					 (cons 'mouse-color
 					       (if su-p "blue" "red")))))))
 
-(defun rgr-install-x11-font ()
-  ;; [this is a real crock; i have no idea why .xresources doesn't work.  --
-  ;; rgr, 26-May-03.]
-  (save-excursion
-    (set-buffer (get-buffer-create " *font work*"))
-    (erase-buffer)
-    (call-process "xlsfonts" nil t nil
-		  "-fn" rgr-x11-preferred-font-name)
-    (goto-char (point-min))
-    (if (looking-at "^-")
-	;; must be a real font spec.
-	(set-frame-font (buffer-substring (point)
-					  (progn (end-of-line)
-						 (point))))
-	(message "Can't find desired font; ignoring."))))
-
 ;;;###autoload
 (defun rgr-install-x11-hacks ()
   (require 'rgr-mouse)
   (rgr-install-mouse-commands)
   (rgr-install-frame-properties)
-  ;; [no, this is better done via X11 resources.  -- rgr, 27-May-03.]
-  '(rgr-install-x11-font)
   ;; [this puts the props on the old frame.  -- rgr, 19-Oct-98.]
   ;; (add-hook 'after-make-frame-hook 'bmerc-install-frame-properties)
   (cond ((rgr-emacs-version-p 19 30)
