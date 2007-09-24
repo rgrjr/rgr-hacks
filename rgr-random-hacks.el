@@ -64,7 +64,9 @@ from this directory."
 ;;;###autoload
 (defun rgr-batch-update-autoloads ()
   "Calls rgr-update-directory-autoloads on command-line-args-left."
-  (apply 'rgr-update-directory-autoloads command-line-args-left)
+  (let ((delete-old-versions t)	;; force backup deletion without query.
+	(kept-old-versions 0))
+    (apply 'rgr-update-directory-autoloads command-line-args-left))
   (setq command-line-args-left nil))
 
 ;;;; Byte compilation.
