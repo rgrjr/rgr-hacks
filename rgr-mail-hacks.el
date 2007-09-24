@@ -2,17 +2,14 @@
 ;;;
 ;;;    mail mode hackery.
 ;;;
-;;;    To compile this without error, do the following:
-;;;
-;;; (mapcar 'require '(rmail sendmail mailabbrev vm))
-;;;
-;;; [But it still fails on rmail-buffer (which is not declared by rmail), and
-;;; mail-aliases-setup (which is not defined until 19.30).  -- rgr, 12-Feb-99.]
-;;; [mail-aliases-setup appears to be obsolete by 19.31,
-;;; rmail-summary-get-new-mail is not loadable via require, and xemacs also
-;;; needs (require 'mail-abbrevs).  -- rgr, 11-Jul-02.]
+;;; [created at the dawn of time.  -- rgr, 23-Sep-07.]
 ;;;
 ;;; $Id$
+
+(eval-when-compile
+  ;; [This still warns on vm-user-composition-folder-buffer and
+  ;; rmail-summary-get-new-mail.  -- rgr, 23-Sep-07.]
+  (mapc 'require '(rmail sendmail mailabbrev vm)))
 
 ;;;; mail mode hacks.
 
@@ -244,13 +241,6 @@ file to read."
 (defun rgr-mail-mode-hook ()
   (rgr-text-mode-hook)
   (rgr-setup-mail-commands (current-local-map))
-  (cond ((rgr-emacs-version-p 19 30)
-	  ;; The 19.30 way of doing things.  -- rgr, 25-Mar-96.  [and presumably
-	  ;; also the 20.x way as well.  -- rgr, 12-Feb-99.]
-	  (add-hook 'mail-setup-hook 'rgr-mail-abbrevs-setup))
-	((rgr-emacs-version-p 19 29)
-	  (require 'mail-abbrevs)
-	  (mail-aliases-setup)))
   ;; Generate a new buffer name each time.  -- rgr, 23-Jun-95.
   (let ((suffix (1+ rgr-mail-buffer-index)) (name nil))
     (while (get-buffer (setq name (format "*mail-%d*" suffix)))
