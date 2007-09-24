@@ -12,7 +12,7 @@
 ;;; rmail-summary-get-new-mail is not loadable via require, and xemacs also
 ;;; needs (require 'mail-abbrevs).  -- rgr, 11-Jul-02.]
 ;;;
-;;; $Id:$
+;;; $Id$
 
 ;;;; mail mode hacks.
 
@@ -138,18 +138,16 @@ top window.  A numeric argument prompts for an RMAIL or vm file to read."
 	(list (read-file-name "Run rmail or vm on file: "
 			      nil nil t))))
   (let ((selected (selected-window))
-	(next (next-window))
-	(vm-p (fboundp 'vm)))
+	(next (next-window)))
     (cond ((null file-name-arg)
 	    ;; Use vm as the standard mail reader.  If we are in a composition
 	    ;; buffer, go to the related mail folder.
-	    (if (not vm-p)
-		(error "Oops; VM is not available."))
+	    (require 'vm)
 	    (let ((related-folder-buffer (vm-user-composition-folder-buffer)))
 	      (if (bufferp related-folder-buffer)
 		  (vm (buffer-file-name related-folder-buffer))
 		  (vm))))
-	  ((and vm-p (not (string-match "\\.rmail$" file-name-arg)))
+	  ((and (fboundp 'vm) (not (string-match "\\.rmail$" file-name-arg)))
 	    ;; Use vm on an explicit folder.
 	    (vm-visit-folder file-name-arg))
 	  ;; Rmail possibilities.
