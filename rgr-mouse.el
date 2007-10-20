@@ -77,6 +77,8 @@
 	     'rgr-mouse)))
 (require 'browse-url)
 
+(require 'rgr-mouse-21)
+
 ;;;; Variables
 
 (defvar rgr-web-client-name browse-url-netscape-program
@@ -241,20 +243,6 @@ additional customizations.")
 	  (rgr-find-url-start-browser url))
 	(t
 	  (message "Aborted."))))
-
-;; [The default is browse-url-default-browser, which seems to be
-;; enough at present; the remote browser hacks are no longer needed.
-;; -- rgr, 15-Apr-07.]
-;; (setq browse-url-browser-function 'rgr-browse-url-netscape)
-
-;;; Load the version-specific commands.  This is why we need to be on the
-;;; load-path.
-(let ((version rgr-emacs-major-version))
-  (condition-case err
-      (load (format "rgr-mouse-%s" version))
-    (error (message "Failed to load %s mouse code:  %S" version err)
-	   ;; fall back to the previous version.
-	   (load (format "rgr-mouse-%s" (1- version))))))
 
 (provide 'rgr-mouse)
 
