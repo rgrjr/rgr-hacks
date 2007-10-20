@@ -304,7 +304,7 @@
 ;; the -N is for files being added or deleted.
 (setq vc-cvs-diff-switches '("-Nu"))
 ;; svn hacks.  -- rgr, 1-May-05.
-(defvar rgr-new-vc-file (if (= rgr-emacs-major-version 22)
+(defvar rgr-new-vc-file (if (>= rgr-emacs-major-version 22)
 			    "/home/rogers/emacs/new-vc-22/new-vc.el"
 			    "/home/rogers/emacs/new-vc/new-vc.el"))
 (cond ((and rgr-new-vc-file
@@ -317,13 +317,6 @@
 ;; Run this after all load-path directories are set up.
 (rgr-make-tags-table-list-hook)
 
-;; Change TERM=emacs into something that Tru64 "man" can deal with.  It refuses
-;; to run if it can't recognize the terminal type, which is broken; it should
-;; just assume "dumb" (though M-x manual-page could force this).  Change this
-;; (almost) last so that other inits can see the original TERM value.  -- rgr,
-;; 20-Aug-01.  [punt.  -- rgr, 29-Feb-04.]
-'(if (equal (getenv "TERM") "emacs")
-    (setenv "TERM" "dumb"))
 ;; Fix MANPATH to include /usr/local/share/man/, which gets missed by the
 ;; $PATH-oriented "man" implementation.  -- rgr, 1-May-03.  [probably moot after
 ;; the OS upgrade.  -- rgr, 29-May-03.]
@@ -331,6 +324,13 @@
      (rgr-fix-manpath "/usr/local/share/man"))
 ;; Prevent attempts by nroff to inflict novel Unicode characters on us.
 (setq manual-program "LANG=en_US man")
+
+;; See the M-x display-time-world command.
+(setq display-time-world-list
+      '(("America/Los_Angeles" "San Francisco")
+	("America/New_York" "Boston")
+	("Europe/London" "London")
+	("Australia/Sydney" "Sydney")))
 
 ;; Ruby hacks.
 (let ((entry '("\\.rb$" . ruby-mode)))
