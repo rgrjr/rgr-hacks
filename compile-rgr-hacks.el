@@ -49,7 +49,6 @@ rgr-hacks-compile-module (see below).")
 	  "rgr-fill-comment"
 	  "rgr-genbank"
 	  ;; "rgr-geometry"
-	  "rgr-home-hacks"
 	  ("rgr-html-hacks" require (html-helper-mode))
 	  ("rgr-html-boilerplate" require (html-helper-mode))
 	  ("rgr-html-head" require (html-helper-mode))
