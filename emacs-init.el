@@ -187,12 +187,6 @@
 (setq tmda-default-whitelist (expand-file-name "~/.tmda/accepted"))
 (setq tmda-default-blacklist (expand-file-name "~/.tmda/rejected"))
 
-(cond ((eq rgr-site 'home)
-	(add-hook 'write-file-hooks 'rgr-mac-before-save-hook))
-      ((and (eq rgr-site 'bmerc)
-	    (fboundp 'bmerc-thread-after-save-hook))
-	(add-hook 'after-save-hook 'bmerc-thread-after-save-hook)))
-
 (cond ((rgr-emacs-version-p 19 0)
 	(add-hook 'comint-mode-hook 'rgr-comint-mode-hook)
 	(add-hook 'shell-mode-hook 'rgr-shell-mode-hook)
@@ -278,14 +272,14 @@
 (setq ssh-host-history
       (append (if (eq rgr-site 'mgi)
 		  nil
-		  '("rogers@modulargenetics.dnsalias.com"))
+		  '("rogers@modulargenetics.com"))
 	      '("rogers@rgrjr.dyndns.org" "rogers@huxley.bu.edu")))
 (if (eq rgr-site 'home)
     ;; Enable tunnelling to make the MGI database and intranet Web servers
     ;; available from home.  This requires corresponding ~/.mgi.conf and
     ;; /usr/sbin/redirect.pl hacks to make it work.  -- rgr, 29-Feb-04.
     (setq ssh-per-host-option-alist
-	  '(("modulargenetics\\.dnsalias\\.com$"
+	  '(("modulargenetics\\.com$"
 	     ;; "-L" "9123:carthage:3306"
 	     "-L" "8080:alexandria:8080"
 	     "-L" "8081:alexandria:80"
