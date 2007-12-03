@@ -1,10 +1,6 @@
 ;;;****************************************************************************
 ;;;
-;;;    GNU Emacs hackery.
-;;;
-;;;    To compile this without error, do the following:
-;;;
-;;;	  (mapcar 'require '(shell sh-script compile telnet))
+;;;;    GNU Emacs hackery.
 ;;;
 ;;; $Id$
 ;;;
@@ -20,6 +16,10 @@
 ;;;
 
 (require 'comint)
+
+(eval-when-compile
+  (require 'shell)
+  (require 'sh-script))
 
 ;;;; Shell hackery
 
