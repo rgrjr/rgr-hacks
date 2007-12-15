@@ -571,6 +571,13 @@ The default argument is equivalent to 2 (just exchange point and mark)."
 	    (goto-char new-point)
 	    nil))))
 
+;;;; Rectangle hax.
+
+(defun rgr-fill-rectangle (start end)
+  "Replace the rectangle with the last char of the command typed."
+  (interactive "r")
+  (string-rectangle start end (string last-command-char)))
+
 ;;;; Installing these goodies.
 
 ;;;###autoload
@@ -614,6 +621,9 @@ M-x buffer-menu)."
   (global-set-key "\M-gc"    'goto-char)
   (global-set-key "\M-g\M-s" 'rgr-view-sequence-at-point)
   (global-set-key "\M-gs"    'rgr-view-sequence-at-point)
+  ;; Some rectangle hackery.
+  (global-set-key "\C-xr " 'rgr-fill-rectangle)
+  (global-set-key "\C-xr*" 'rgr-fill-rectangle)
   ;; I keep typing "insert" by accident, and then overwrite stuff by accident.
   ;; Unbinding this key means that I have to type "M-x overwrite-mode RET" if I
   ;; really want to clobber myself.  -- rgr, 6-Feb-06.
