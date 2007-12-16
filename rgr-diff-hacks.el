@@ -117,7 +117,9 @@
 
 ;;;###autoload
 (defun rgr-install-diff-hacks ()
-  (global-set-key "\C-c=" 'rgr-quick-source-compare)
+  ;; [this used to bind rgr-quick-source-compare, but diff-buffer-with-file
+  ;; seems to have been around for a while.  -- rgr, 27-Oct-07.]
+  (global-set-key "\C-c=" 'diff-buffer-with-file)
   (global-set-key "\C-c!" 'rgr-add-definition-comment)
   (add-hook 'diff-mode-hook 'rgr-diff-mode-hook))
 
