@@ -298,11 +298,21 @@
 ;; the -N is for files being added or deleted.
 (setq vc-cvs-diff-switches '("-Nu"))
 ;; svn hacks.  -- rgr, 1-May-05.
-(defvar rgr-new-vc-file (if (>= rgr-emacs-major-version 22)
-			    "/home/rogers/emacs/new-vc-22/new-vc.el"
-			    "/home/rogers/emacs/new-vc/new-vc.el"))
-(cond ((and rgr-new-vc-file
-	    (file-readable-p rgr-new-vc-file))
+(defvar rgr-new-vc-file
+  (let* ((base-dir (if (and (eq rgr-site 'mgi)
+			    (zerop (user-uid)))
+		       ;; Obligatory root-owned location when root.
+		       "/usr/local/src/emacs/"
+		       ;; Normal location.
+		       "/home/rogers/emacs/"))
+	 (subdir (expand-file-name
+		   (if (>= rgr-emacs-major-version 22) "new-vc-22" "new-vc")
+		   base-dir)))
+    (expand-file-name "new-vc.el" subdir)))
+(cond ((null rgr-new-vc-file)
+        ;; Skip.
+        )
+      ((file-readable-p rgr-new-vc-file)
         (load-file rgr-new-vc-file))
       ((eq rgr-site 'home)
         ;; old solution.  -- rgr, 3-Dec-05.
