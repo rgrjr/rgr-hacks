@@ -8,27 +8,12 @@
 ;;;    May want to fix c-fill-paragraph to be smarter about not being in a
 ;;; comment, or being in among multiple /* drivel */ lines.
 ;;;
-;;;    [old] Modification history:
-;;;
-;;; created with rgr-insert-char-alias, rgr-c-mode-hook.  -- rgr, 30-Mar-95.
-;;; set fill-column to 80.  -- rgr, 12-Apr-95.
-;;; rgr-c-ify-identifier: new.  -- rgr, 1-May-95.
-;;; rgr-c-ify-identifier: bind to C-c l.  -- rgr, 2-Jun-95.
-;;; rgr-c-frob-comment fn.  -- rgr, 19-Jun-95.
-;;; rgr-center-line: new.  -- rgr, 7-Jul-95.
-;;; rgr-add-to-c-modification-history, compile-this-file fns.  -- rgr, 8-Jul-95.
-;;; rgr-c-mode-hook: disable character aliasing.  -- rgr, 10-May-96.
-;;; rgr-c-frob-comment-step: flush trailing whitespace.  -- rgr, 6-Jun-96.
-;;; rgr-add-to-c-modification-history: new implementation.  -- rgr, 13-Aug-96.
-;;; rgr-c-frob-comment: fix Ljubomir's "banner" comments.  -- rgr, 19-Nov-96.
-;;; moved compile commands to ./rgr-compile-hacks.el file.  -- rgr, 26-Nov-96.
-;;; rgr-c-electric-dash: new trick.  -- rgr, 1-Dec-96.
-;;; rgr-make-region-obsolete: fix region bug.  -- rgr, 10-Dec-96.
-;;; rgr-add-to-c-modification-history: fix header-comment.  -- rgr, 12-Dec-96.
-;;; rgr-c-use-electric-dash-p: global enable.  -- rgr, 9-Nov-99.
-;;; rgr-insert-char-alias: flushed.  -- rgr, 9-Nov-99.
+;;; [created with rgr-insert-char-alias, rgr-c-mode-hook.  -- rgr, 30-Mar-95.]
 ;;;
 ;;; $Id$
+
+(eval-when-compile
+  (require 'cc-mode))
 
 (defvar rgr-c-use-electric-dash-p nil
   "*Set this to non-nil for '-' to insert '_' when typed once, and '-'
@@ -91,6 +76,9 @@ doesn't advertise itself in the mode line."
 	    (t
 	      (forward-char)))
       (setq char (char-after (point))))))
+
+;; [quiet the byte-compiler.  -- rgr, 18-Jan-08.]
+(defvar blank-lines)
 
 (defun rgr-c-frob-comment-step (line-re first-p last-p)
   ;; Subroutine for rgr-c-frob-comment
@@ -261,7 +249,6 @@ for C syntax]."
   (define-key c-mode-map "-" 'rgr-c-electric-dash)
   (define-key c-mode-map "\M-#" 'rgr-c-frob-comment)
   (define-key c-mode-map "\M-s" 'rgr-center-line)
-  (define-key c-mode-map "\C-cc" 'rgr-clean-c-compilation-buffer)
   (define-key c-mode-map "\M-*" 'rgr-add-to-c-modification-history)
   (define-key c-mode-map "\C-cl" 'rgr-c-ify-identifier)
   (define-key lisp-mode-map "\C-cl" 'rgr-c-ify-identifier))

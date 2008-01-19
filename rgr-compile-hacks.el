@@ -11,36 +11,9 @@
 ;;;
 ;;;    Modification history:
 ;;;
-;;; cdgrep command.  -- rgr, 4-Apr-94.
-;;; split out of ./rgr-hacks.el file.  -- rgr, 26-Mar-96.
-;;; rgr-clean-c-compilation-buffer: new.  -- rgr, 16-Jul-96.
-;;; compile-this-file: must (require 'compile) [bug fix].  -- rgr, 16-Jul-95.
-;;; rgr-sunos-undeclared-functions: added fputs, sscanf.  -- rgr, 8-Aug-96.
-;;; compile-this-file: optimize -O2 by default.  -- rgr, 14-Aug-95.
-;;; rgr-recompile: new.  -- rgr, 30-Aug-96.
-;;; rgr-find-last-compilation-buffer: hack for rgr-clean-c-compilation-buffer.
-;;;	-- rgr, 5-Sep-96.
-;;; rgr-maybe-clean-c-compilation-buffer: auto feature.  -- rgr, 13-Nov-96.
-;;; rgr-sunos-undeclared-functions: add _filbuf.  -- rgr, 14-Nov-96.
-;;; rgr-recompile: fix "Invoke compile afresh" arg bug.  -- rgr, 14-Nov-96.
-;;; rgr-recompile: make "last compile in cd" really work.  -- rgr, 25-Nov-96.
-;;; split out of ./rgr-shell-hacks.el file.  -- rgr, 26-Nov-96.
-;;; putchar expansion includes _flsbuf.  -- rgr, 13-Mar-97.
-;;; rgr-sunos-undeclared-functions: strtol.  -- rgr, 30-May-97.
-;;; rgr-recompile: must expand dir before comparing.  -- rgr, 16-Jun-97.
-;;; rgr-gcc-alpha-assembler-warning & support.  -- rgr, 3-Nov-97.
-;;; cdgrep: establish default directory.  -- rgr, 10-Mar-98.
-;;; rgr-grep-summarize-hits: new command.  -- rgr, 11-Mar-98.
-;;; rgr-sunos-undeclared-functions: added ungetc.  -- rgr, 24-Jul-98.
-;;; cdgrep: improved to use the cdgrep.pl script.  -- rgr, 16-Jun-99.
-;;; rgr-compilation-mode-hook: compilation-window-height.  -- rgr, 10-Oct-00.
-;;; rgr-grep-annotate-current-buffer and friends.  -- rgr, 27-Feb-02.
-;;; rgr-compilation-mode-hook: oops; mapc is not elisp.  -- rgr, 15-Apr-02.
-;;; trivial tweaks.  -- rgr, 24-Jul-02.
-;;; flush obsolete cdgrep command.  -- rgr, 13-Apr-03.
-;;; rgr-grep-annotate-with-definition-names: use ilisp-possibilities instead of
-;;;	old rgr-next-possibility version.  -- rgr, 19-Apr-03.
+;;; [created, with the cdgrep command.  -- rgr, 4-Apr-94.]
 ;;;
+;;; $Id$
 
 (eval-when-compile
   (require 'rgr-lisp-hacks)
@@ -49,112 +22,6 @@
 (require 'compile)
 
 (defvar compilation-buffer-compile-command nil)
-
-;;;; compile-this-file
-
-;;;***autoload
-(defun compile-this-file ()
-  "Compile the current buffer by running gcc asynchronously."
-  (interactive)
-  (and (buffer-modified-p)
-       (or (not (buffer-file-name))
-	   (format "Save file %s? " (buffer-file-name)))
-       (save-buffer))
-  (setq compile-command (concat "gcc -ansi -pedantic -O2 -c "
-				(file-name-nondirectory (buffer-file-name))))
-  (compilation-start compile-command))
-
-;;;; rgr-clean-c-compilation-buffer
-
-(defvar rgr-gcc-implicit-declaration-warning
-       "warning: implicit declaration of function `\\([^ ]+\\)'"
-  "Regular expression that matches implicit function declaration
-warnings, and identifies the name of the function.")
-(defvar rgr-sunos-undeclared-functions '(atoi strtol
-					 fclose fprintf fputs fscanf
-					 printf sscanf ungetc
-					 ;; getc expansion includes _filbuf.
-					 _filbuf
-					 ;; putchar expansion includes _flsbuf
-					 _flsbuf)
-  "Functions left undeclared by SunOS headers.")
-
-(defvar rgr-gcc-alpha-assembler-warning
-        (and (equal system-configuration "alpha-dec-osf1")
-	     (concat "as0: .*: extraneous values on version stamp ignored\n"
-		     "      .verstamp.*\n"))
-  "Idiot extra lines to kill on gcc/alpha combo.")
-
-(defun rgr-find-last-compilation-buffer (dir)
-  "Find the last compilation-mode buffer associated with dir.
-Should be consolidated with rgr-recompile code."
-  ;; [***bug***: this doesn't work; buffer-list isn't ordered right.  -- rgr,
-  ;; 5-Sep-96.]
-  (let ((tail (buffer-list)) (compilation-buffer nil))
-    (save-excursion
-      (while tail
-	(let ((buffer (car tail)))
-	  (set-buffer buffer)
-	  (if (and (eq major-mode 'compilation-mode)
-		   (not (string-match "grep" (buffer-name)))
-		   (equal dir default-directory))
-	      (setq compilation-buffer buffer
-		    tail nil)))
-	(setq tail (cdr tail))))
-    compilation-buffer))
-
-(defun rgr-clean-c-compilation-buffer-internal ()
-  ;; Do the grunt work, assuming we are in the buffer.
-  (goto-char (point-min))
-  (while (re-search-forward rgr-gcc-implicit-declaration-warning nil t)
-    (let ((function (intern (buffer-substring (match-beginning 1)
-					      (match-end 1)))))
-      (forward-line)
-      (if (memq function rgr-sunos-undeclared-functions)
-	  (delete-region (point)
-			 (progn (forward-line -1)
-				(point))))))
-  (cond (rgr-gcc-alpha-assembler-warning
-	  (goto-char (point-min))
-	  (while (re-search-forward rgr-gcc-alpha-assembler-warning nil t)
-	    (replace-match ""))))
-  ;; Postpass to get rid of useless file names.  Go backwards from the end of
-  ;; the buffer in order to trash multiple useless "In function" lines
-  ;; generated for the same file.
-  (goto-char (point-max))
-  (while (re-search-backward "^\\([^ \t\n]+:\\) In function" nil t)
-    (let* ((line-start (match-beginning 0))
-	   (file-prefix (buffer-substring line-start (match-end 1))))
-      (forward-line)
-      (if (looking-at (regexp-quote file-prefix))
-	  ;; Real errors in this function; leave it alone.
-	  (forward-line -1)
-	  ;; Dangling "In function" line; nuke it.
-	  (delete-region line-start (point))))))
-
-;;;###autoload
-(defun rgr-clean-c-compilation-buffer ()
-  "Get rid of all warnings that match rgr-gcc-implicit-declaration-warning
-and name a function on the rgr-sunos-undeclared-functions list.  If not
-in a compilation buffer, the last one associated with the current
-directory is used.  The warning is assumed to fit on one line."
-  (interactive)
-  (save-excursion
-    (or (eq major-mode 'compilation-mode)
-	(set-buffer
-	  (or (rgr-find-last-compilation-buffer default-directory)
-	      (error "No compilation in %s directory." default-directory))))
-    (rgr-clean-c-compilation-buffer-internal)))
-
-;;;###autoload
-(defun rgr-maybe-clean-c-compilation-buffer (buffer message)
-  ;; Set compilation-finish-function to this in order to do an implicit
-  ;; rgr-clean-c-compilation-buffer after every compilation.
-  (if (and (string-match "finished" message)
-	   (string-match "compilation" (buffer-name buffer)))
-      (save-excursion
-	(set-buffer buffer)
-	(rgr-clean-c-compilation-buffer-internal))))
 
 ;;;; rgr-grep-summarize-hits
 
@@ -299,6 +166,24 @@ names for each hit."
 ;; 26-Nov-96.
 (add-hook 'compilation-mode-hook 'rgr-remember-compile-command)
 
+(defun rgr-find-last-compilation-buffer (dir)
+  "Find the last compilation-mode buffer associated with dir.
+Should be consolidated with rgr-recompile code."
+  ;; [***bug***: this doesn't work; buffer-list isn't ordered right.  -- rgr,
+  ;; 5-Sep-96.]
+  (let ((tail (buffer-list)) (compilation-buffer nil))
+    (save-excursion
+      (while tail
+	(let ((buffer (car tail)))
+	  (set-buffer buffer)
+	  (if (and (eq major-mode 'compilation-mode)
+		   (not (string-match "grep" (buffer-name)))
+		   (equal dir default-directory))
+	      (setq compilation-buffer buffer
+		    tail nil)))
+	(setq tail (cdr tail))))
+    compilation-buffer))
+
 ;;;###autoload
 (defun rgr-recompile (&optional reprompt-p)
   "Redo the last compile command involving the current directory,
@@ -349,13 +234,13 @@ without asking any questions."
   ;; [rgr-grep-annotate-current-buffer is getting to be a pain, as it insists on
   ;; reading all of the files that were hit, and doesn't always work very well
   ;; to begin with, and rgr-maybe-clean-c-compilation-buffer is moot, as I so
-  ;; rarely code in C any more.  -- rgr, 7-Aug-03.
+  ;; rarely code in C any more.  -- rgr, 7-Aug-03.]
+  ;; [rgr-maybe-clean-c-compilation-buffer deleted.  -- rgr, 18-Jan-08.]
   '(mapcar (function (lambda (fn)
 	    (or (member fn compilation-finish-functions)
 		(setq compilation-finish-functions
 		      (cons fn compilation-finish-functions)))))
-	  '(rgr-grep-annotate-current-buffer
-	    rgr-maybe-clean-c-compilation-buffer))
+	  '(rgr-grep-annotate-current-buffer))
   ;; Customize the window height.  This is 1/4 of the frame, but never less than
   ;; six lines.  [stolen from the rgr-rmail-mode-hook version.  -- rgr,
   ;; 10-Oct-00.]
