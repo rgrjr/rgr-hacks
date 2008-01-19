@@ -23,6 +23,9 @@ rgr-hacks-compile-module (see below).")
 	'(;; [this comes first because it has some emacs version stuff.
 	  ;; -- rgr, 23-Apr-03.]
 	  "rgr-hacks"
+	  ;; orphaned features.
+	  ("ilisp-possibilities" require (diff-mode))
+	  "ilisp-mouse"
 	  ;; [provides the rgr-update-autoloads command.  -- rgr, 26-Apr-03.]
 	  ("rgr-random-hacks" require (autoload chistory))
 	  ;; [no longer works.  -- rgr, 26-Nov-06.]
@@ -61,8 +64,6 @@ rgr-hacks-compile-module (see below).")
 	  "rgr-lisp-hacks"
 	  "rgr-mail-hacks"
 	  "rgr-makefile-hacks"
-	  ("ilisp-possibilities" require (diff-mode))	;; orphaned feature.
-	  "ilisp-mouse"
 	  ("rgr-mouse-21"
 	   if (member rgr-emacs-major-version '(21 22))
 	   require (ilisp-mouse))
