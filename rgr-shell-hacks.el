@@ -175,13 +175,15 @@ it as input at the command prompt."
 	   (save-excursion
 	     (beginning-of-line)
 	     (cond ((re-search-forward rgr-diff-command-re end t)
-		     (rgr-frob-diff-remake-command (match-string 1)
-						   (match-string 3)
-						   (match-string 4)))
+		     (rgr-frob-diff-remake-command
+		       (match-string-no-properties 1)
+		       (match-string-no-properties 3)
+		       (match-string-no-properties 4)))
 		   ((re-search-forward rgr-differ-line-re end t)
-		     (rgr-frob-diff-remake-command "cmp"
-						   (match-string 1)
-						   (match-string 2)))
+		     (rgr-frob-diff-remake-command
+		       "cmp"
+		       (match-string-no-properties 1)
+		       (match-string-no-properties 2)))
 		   (t
 		     (error "Not on a diff or cmp command line."))))))
     ;; (message "got command %S" command)
