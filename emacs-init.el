@@ -342,6 +342,19 @@
       (setq auto-mode-alist (cons entry auto-mode-alist))))
 (add-hook 'ruby-mode-hook 'rgr-ruby-mode-hook)
 
+;; Erlang hacks.
+(let ((erlang-path "/shared/emacs/erlang"))
+  (cond ((file-directory-p erlang-path)
+	  (or (member erlang-path load-path)
+	      (setq load-path (cons erlang-path load-path)))
+	  (require 'erlang-start))))
+
+(defun rgr-erlang-mode-hook ()
+  ;; Try to avoid shifting.  -- rgr, 20-Dec-96.
+  (define-key erlang-mode-map "-" 'rgr-c-electric-dash)
+  (setq fill-column 80))
+(add-hook 'erlang-mode-hook 'rgr-erlang-mode-hook)
+
 ;;; Additional inits.
 (cond ((and (eq rgr-site 'bmerc)
 	    (not (equal (user-real-login-name) "rogers")))
