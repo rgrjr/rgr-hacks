@@ -53,8 +53,10 @@ interval.")
   (setq ilisp-possibilities-buffers
 	(cons (buffer-name)
 	      (delete (buffer-name) ilisp-possibilities-buffers)))
-  (and reset-from-point-p
-       (funcall (or (get major-mode 'reset-possibilities-from-point) 'ignore))))
+  (if reset-from-point-p
+      (let ((resetter (get major-mode 'reset-possibilities-from-point)))
+	(if resetter
+	    (funcall resetter)))))
 
 (defun ilisp-gensym-possibility-buffer-name (mode)
   ;; Suitable as a compilation-buffer-name-function value.  [hack -- do this
@@ -153,6 +155,28 @@ buffer."
      'ilisp-compile-mode-reset-possibilities-from-point)
 (add-hook 'compilation-mode-hook 'ilisp-push-compile-possibility-buffer)
 (setq compilation-buffer-name-function 'ilisp-gensym-possibility-buffer-name)
+
+;;;; diff-mode interface
+
+(defun ilisp-diff-next-possibility (buffer &optional n)
+  ;; Returns a boolean.
+  (condition-case error
+      (progn (diff-next-error n nil)
+	     t)
+    (error
+      (unless (equal error '(error "No next hunk"))
+	(message "[error %S]" error)
+	(sit-for 2))
+      nil)))
+
+(defun ilisp-push-diff-possibility-buffer ()
+  ;; Use as a diff-mode-hook value -- sets the current buffer up as a
+  ;; diff possibility buffer.
+  (set (make-local-variable 'ilisp-next-possibility)
+       'ilisp-diff-next-possibility)
+  (ilisp-push-possibility-buffer))
+
+(add-hook 'diff-mode-hook 'ilisp-push-diff-possibility-buffer)
 
 ;;;; wrapup.
 
