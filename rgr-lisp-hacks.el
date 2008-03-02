@@ -226,12 +226,7 @@ region."
     (message "Loading slime.")
     (add-to-list 'load-path (expand-file-name slime-dir)))
   ;; Set up for CMU Common Lisp.
-  (setq inferior-lisp-program
-	(if (equal (system-name) "lap")
-	    ;; [kludge for lap, which doesn't have much memory -- real or VM.
-	    ;; -- rgr, 29-Jun-07.]
-	    "/usr/local/bin/lisp -dynamic-space-size 250"
-	    "/usr/local/bin/lisp"))
+  (setq inferior-lisp-program "/usr/local/bin/lisp")
   (require 'slime)
   (slime-setup))
 
