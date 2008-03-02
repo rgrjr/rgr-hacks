@@ -28,8 +28,6 @@ rgr-hacks-compile-module (see below).")
 	  "ilisp-mouse"
 	  ;; [provides the rgr-update-autoloads command.  -- rgr, 26-Apr-03.]
 	  ("rgr-random-hacks" require (autoload chistory))
-	  ;; [no longer works.  -- rgr, 26-Nov-06.]
-	  ;; "ange-ftp-hacks"
 	  "bagels"
 	  "rgr-c-hacks"
 	  ;; this requires that the PSA software be installed.  [oops; can't
