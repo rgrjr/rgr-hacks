@@ -184,8 +184,11 @@
 (setq mc-pgp-keydir (expand-file-name "~/.gnupg"))
 (setq mc-passwd-timeout 600)	;; ten minutes.
 ;; TMDA stuff.  -- rgr, 18-May-04.
-(setq tmda-default-whitelist (expand-file-name "~/.tmda/accepted"))
-(setq tmda-default-blacklist (expand-file-name "~/.tmda/rejected"))
+(let ((base (expand-file-name (if (eq rgr-site 'home)
+				  "~/.tmda/"
+				  "~/.tmda/lists/"))))
+  (setq tmda-default-whitelist (expand-file-name "accepted" base))
+  (setq tmda-default-blacklist (expand-file-name "rejected" base)))
 
 (cond ((rgr-emacs-version-p 19 0)
 	(add-hook 'comint-mode-hook 'rgr-comint-mode-hook)
