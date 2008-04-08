@@ -26,6 +26,11 @@
 ;;; rgr-vm-preprocess-spool-files: deal with POP drops.  -- rgr, 27-Mar-03.
 ;;;
 
+(eval-when-compile
+  (require 'vm)
+  (require 'vm-mime)
+  (require 'mail-parse))
+
 (defun rgr-vm-preprocess-spool-files (entries)
   "Given a list of (list &optional folder inbox crash list-address)
 entries, expand it into a list of vm-spool-files entries using standard
@@ -175,7 +180,7 @@ of killling it.  Kills the summaries, though."
       (setq result (read-string prompt))
       (if (and (string= result "") default)
 	  (setq result default))
-      (setq result (string-to-int result)))
+      (setq result (string-to-number result)))
     (let ((mp (or (nthcdr (1- result) vm-message-list)
 		  (error "No such message."))))
       (car mp))))

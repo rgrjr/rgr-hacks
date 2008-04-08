@@ -23,6 +23,10 @@
 
 (require 'diff)
 
+(eval-when-compile
+  (require 'diff)
+  (require 'diff-mode))
+
 (defun rgr-diff-internal (old new &optional switches new-file-is-temp-p)
   ;; based on the discus-diff function, with a few tricks from the diff
   ;; function.
