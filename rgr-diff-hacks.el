@@ -96,6 +96,11 @@
       (toggle-read-only 1))
     (delete-file patch-file)))
 
+(defun rgr-diff-run-diffstat ()
+  "Run `diffstat' on the current buffer."
+  (interactive)
+  (shell-command-on-region (point-min) (point-max) "diffstat"))
+
 (defun rgr-diff-hunk-next (&optional count)
   "Move to the next hunk, and show it at the top of the window."
   (interactive "P")
@@ -112,6 +117,7 @@
 (defun rgr-diff-mode-hook ()
   (define-key diff-mode-map "\C-cp" 'rgr-diff-patch-directory)
   (define-key diff-mode-map "\C-c!" 'rgr-diff-add-definition-comment)
+  (define-key diff-mode-map "\C-cd" 'rgr-diff-run-diffstat)
   (define-key diff-mode-map "\M-P" 'rgr-diff-hunk-prev)
   (define-key diff-mode-map "\M-N" 'rgr-diff-hunk-next))
 
