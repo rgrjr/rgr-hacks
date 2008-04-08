@@ -427,6 +427,7 @@ directory."
   (interactive (list (read-file-name "Directory to save attachments: "
 				     nil default-directory)))
   (let ((last-e nil)
+	(n-queried 1)
 	(n-saved 0)
 	(default-directory (or directory default-directory)))
     (while (not (eobp))
@@ -434,13 +435,15 @@ directory."
 	(cond ((and e (not (eq e last-e)))
 	       (let* ((layout (vm-extent-property e 'vm-mime-layout))
 		      (default-filename
-			(vm-mime-get-disposition-parameter layout "filename"))
+		        (or (vm-mime-get-disposition-parameter layout "filename")
+			    (format "attachment-%d" n-queried)))
 		      (file (expand-file-name
 			      (file-name-nondirectory default-filename))))
 		 (cond ((y-or-n-p (format "Save to %s? " file))
 			  (vm-mime-send-body-to-file layout nil file)
 			  (setq n-saved (1+ n-saved))))
 		 (setq last-e e)))))
+      (setq n-queried (1+ n-queried))
       (forward-line))
     (message "Done; saved %d message%s."
 	     n-saved (if (= n-saved 1) "" "s"))))
