@@ -26,21 +26,34 @@
 			(if (eq rgr-emacs-flavor 'fsf)
 			    'emacs
 			    rgr-emacs-flavor)
-			(if (equal version "22.1")
+			(if (string-match version "22.2")
 			    ;; don't show the standard version(s).
 			    ""
 			    ;; add spacing.
 			    (concat version " "))
 			(if su-p "[su] " "")
 			real-login-name system)))
-      (if (eq rgr-emacs-flavor 'xemacs)
-	  (setq frame-title-format label)
-	  (modify-frame-parameters (selected-frame)
-				   (list (cons 'name label)
-					 ;; [this doesn't seem to work in 20.3.
-					 ;; -- rgr, 21-Mar-04.]
-					 (cons 'mouse-color
-					       (if su-p "blue" "red")))))))
+    (if (eq rgr-emacs-flavor 'xemacs)
+	(setq frame-title-format label)
+	(modify-frame-parameters (selected-frame)
+				 (list (cons 'name label)
+				       ;; [this doesn't seem to work in 20.3.
+				       ;; -- rgr, 21-Mar-04.]
+				       (cons 'mouse-color
+					     (if su-p "blue" "red")))))))
+
+(defun rgr-x11-kill-ring-save (beg end)
+  "Force X11 cut buffer save, even if interprogram-cut-function is disabled."
+  (interactive "r")
+  (let ((interprogram-cut-function 'x-select-text))
+    (copy-region-as-kill beg end)
+    (message "%d bytes saved" (1+ (- end beg)))))
+
+(defun rgr-x11-kill-ring-yank (&optional arg)
+  "Force X11 cut buffer yank, even if interprogram-paste-function is disabled."
+  (interactive "*P")
+  (let ((interprogram-paste-function 'x-cut-buffer-or-selection-value))
+    (yank arg)))
 
 ;;;###autoload
 (defun rgr-install-x11-hacks ()
