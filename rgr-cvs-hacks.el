@@ -520,6 +520,8 @@ This is useful, for instance, when a definition has been deleted."
 
 ;;;###autoload
 (defun rgr-vc-log-edit-hook ()
+  ;; This makes fill-paragraph operate on each comment individually.
+  (set (make-local-variable 'paragraph-start) "^[ \t]*\\($\\|[*+]\\)")
   (define-key log-edit-mode-map "\C-cj"
     'rgr-vc-log-join-consecutive-file-headings)
   (define-key log-edit-mode-map "\C-c+" 'rgr-vc-log-plus))
