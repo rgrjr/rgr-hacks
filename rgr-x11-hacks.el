@@ -18,21 +18,23 @@
 	  (format "%s.%s" rgr-emacs-major-version rgr-emacs-minor-version))
 	 (real-login-name (user-real-login-name))
 	 (su-p (not (equal real-login-name (user-login-name))))
-	 (system (let ((name (system-name)))
-		   (if (string-match "\\." name)
-		       (substring name 0 (match-beginning 0))
-		       name)))
-	 (label (format "%s %s%s%s@%s"
-			(if (eq rgr-emacs-flavor 'fsf)
-			    'emacs
-			    rgr-emacs-flavor)
-			(if (string-match version "22.2")
+	 (ssh-p (getenv "SSH_CONNECTION"))
+	 (label (concat (if (eq rgr-emacs-flavor 'fsf)
+			    "emacs"
+			    (symbol-name rgr-emacs-flavor))
+			(if (string-match "^22\\.2" version)
 			    ;; don't show the standard version(s).
 			    ""
 			    ;; add spacing.
-			    (concat version " "))
-			(if su-p "[su] " "")
-			real-login-name system)))
+			    (concat " " version))
+			(if (or su-p ssh-p)
+			    (let ((name (system-name)))
+			      (format " %s@%s"
+				      real-login-name
+				      (if (string-match "\\." name)
+					  (substring name 0 (match-beginning 0))
+					  name)))
+			    ""))))
     (if (eq rgr-emacs-flavor 'xemacs)
 	(setq frame-title-format label)
 	(modify-frame-parameters (selected-frame)
@@ -60,20 +62,9 @@
   (require 'rgr-mouse)
   (rgr-install-mouse-commands)
   (rgr-install-frame-properties)
-  ;; [this puts the props on the old frame.  -- rgr, 19-Oct-98.]
-  ;; (add-hook 'after-make-frame-hook 'bmerc-install-frame-properties)
-  (cond ((rgr-emacs-version-p 19 30)
-	  (global-set-key [?\C-\.] 'ilisp-next-possibility)
-	  ;; Do this only for window systems; it disables function keys on ASCII
-	  ;; terminals.  -- rgr, 5-Apr-96.  [actually, it doesn't if the
-	  ;; function-key-map is set correctly.  -- rgr, 6-Feb-98.]  [never
-	  ;; mind; I'm now used to typing M-{ and M-} instead.  -- rgr,
-	  ;; 19-Oct-98.]
-	  ;; (global-set-key "\M-[" 'backward-paragraph)
-	  ;; (global-set-key "\M-]" 'forward-paragraph)
-	  ;; [not sure if this autoloads . . .  -- rgr, 27-Nov-95.]  [it didn't,
-	  ;; but I seem to have taken care of that in the mean time.  -- rgr,
-	  ;; 4-Apr-96.]
-	  (global-set-key [?\C-x ?\C-\;] 'rgr-comment-region-lisp))))
+  (global-set-key [?\C-\.] 'ilisp-next-possibility)
+  ;; [not sure if this autoloads . . .  -- rgr, 27-Nov-95.]  [it didn't, but I
+  ;; seem to have taken care of that in the mean time.  -- rgr, 4-Apr-96.]
+  (global-set-key [?\C-x ?\C-\;] 'rgr-comment-region-lisp))
 
 (provide 'rgr-x11-hacks)
