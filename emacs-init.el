@@ -258,7 +258,7 @@
 	      (if (eq rgr-site 'home)
 		  ;; [for some reason, "netscape" no longer works on my home
 		  ;; system.  -- rgr, 7-Jul-07.]
-		  'browse-url-gnome-moz
+		  'browse-url-firefox
 		  'browse-url-netscape))
 	    ((and (executable-find "firefox")
 		  ;; Not available in Emacs 21.*.
