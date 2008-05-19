@@ -2,28 +2,9 @@
 ;;;
 ;;;    GNU Emacs hackery.
 ;;;
-;;;    [This also has ilisp hacks here, because I'm too lazy to separate them
-;;; out.  -- rgr, 28-Jan-00.]
+;;; [created (split out of the rgr-hacks.el file).  -- rgr, 20-Nov-98.]
 ;;;
-;;;    To compile (almost) without error, do (mapc 'require '(ilisp ilisp-src)).
-;;;
-;;;    Modification history:
-;;;
-;;; split out of the rgr-hacks.el file.  -- rgr, 20-Nov-98.
-;;; rgr-comment-region-lisp: new.  -- rgr, 7-Sep-99.
-;;; rgr-lisp-def-name: avoid loading ilisp.  -- rgr, 15-Sep-99.
-;;; rgr-ilisp-mode-hook: move here, restore comint bindings.  -- rgr, 28-Jan-00.
-;;; rgr-cmucl-ilisp-display-output: new.  -- rgr, 28-Feb-00.
-;;; don't use rgr-cmucl-ilisp-display-output in ilisp 5.10.1.  -- rgr, 6-Dec-00.
-;;; rgr-ilisp-mode-hook: ilisp-display-output-function here.  -- rgr, 7-Dec-00.
-;;; rgr-ilisp-mode-hook: cmulisp-local-source-directory.  -- rgr, 27-Dec-00.
-;;; rgr-ilisp-mode-hook: output suppression for v9 and v10.  -- rgr, 29-Dec-00.
-;;; rgr-lisp-def-name: teach this about defmethod.  -- rgr, 9-Nov-01.
-;;; rgr-lisp-snarf-definition-name: fix a syntax issue.  -- rgr, 17-Jan-02.
-;;; rgr-lisp-def-name: obey namep for methods.  -- rgr, 27-Feb-02.
-;;; work around PCL *load-truename* problem.  -- rgr, 28-Aug-02.
-;;; rgr-cmulisp-mode-hook: more pathname fixes.  -- rgr, 1-Sep-02.
-;;;
+;;; $Id:$
 
 (defun rgr-nth-buffer (n)
   ;; Find the nth previous buffer.  This would be equivalent to
@@ -210,6 +191,80 @@ region."
 		  (forward-line 1)))))
       (set-marker comment-marker nil))))
 
+;;; Replacing a binding.
+
+(defun rgr-frob-binding ()
+  "Replace an expression with a variable name.
+This must be invoked within a let, let*, do, or do* binding form,
+from which both the variable name and bound value are extracted.
+Within the scope of the binding, all occurrences of the
+expression are replaced with the bound variable name."
+  (interactive)
+  ;; First, find out where we are.
+  (let ((binding-form-start nil)	;; Before the open paren.
+	(star-p nil)			;; Whether a let* or do* form.
+	(scope-start nil)		;; Before the body, for non-star style.
+	(form-end nil)			;; End of scope.
+	(initial-point (point)))
+    (let ((paren-starts nil)
+	  (done-p nil))
+      (save-excursion
+	(while (not (or (looking-at "(\\(let\\|do\\)\\(*\\)?[ \t\n]")
+			done-p))
+	  (if (eq (char-after (point)) ?\()
+	      (setq paren-starts (cons (point) paren-starts)))
+	  (condition-case err
+	      (backward-up-list)
+	    (error (message "%S" err)
+		   (setq done-p t))))
+	(if done-p
+	    (error "Not in a LET or DO binding subform [unmatched]."))
+	(setq star-p (not (null (match-string 2))))
+	'(message "paren starts %S star-p %S" paren-starts star-p)
+	(setq binding-form-start
+	      (or (car (cdr paren-starts))
+		  (error "Not inside a LET or DO binding subform.")))
+	;; Find the end of the form, since this is the end of the scope.
+	(save-excursion
+	  (forward-sexp 1)
+	  (setq form-end (point)))
+	;; Make sure that binding-form-start is really inside the list of
+	;; binding subforms, and not the body.
+	(forward-char 1)
+	(forward-sexp 2)
+	(if (< (point) binding-form-start)
+	    (error "Not in a LET or DO binding subform [body]."))
+	;; Find the start of the scope.  This will be after the chosen binding
+	;; form if star-p, else before the body (which is where we are now.
+	(cond (star-p
+		(goto-char binding-form-start)
+		(forward-sexp 1)))
+	(setq scope-start (point))))
+    (message "binding-form-start %S scope-start %S form-end %S star-p %S"
+	     binding-form-start scope-start form-end star-p)
+    ;; Parse out the variable and initial value expression.  We can't just read
+    ;; the binding form, because we want the variable and expression as separate
+    ;; strings.
+    (let ((variable-name nil) (expression-regexp nil) (count 0))
+      (goto-char binding-form-start)
+      (forward-char 1)
+      (let ((var-end (progn (forward-sexp 1) (point)))
+	    (init-end (progn (forward-sexp 1) (point)))
+	    (init-start (progn (forward-sexp -1) (point)))
+	    (var-start (progn (forward-sexp -1) (point))))
+	(setq variable-name (buffer-substring var-start var-end))
+	(setq expression-regexp
+	      ;; [bug:  should generalize whitespace.  -- rgr, 30-Dec-07.]
+	      (regexp-quote (buffer-substring init-start init-end))))
+      ;; Do the replacement.
+      (goto-char scope-start)
+      (while (re-search-forward expression-regexp form-end t)
+	(replace-match variable-name)
+	(setq count (1+ count)))
+      (message "Done; %d replacements." count)
+      (if (zerop count)
+	  (goto-char initial-point)))))
+
 ;;;; Slime stuff.
 
 ;;;###autoload
@@ -227,6 +282,8 @@ region."
     (add-to-list 'load-path (expand-file-name slime-dir)))
   ;; Set up for CMU Common Lisp.
   (setq inferior-lisp-program "/usr/local/bin/lisp")
+  ;; Set up for Steel Bank Common Lisp.  [not working yet.  -- rgr, 2-Mar-08.]
+  ;(setq inferior-lisp-program "/usr/local/bin/sbcl")
   (require 'slime)
   (slime-setup))
 
