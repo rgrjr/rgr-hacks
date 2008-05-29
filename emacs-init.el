@@ -187,7 +187,9 @@
 (let ((base (expand-file-name (if (eq rgr-site 'home)
 				  "~/.tmda/"
 				  "~/.tmda/lists/"))))
-  (setq tmda-default-whitelist (expand-file-name "accepted" base))
+  (setq tmda-default-whitelist
+	(expand-file-name (if (eq rgr-site 'home) "accepted" "whitelist")
+			  base))
   (setq tmda-default-blacklist (expand-file-name "rejected" base)))
 
 (cond ((rgr-emacs-version-p 19 0)
@@ -351,6 +353,10 @@
 	  (or (member erlang-path load-path)
 	      (setq load-path (cons erlang-path load-path)))
 	  (require 'erlang-start))))
+
+;; Lua hacks.
+(setq auto-mode-alist (cons '("\\.lua$" . lua-mode) auto-mode-alist))
+(autoload 'lua-mode "lua-mode" "Lua editing mode." t)
 
 (defun rgr-erlang-mode-hook ()
   ;; Try to avoid shifting.  -- rgr, 20-Dec-96.
