@@ -95,7 +95,22 @@ pair of (file-stem . properties), where properties is a disembodied plist.")
 	 (skipped-p nil)
 	 (compiled-p nil)
 	 (need-to-load-p nil))
-    (cond ((not (file-exists-p source-name))
+
+    ;; Check for requirements.
+    (let ((tail requirements))
+      (while tail
+	(cond ((condition-case error (not (require (car tail)))
+		 (error
+		  ;; (message "Error loading %S:  %S" (car tail) error)
+		  t))
+		(setq skipped-p (car tail))
+	        (message "File %S skipped because '%s' could not be loaded."
+			 source-name skipped-p)))
+	(setq tail (cdr tail))))
+
+    ;; Compile if necessary.
+    (cond (skipped-p)
+	  ((not (file-exists-p source-name))
 	    (message "Can't find %s -- not compiling." source-name))
 	  ((not (or force-p
 		    (not (file-exists-p binary-name))
@@ -103,17 +118,6 @@ pair of (file-stem . properties), where properties is a disembodied plist.")
 	  ((not (eval (rgr-hacks-getf options 'if t)))
 	    (setq skipped-p 'if)
 	    (message "File %S skipped because of 'if' test." source-name))
-	  ((let ((tail requirements))
-	     (while tail
-	       (if (condition-case error (require (car tail) nil t)
-		     (error
-		       (message "Error loading %S:  %S" (car tail) error)
-		       nil))
-		   (setq tail (cdr tail))
-		   (setq skipped-p (car tail) tail nil)))
-	     skipped-p)
-	    (message "File %S skipped because '%s' could not be loaded."
-		     source-name skipped-p))
 	  (t
 	    (setq compiled-p t need-to-load-p must-load-p)
 	    (cond (rgr-hacks-compile-self-debug-p
@@ -123,10 +127,9 @@ pair of (file-stem . properties), where properties is a disembodied plist.")
 		    (byte-compile-file source-name)))
 	    (setq rgr-hacks-compile-self-n-files-compiled
 		  (1+ rgr-hacks-compile-self-n-files-compiled))))
-    (if skipped-p
-	(setq must-load-p nil))
-    (if (and must-load-p (not need-to-load-p))
-	;; Check for newer binary on disk.
+
+    ;; Check for newer binary on disk.
+    (if (and (not skipped-p) must-load-p (not need-to-load-p))
 	(let ((entry (assoc name-stem rgr-hacks-compiled-modules)))
 	  (setq bin-date (nth 5 (file-attributes binary-name)))
 	  (if bin-date
@@ -135,6 +138,8 @@ pair of (file-stem . properties), where properties is a disembodied plist.")
 			(not (equal bin-date (cdr entry)))))
 	      ;; (error "No binary '%s'; can't load." binary-name)
 	      )))
+
+    ;; Load if necessary.
     (cond ((not need-to-load-p))
 	  (rgr-hacks-compile-self-debug-p
 	    (message "Need to load %s" binary-name))
