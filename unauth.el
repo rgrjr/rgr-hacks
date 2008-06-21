@@ -5,77 +5,6 @@
 ;;; composed, and you will be left in mail mode to touch up and send the
 ;;; message.  Repeat for each offending host.
 ;;;
-;;;    [old] Modification history:
-;;;
-;;; created.  -- rgr, 6-Jun-00.
-;;; major rewrite.  -- rgr, 30-Jul-00.
-;;; rgr-unauth-protocol-disposition-line-regexp: allow pop-3.  -- rgr, 3-Aug-00.
-;;; rgr-unauth-send-complaint: add ARIN query.  -- rgr, 5-Aug-00.
-;;; rgr-unauth-insert-stuff asp query, make rgr-unauth-query-arin recognize
-;;;	apnic blocks.  -- rgr, 11-Aug-00.
-;;; rgr-unauth-query-arin: add ripe (or try to).  -- rgr, 18-Aug-00.
-;;; rgr-unauth-query-arin: fix ripe regexp.  -- rgr, 16-Oct-00.
-;;; rgr-unauth-query-arin: oops; need both, generalized.  -- rgr, 18-Oct-00.
-;;; rgr-unauth-scarf-attempt-alist: un-name asp/tcp.  -- rgr, 23-Oct-00.
-;;; rgr-unauth-query-arin apnic kludge, kludge timezone to EST, skip private
-;;;	addresses.  -- rgr, 8-Nov-00.
-;;; rgr-unauth-query-arin: unsuccessful nic.or.kr fwd'ing.  -- rgr, 13-Nov-00.
-;;; rgr-unauth-insert-stuff: fix host name/IP/TZ kludges.  -- rgr, 15-Nov-00.
-;;; rgr-unauth-scarf-attempt-alist: don't include ftp/tcp.  -- rgr, 9-Dec-00.
-;;; rgr-unauth-find-subnet-abuse-address and support.  -- rgr, 16-Dec-00.
-;;; abuse@bbnplanet.com.  -- rgr, 19-Dec-00.
-;;; rgr-unauth-parse-ip-subnet: add subrange format.  -- rgr, 24-Dec-00.
-;;; rgr-unauth-whois-servers: add :whois option.  -- rgr, 31-Dec-00.
-;;; rgr-unauth-find-subnet: allow subnet to be a list.  -- rgr, 2-Jan-01.
-;;; rgr-unauth-protocol-disposition-line-regexp: b'cast.  -- rgr, 15-Jan-01.
-;;; added 169.254.0.0/16 as private addresses.  -- rgr, 2-Feb-01.
-;;; rgr-unauth-subnet-match-bounds-tail-p: fix bug with full containment, no
-;;;	whitespace in rgr-unauth-whois-servers.  -- rgr, 11-Feb-01.
-;;; rgr-unauth-query-arin-internal: don't use \! for IP.  -- rgr, 14-Feb-01.
-;;; rgr-unauth-find-all-subnets: deal with overlaps.  -- rgr, 19-Feb-01.
-;;; rgr-unauth-send-complaint: use rgr-unauth-make-uid.  -- rgr, 9-Mar-01.
-;;; rgr-unauth-abuse-addresses: remove 62.224.0.0/14.  -- rgr, 22-Mar-01.
-;;; rgr-unauth-insert-stuff: also check /var/log/messages.1.  -- rgr, 1-Apr-01.
-;;; ...
-;;; rgr-unauth-insert-local-hostname error check.  -- rgr, 21-Oct-01.
-;;; rgr-unauth-insert-stuff: TIA before sig.  -- rgr, 22-Oct-01.
-;;; fudge host name for reports to mediaone.  -- rgr, 28-Oct-01.
-;;; rgr-unauth-insert-stuff: include numeric timezone.  -- rgr, 1-Nov-01.
-;;; rgr-unauth-scarf-attempt-alist: also scarf ssh/tcp.  -- rgr, 13-Dec-01.
-;;; attbi.net -> attbi.com, new netblock, fix my DNS name.  -- rgr, 14-Mar-02.
-;;; rgr-unauth-make-abuse-address: support ".ad.jp".  -- rgr, 13-Apr-02.
-;;; rgr-unauth-insert-stuff: mention NTP in time blurb.  -- rgr, 7-May-02.
-;;; rgr-unauth-insert-stuff: extract previous attempts.  -- rgr, 13-May-02.
-;;; bbnplanet.com -> genuity.net.  -- rgr, 4-Jul-02.
-;;; rgr-unauth-benign-protocol-regexp, skip 1433 ("Spida" worm), correct gte.net
-;;;	entry, more concentric.net, thrunet.com.  -- rgr, 5-Jul-02.
-;;; rgr-unauth-class-a-entries interface to bucketized address DB, plus the
-;;;	complete "CHINANET Sichuan province network".  -- rgr, 21-Jul-02.
-;;; rgr-unauth-benign-protocol-regexp: added KaZaA.  -- rgr, 24-Jul-02.
-;;; rgr-unauth-previous-month-log-file-name search.  -- rgr, 27-Aug-02.
-;;; new whois.lacnic.net registry.  -- rgr, 3-Oct-02.
-;;; rgr-unauth-insert-stuff: change reverse DNS address.  -- rgr, 27-Oct-02.
-;;; JPNIC support, clean "added subnet" comments.  -- rgr, 12-Dec-02.
-;;; rgr-unauth-query-arin-inserting-headers: new.  -- rgr, 16-Dec-02.
-;;; rgr-unauth-whois-server-regexps: lacnic & apnic stubs.  -- rgr, 17-Dec-02.
-;;; rgr-unauth-benign-protocol-regexp: skip 445 probes.  -- rgr, 18-Dec-02.
-;;; moved subnet database to rgr-unauth-db.el file.  -- rgr, 23-Dec-02.
-;;; rgr-unauth-query-arin-inserting-headers: look for an ARIN abuse POC.
-;;;	-- rgr, 28-Dec-02.
-;;; code for handling ripe tech POC lookups.  -- rgr, 29-Dec-02.
-;;; tech POCs for lacnic and apnic, bug fixes, better msgs.  -- rgr, 30-Dec-02.
-;;; rgr-unauth-whois-server-regexps: "whois.nic.ad.jp" entry.  -- rgr, 1-Jan-03.
-;;; use firewall report date to make "yesterday" phrase & consolidate old log
-;;;	entries, recursively list JPNIC "Sub Allocations."  -- rgr, 10-Jan-03.
-;;; rgr-unauth-whois-server-regexps: registro.br.  -- rgr, 13-Jan-03.
-;;; rgr-unauth-insert-poc-headers: "abuse" POC as default.  -- rgr, 16-Jan-03.
-;;; new rgr-unauth-query-whois-server cmd, refactored query code to make this
-;;;	available.  -- rgr, 19-Jan-03.
-;;; rgr-unauth-query-whois-server: make ARIN default server.  -- rgr, 9-Feb-03.
-;;; rgr-unauth-whois-server-regexps: oops; don't allow \n in ARIN TechEmail
-;;;	regexp; the field is not always omitted if blank.  -- rgr, 12-Apr-03.
-;;; starting to use the log to hack followup reports.  -- rgr, 15-Apr-03.
-;;;
 ;;; $Id$
 
 (require 'rgr-unauth-db)
@@ -284,7 +213,13 @@ start at most one emacs per day."
 	      (setq result match))))
       (or result "[ip unknown]"))))
 
-(defun rgr-unauth-previous-month-log-file-name ()
+(defun rgr-unauth-log-file-names (&optional log-file-name)
+  (or log-file-name
+      (setq log-file-name "messages"))
+  ;; [we'd need to sort these by date.  -- rgr, 6-Jan-08.]
+  (directory-files "/var/log/" t (concat "^" log-file-name)))
+
+(defun rgr-unauth-previous-month-log-file-name (&optional log-file-name)
   ;; Log files are of the format "/var/log/messages.200207.log".  We compute the
   ;; previous month by finding out what day month and year it is, then
   ;; subtracting one.
@@ -296,7 +231,21 @@ start at most one emacs per day."
 	;; arrange to borrow 12 months from the year.
 	(setq last-month 12
 	      last-year (1- last-year)))
-    (format "/var/log/messages.%04d%02d.log" last-year last-month)))
+    (let* ((log-dir "/var/log/")
+	   (last-log-file (expand-file-name
+			    (format "%s.%04d%02d.log"
+				    (or log-file-name "messages")
+				    last-year last-month)
+			    log-dir))
+	   (numbered-log-file (expand-file-name
+			        (format "%s.1" (or log-file-name "messages"))
+				log-dir)))
+      (cond ((file-readable-p last-log-file)
+	      last-log-file)
+	    ((file-readable-p numbered-log-file)
+	      numbered-log-file)
+	    ;; [desperate fallback.  -- rgr, 6-Jan-08.]
+	    (t last-log-file)))))
 
 (defun rgr-unauth-parse-date (date)
   ;; [it's a pain that we have to do this, but date-to-time can't deal with
@@ -359,21 +308,17 @@ start at most one emacs per day."
       (rgr-mail-fill-paragraph nil)
       (insert "\n\n")
       ;; Grab complete log entries for this IP.
-      (let ((start (point))
-	    (last-log-file (rgr-unauth-previous-month-log-file-name)))
+      (let ((start (point)))
 	;; look for hits in the previous month first.  if this file doesn't
 	;; exist, then we probably just rolled the logs last night, so we should
 	;; try /var/log/messages.1 instead.  [also look in the old system.  --
 	;; rgr, 3-May-03.]
-	(apply (function call-process) "fgrep" nil t nil
-	       "-he" host-ip
-	       (append (cond ((file-readable-p "/mnt/rh60/var/log/messages")
-			       '("/mnt/rh60/var/log/messages")))
-		       (cond ((file-readable-p last-log-file)
-			       (list last-log-file))
-			     ((file-readable-p "/var/log/messages.1")
-			       '("/var/log/messages.1")))
-		       '("/var/log/messages")))
+	(funcall (function call-process) "fgrep" nil t nil
+		 "-he" host-ip
+		 (rgr-unauth-previous-month-log-file-name "messages")
+		 (rgr-unauth-previous-month-log-file-name "firewall")
+		 "/var/log/messages"
+		 "/var/log/firewall")
 	(save-excursion
 	  (save-restriction
 	    (narrow-to-region start (point))
