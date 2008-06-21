@@ -17,10 +17,9 @@
 	  ;; it right).  -- rgr, 19-Oct-98.
 	  (format "%s.%s" rgr-emacs-major-version rgr-emacs-minor-version))
 	 (real-login-name (user-real-login-name))
-	 (su-p
-	  ;; SUDO_USER is also defined by kdesu (e.g.).
-	  (not (equal (or (getenv "SUDO_USER") real-login-name)
-		      (user-login-name))))
+	 (su-p (not (equal real-login-name
+			   ;; SUDO_USER is also defined by kdesu (e.g.).
+			   (or (getenv "SUDO_USER") (user-login-name)))))
 	 (ssh-p (getenv "SSH_CONNECTION"))
 	 (label (concat (if (eq rgr-emacs-flavor 'fsf)
 			    "emacs"
