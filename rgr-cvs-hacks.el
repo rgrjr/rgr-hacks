@@ -445,15 +445,12 @@ noted as such."
 	  (comment-start nil))
       (cond ((member changed-file current-comment-files)
 	      ;; assume we're in the right place.
-	      (beginning-of-line))
+	      )
 	    ((setq comment-start (rgr-vc-find-file-comment changed-file))
 	      '(error "Changed file %S but buffer is at files %S."
 		     changed-file current-comment-files)
 	      (goto-char comment-start)
-	      (forward-line))
-	    (t
-	      ;; assume we should add a new entry here.
-	      (beginning-of-line))))
+	      (forward-line))))
     (rgr-vc-log-plus)
     (if name
 	(insert "(" name "):  "))
@@ -491,17 +488,20 @@ This is useful, for instance, when a definition has been deleted."
 (defun rgr-vc-log-plus ()
   "Insert a '  + ' at point, starting a new line if not at BOL."
   (interactive)
+  ;; (message "wogga [1] point %s bolp %s eolp %s" (point) (bolp) (eolp))
   (cond ((and (eolp) (bolp))
 	  ;; empty line, no adjustment needed.
 	  )
-	((and (bolp) (looking-at "^[ \t]*[*+]"))
+	((looking-at paragraph-start)
 	  ;; beginning of non-empty line with stuff already on it; move it to
 	  ;; the next line.
 	  (insert "\n")
 	  (forward-char -1))
 	((not (bolp))
 	  ;; in the middle or end of a non-empty line
-	  (insert "\n")))
+	  (forward-paragraph 1)
+	  (insert "\n")
+	  (forward-char -1)))
   (insert "   + "))
 
 (defun rgr-vc-log-join-consecutive-file-headings ()
