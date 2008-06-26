@@ -4,7 +4,7 @@
 ;;;
 ;;; [created (split out of the rgr-hacks.el file).  -- rgr, 20-Nov-98.]
 ;;;
-;;; $Id:$
+;;; $Id$
 
 (defun rgr-nth-buffer (n)
   ;; Find the nth previous buffer.  This would be equivalent to
@@ -271,7 +271,9 @@ expression are replaced with the bound variable name."
 (defun rgr-load-slime ()
   (interactive)
   (let ((slime-dir nil)
-	(tail '("/usr/local/emacs/slime-2.0" "/shared/emacs/slime")))
+	(tail '("/usr/local/emacs/slime-2.0"
+		"/usr/local/src/emacs/slime-2.0"
+		"/shared/emacs/slime")))
     (while tail
       (if (file-directory-p (car tail))
 	  (setq slime-dir (car tail) tail nil)
