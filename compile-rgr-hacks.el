@@ -15,9 +15,10 @@ rgr-hacks-compile-module (see below).")
 (defvar rgr-hacks-compile-self-n-files-compiled 0
   "Count of files compiled this time; not valid globally.")
 
-(if (file-directory-p "/shared/emacs/site-lisp")
-    ;; This makes it possible to find html-helper-mode at home.
-    (setq load-path (cons "/shared/emacs/site-lisp" load-path)))
+(cond ((file-directory-p "/shared/emacs/site-lisp")
+	;; This makes it possible to find html-helper-mode at home.
+	(setq load-path (cons "/shared/emacs/site-lisp" load-path))
+        (load "/shared/emacs/site-lisp/site-start.el")))
 
 (defvar rgr-hacks-source-files
 	'(;; [this comes first because it has some emacs version stuff.
@@ -69,6 +70,8 @@ rgr-hacks-compile-module (see below).")
 	  "rgr-mouse-doc"
 	  "rgr-perl-hacks"
 	  ("rgr-ruby-hacks" require (ruby-mode))
+	  ("rgr-lua-hacks" require (lua-mode))
+	  "rgr-parrot-hacks"
 	  "rgr-rect-hacks"
 	  "rgr-log-view"
 	  "rgr-rmail-hacks"
