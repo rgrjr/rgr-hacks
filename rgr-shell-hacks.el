@@ -79,8 +79,7 @@ window is selected, else the buffer is selected in the current window."
 (defun rgr-comint-get-old-input-with-continuation-lines ()
   ;; replacement for comint-get-old-input-default
   "Default for `comint-get-old-input' [modified.  -- rgr, 20-Aug-97].
-Take the current line, plus any previous lines ending in '\\'
-\(discarding any initial text matching `comint-prompt-regexp'), plus the
+Take the current line, plus any previous lines ending in '\\', plus the
 next (and subsequent) line if the current (previous) line ends in '\\'."
   (save-excursion
     (let ((original-point (point)) (start nil))
@@ -101,7 +100,7 @@ next (and subsequent) line if the current (previous) line ends in '\\'."
 		  (= (char-after (1- (point))) ?\\))
 	;; this is equivalent to (progn (forward-line) (end-of-line)).
 	(end-of-line 2))
-      (buffer-substring start (point)))))
+      (buffer-substring-no-properties start (point)))))
 
 ;; Truncating output to the last "uptime" command.
 
@@ -162,12 +161,9 @@ are (1) first file, and (2) second file.")
 		       (list file1 file2))
 	       " ")))
 
-(defun rgr-frob-diff ()
-  "Change 'diff' to 'cmp' and vice versa using the current line.
-With point on a command line or the 'differ' output of cmp, changes to
-the other command, obeying diff-command and diff-switches, and inserts
-it as input at the command prompt."
-  (interactive)
+(defun rgr-frob-diff-internal (command-maker)
+  ;; Given a command maker, try to find the command on the line, call the maker
+  ;; to build a new command, and insert it.
   (let* ((end (save-excursion
 		(end-of-line)
 		(point)))
@@ -175,15 +171,15 @@ it as input at the command prompt."
 	   (save-excursion
 	     (beginning-of-line)
 	     (cond ((re-search-forward rgr-diff-command-re end t)
-		     (rgr-frob-diff-remake-command
-		       (match-string-no-properties 1)
-		       (match-string-no-properties 3)
-		       (match-string-no-properties 4)))
+		     (funcall command-maker
+			      (match-string-no-properties 1)
+			      (match-string-no-properties 3)
+			      (match-string-no-properties 4)))
 		   ((re-search-forward rgr-differ-line-re end t)
-		     (rgr-frob-diff-remake-command
-		       "cmp"
-		       (match-string-no-properties 1)
-		       (match-string-no-properties 2)))
+		     (funcall command-maker
+			      "cmp"
+			      (match-string-no-properties 1)
+			      (match-string-no-properties 2)))
 		   (t
 		     (error "Not on a diff or cmp command line."))))))
     ;; (message "got command %S" command)
@@ -191,6 +187,25 @@ it as input at the command prompt."
 		 (or (get-buffer-process (current-buffer))
 		     (error "Current buffer has no process"))))
     (insert command)))
+
+(defun rgr-frob-diff ()
+  "Change 'diff' to 'cmp' and vice versa using the current line.
+With point on a command line or the 'differ' output of cmp, changes to
+the other command, obeying diff-command and diff-switches, and inserts
+it as input at the command prompt."
+  (interactive)
+  (rgr-frob-diff-internal 'rgr-frob-diff-remake-command))
+
+(defun rgr-frob-diff-to-mv (command from to)
+  (concat "mv " to " " from))
+
+(defun rgr-diff-to-update ()
+  "Change 'diff' or 'cmp' on the current line to an 'mv' that updates.
+With point on a command line or the 'differ' output of cmp, changes it
+to an 'mv' command that swaps the first and second args, and inserts
+it as input at the command prompt."
+  (interactive)
+  (rgr-frob-diff-internal 'rgr-frob-diff-to-mv))
 
 ;;;; SSH support.
 
@@ -277,8 +292,9 @@ Communication with HOST is recorded in a buffer `*ssh-HOST*'."
   ;; 21-Dec-94.]
   (setq comint-input-autoexpand nil)
   ;; Make comint-based modes smarter about continued command lines.  -- rgr,
-  ;; 20-Aug-97.
-  (setq comint-get-old-input 'rgr-comint-get-old-input-with-continuation-lines))
+  ;; 20-Aug-97.  [now supported in emacs 22.  -- rgr, 29-Jun-08.]
+  ;(setq comint-get-old-input 'rgr-comint-get-old-input-with-continuation-lines)
+  )
 
 ;;;###autoload
 (defun rgr-shell-mode-hook ()
@@ -295,6 +311,7 @@ Communication with HOST is recorded in a buffer `*ssh-HOST*'."
   (setq comint-scroll-show-maximum-output nil)
   ;; New hack.  -- rgr, 11-Jul-07.
   (define-key shell-mode-map "\C-c*d" 'rgr-frob-diff)
+  (define-key shell-mode-map "\C-c*u" 'rgr-diff-to-update)
   ;; [oops; this is redundant.  -- rgr, 20-Jan-00.]
   ;; (define-key shell-mode-map "\M-\r" 'rgr-shell-insert-previous-input)
 
