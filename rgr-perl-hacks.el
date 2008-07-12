@@ -465,6 +465,9 @@ the page."
   ;; -- rgr, 16-May-97.]  [/usr/bin/perl is more standard, so prefer that.  --
   ;; rgr, 22-Oct-02.]
   (cond ((not (string-match "\.pr?l$" (buffer-file-name))))
+	((rgr-emacs-version-p 23)
+	  ;; Not needed in perl-mode in Emacs 23.x.
+	  )
 	((file-executable-p "/usr/bin/perl")
 	  (require 'executable)
 	  (executable-set-magic "/usr/bin/perl -w"))
