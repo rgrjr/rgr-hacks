@@ -2,49 +2,15 @@
 ;;;
 ;;;;   GNU Emacs init file.
 ;;;
-;;;    [old] Modification history:
-;;;
-;;; started mod hist.  -- rgr, 8-Apr-94.
-;;; . . .
-;;; added rgr-w3-load-hook.  -- rgr, 16-Jan-00.
-;;; added rgr-vm-mail-mode-hook.  -- rgr, 19-Jan-00.
-;;; set user-mail-address at home.  -- rgr, 24-Jan-00.
-;;; oops; move user-mail-address where rgr-site is defined.  -- rgr, 24-Jan-00.
-;;; move i?lisp-mode-hook to the rgr-lisp-hacks.el file.  -- rgr, 28-Jan-00.
-;;; bind C-x m to vm-mail globally.  -- rgr, 3-Feb-00.
-;;; Turn off paging in subordinate shells.  -- rgr, 17-Feb-00.
-;;; bind v+q-mbox-status to s-f1 globally.  -- rgr, 5-Mar-00.
-;;; use bmerc version of rgr-thread-after-save-hook, install
-;;;	rgr-mac-before-save-hook at home.  -- rgr, 17-Mar-00.
-;;; only save completions in rgr-emacs if we can write it!  -- rgr, 1-Apr-00.
-;;; rgr-ange-ftp-load-hook: new.  -- rgr, 13-Apr-00.
-;;; matlab-mode-hook & matlab-shell-mode-hook.  -- rgr, 26-Jul-00.
-;;; Put ("\\.vm$" . vm-mode) on auto-mode-alist.  -- rgr, 27-Nov-00.
-;;; rgr-elisp-find-tag-for-emacs-key binding.  -- rgr, 17-Dec-00.
-;;; display and ssh checks for rgr-web-client-name setup.  -- rgr, 12-Jan-01.
-;;; shorten sigler's frame.  -- rgr, 7-Mar-01.
-;;; use feynman as rgr-web-client-host.  -- rgr, 8-Mar-01.
-;;; remove sigler frame-height hackery.  -- rgr, 10-Apr-01.
-;;; Mailcrypt stuff.  -- rgr, 3-May-01.
-;;; flush transient-mark-mode, other cleanups.  -- rgr, 27-Jun-01.
-;;; Added some xemacs stuff.  -- rgr, 26,27-Jul-01.
-;;; flush bootcamp stuff, add term kludge for Tru64.  -- rgr, 20-Aug-01.
-;;; update mc-gpg-user-id to new key.  -- rgr, 29-Jan-02.
-;;; extended completion-ignored-extensions value.  -- rgr, 15-Mar-02.
-;;; autoload wiki-remote-get.  -- rgr, 1-Apr-02.
-;;; don't run vm if not available.  -- rgr, 14-Nov-02.
-;;; disable rgr-abbrev-completion-save-directory when root.  -- rgr, 12-Dec-02.
-;;; alternative v+q-mbox-status on f2.  -- rgr, 16-Jan-03.
-;;; update mc-gpg-user-id to use new key.  -- rgr, 12-Feb-03.
-;;; use mail-default-headers to BCC around spam filters.  -- rgr, 20-Mar-03.
-;;; oops; mail-default-headers is bound by sendmail.el.  -- rgr, 24-Mar-03. 
-;;; clear imenu-scanning-message.  -- rgr, 25-Mar-03.
+;;; [created.  -- rgr, 8-Apr-94.]
 ;;;
 ;;; $Id$
 
 (defvar rgr-emacs (expand-file-name
-		    ;; use explicit user id so su works.
-		    "~rogers/emacs/rgr-hacks"))
+		    "rgr-hacks"
+		    (or load-file-name
+			;; use explicit user id so su works.
+			"~rogers/emacs/")))
 (or (member rgr-emacs load-path)
     (setq load-path (cons rgr-emacs load-path)))
 (load (expand-file-name "rgr-hacks-autoloads.el" rgr-emacs))
@@ -65,14 +31,13 @@
 
 ;; fix lame color scheme under KDE on SuSE 9.0.  -- rgr, 13-Mar-04.
 ;; [actually, let's make this the default.  -- rgr, 20-Mar-04.]
-(cond (t ;; (equal (system-name) "alp.rgrjr.com")
-        (set-background-color (if (zerop (user-real-uid))
-				  ;; use something distinctive for root.  --
-				  ;; rgr, 13-Mar-04.
-				  "azure"
-				  ;; use something more bland for normal users.
-				  "linen"))
-        (set-foreground-color "black")))
+(set-background-color (if (zerop (user-real-uid))
+			  ;; use something distinctive for root.  --
+			  ;; rgr, 13-Mar-04.
+			  "azure"
+			  ;; use something more bland for normal users.
+			  "linen"))
+(set-foreground-color "black")
 
 ;; disable transient-mark-mode (seems to be on by default in the SuSE 20.7
 ;; version).  -- rgr, 27-Jun-01.
@@ -192,10 +157,9 @@
 			  base))
   (setq tmda-default-blacklist (expand-file-name "rejected" base)))
 
-(cond ((rgr-emacs-version-p 19 0)
-	(add-hook 'comint-mode-hook 'rgr-comint-mode-hook)
-	(add-hook 'shell-mode-hook 'rgr-shell-mode-hook)
-        (add-hook 'telnet-mode-hook 'rgr-telnet-mode-hook)))
+(add-hook 'comint-mode-hook 'rgr-comint-mode-hook)
+(add-hook 'shell-mode-hook 'rgr-shell-mode-hook)
+(add-hook 'telnet-mode-hook 'rgr-telnet-mode-hook)
 (add-hook 'sh-mode-hook 'rgr-sh-mode-hook)
 
 (rgr-define-lisp-mode-commands emacs-lisp-mode-map)
@@ -217,7 +181,7 @@
 ;; and autosave files, and CVS ".#file.version" files.  -- rgr, 28-Feb-05.]
 (setq grep-find-command
       (concat "find . -type f "
-	      "| grep -Ev '/\\.?#|~$|/TAGS$|/\.svn/|/CVS/|\.patch$' "
+	      "| grep -Ev '/\\.?#|~$|/TAGS$|/\.svn/|/cover_|/CVS/|\.patch$' "
 	      "| xargs -e grep -n -e "))
 (add-hook 'compilation-mode-hook 'rgr-compilation-mode-hook)
 (add-hook 'makefile-mode-hook 'rgr-makefile-mode-hook)
@@ -342,9 +306,7 @@
 	("Australia/Sydney" "Sydney")))
 
 ;; Ruby hacks.
-(let ((entry '("\\.rb$" . ruby-mode)))
-  (or (member entry auto-mode-alist)
-      (setq auto-mode-alist (cons entry auto-mode-alist))))
+(add-to-list 'auto-mode-alist '("\\.rb$" . ruby-mode))
 (add-hook 'ruby-mode-hook 'rgr-ruby-mode-hook)
 
 ;; Erlang hacks.
