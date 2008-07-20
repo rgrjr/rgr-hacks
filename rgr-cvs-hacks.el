@@ -121,8 +121,7 @@ shows the log for that many days."
 This would be just a shorthand for the vc-diff command (\\[vc-diff])
 when asked to compare a working directory to the original CVS version
 \(e.g. 'C-u \\[vc-diff] \".\" RET RET RET'), but it also renames the
-output buffer from '*vc-diff*' to '*vc-project-diff*'.  This is so that
-the \\[rgr-vc-log-insert-skeleton] command can use this output."
+output buffer from '*vc-diff*' to '*vc-project-diff*'."
   (interactive)
   (if (>= rgr-emacs-major-version 23)
       ;; The new way uses filesets (and vc-version-diff ignores its first arg).
@@ -283,67 +282,6 @@ The '*' must be at the start of the line.  Other comments are ignored."
 		(setq files-to-commit (cdr files-to-commit))))
 	  ;; no.
 	  (message "Oh, well!  Later maybe?")))))
-
-(defvar rgr-cvs-diff-skeleton-entry-regexp
-	(concat "^\\+\\+\\+ \\([^ \t\n]*\\)\t" 
-		"\\|^cvs \\(diff\\|server\\): \\([^ \t\n]*\\) "
-		"\\(is a new entry\\|was removed\\)")
-  "Regexp matching things of interest to the rgr-vc-log-insert-skeleton cmd.")
-
-;;;###autoload
-(defun rgr-vc-log-insert-skeleton ()
-  "Insert a '* filename:' line for each file that appears in diff output.
-This inserts one line at the end of the current buffer for each file
-mentioned in a diff buffer that doesn't already appear in the current
-buffer (allowing for \\[rgr-vc-log-join-consecutive-file-headings]).  The
-current buffer is assumed to be something like a CVS log comment.  The
-diff buffer is the most recently visited one of '*vc-project-diff*'
-\(created by the \\[rgr-vc-project-diff] command\), '*VC-diff*' (created
-by the \\[vc-diff] command), or '*Shell Command Output*' (assumed to be
-the output of 'cvs diff'.)  Files that are being added or deleted are
-noted as such."
-  (interactive)
-  (let* ((comment-buffer (current-buffer))
-	 (commented-files (rgr-vc-all-comment-files))
-	 (extra-files (append commented-files nil))
-	 (other-buffer
-	   (or (rgr-find-more-recent-buffer
-		 (get-buffer "*vc-project-diff*")
-		 (get-buffer "*Shell Command Output*")
-		 (get-buffer "*VC-diff*"))
-	       (error "Can't find %S, %S, or %S buffer." "*VC-diff*"
-		      "*vc-project-diff*" "*Shell Command Output*"))))
-    (save-excursion
-      (set-buffer other-buffer)
-      (goto-char (point-min))
-      (while (re-search-forward rgr-cvs-diff-skeleton-entry-regexp nil t)
-	(let* ((file-name (or (match-string 1) (match-string 3)))
-	       (full-file-name (expand-file-name file-name))
-	       (extra (match-string 4)))
-	  ;; (message "found %S" file-name)
-	  (setq extra-files (delete full-file-name extra-files))
-	  (or (member full-file-name commented-files)
-	      (save-excursion
-		(set-buffer comment-buffer)
-		(goto-char (point-max))
-		(insert "* " file-name
-			(cond ((equal extra "was removed") " (deleted)")
-			      (extra " (added)")
-			      (t ""))
-			":\n")
-		(setq commented-files
-		      (cons full-file-name commented-files)))))))
-    (let ((tail extra-files) (n (length extra-files)))
-      (while tail
-	(message "%S does not appear in the diff." (car tail))
-	(sit-for 1)
-	(setq tail (cdr tail)))
-      (if (> n 1)
-	  (message "Total of %d extra files." n)))
-    ;; move point to start adding comments, but not if already someplace useful.
-    (if (bobp)
-	(forward-line 1))
-    commented-files))
 
 (defun rgr-makefile-definition-name ()
   (if (re-search-backward "^\\([^: \t\n]+\\):" nil t)
