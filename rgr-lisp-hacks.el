@@ -120,6 +120,15 @@ defmethod forms."
 	;; Try the standard recipe.
 	(rgr-original-lisp-def-name namep))))
 
+(defun rgr-lisp-mode-definition-name ()
+  ;; interface to rgr-mode-definition-name
+  (if (not (looking-at "^("))
+      (beginning-of-defun))
+  (rgr-lisp-def-name t))
+
+(put 'lisp-mode 'mode-definition-name 'rgr-lisp-mode-definition-name)
+(put 'emacs-lisp-mode 'mode-definition-name 'rgr-lisp-mode-definition-name)
+
 ;;;###autoload
 (defun rgr-add-to-lisp-modification-history (&optional insert-definition-name-p)
   "Add to a modification history at the end of the first paragraph.

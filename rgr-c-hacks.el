@@ -219,6 +219,13 @@ mostly for compatibility with the rgr-lisp-def-name fn.)"
 	  (setq result (replace-match "*" t t result)))
 	result))))
 
+(defun rgr-c-mode-definition-name ()
+  ;; Interface to rgr-mode-definition-name
+  (rgr-c-def-name t))
+
+(put 'c-mode 'mode-definition-name 'rgr-c-mode-definition-name)
+(put 'cc-mode 'mode-definition-name 'rgr-c-mode-definition-name)
+
 (defun rgr-add-to-c-modification-history (&optional insert-definition-name-p)
   ;; [syntax-independent version.  -- rgr, 13-Aug-96.]
   "Add to a modification history near the top of the file.

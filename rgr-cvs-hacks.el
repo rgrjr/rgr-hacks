@@ -287,28 +287,25 @@ The '*' must be at the start of the line.  Other comments are ignored."
   (if (re-search-backward "^\\([^: \t\n]+\\):" nil t)
       (match-string 1)))
 
+(put 'makefile-mode 'mode-definition-name 'rgr-makefile-definition-name)
+(put 'makefile-gmake-mode 'mode-definition-name 'rgr-makefile-definition-name)
+
+(defun rgr-pir-mode-definition-name ()
+  (and (re-search-backward "^\\.sub[ \t]+\\([^ \t\n]+\\)" nil t)
+       (match-string 1)))
+
+(put 'pir-mode 'mode-definition-name 'rgr-pir-mode-definition-name)
+
 (defun rgr-mode-definition-name ()
-  ;; Total kludge.
-  (save-excursion
-    (cond ((member major-mode '(emacs-lisp-mode lisp-mode))
-	    (if (not (looking-at "^("))
-		(beginning-of-defun))
-	    (rgr-lisp-def-name t))
-	  ((member major-mode '(perl-mode cperl-mode))
-	    (rgr-perl-definition-name))
-	  ((member major-mode '(makefile-mode makefile-gmake-mode))
-	    (rgr-makefile-definition-name))
-	  ((eq major-mode 'pir-mode)
-	    (and (re-search-backward "^\\.sub[ \t]+\\([^ \t\n]+\\)" nil t)
-		 (match-string 1)))
-	  ((eq major-mode 'c-mode)
-	    (rgr-c-def-name t))
-	  ((eq major-mode 'ruby-mode)
-	    (rgr-ruby-def-name))
-	  (t
-	    (message "Can't find definitions for %S mode." major-mode)
-	    (sit-for 2)
-	    nil))))
+  "Find the name of the current definition."
+  (let ((mode-finder (get major-mode 'mode-definition-name)))
+    (save-excursion
+      (cond (mode-finder
+	      (funcall mode-finder))
+	    (t
+	      (message "Can't find definitions for %S mode." major-mode)
+	      (sit-for 2)
+	      nil)))))
 
 (defun rgr-vc-comment-file-names ()
   ;; Return the comment file names at point, skipping past them.

@@ -122,6 +122,9 @@ somewhat system-dependent.")
 		  name)))
       (error nil))))
 
+(put 'perl-mode 'mode-definition-name 'rgr-perl-definition-name)
+(put 'cperl-mode 'mode-definition-name 'rgr-perl-definition-name)
+
 (defun rgr-add-to-perl-modification-history (&optional insert-definition-name-p)
   ;; [syntax-independent version.  -- rgr, 13-Aug-96.]
   "Add to a modification history near the top of the file.

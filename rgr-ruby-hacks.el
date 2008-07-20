@@ -95,6 +95,8 @@ are supported:
 		    (concat class-name "#" name)
 		    name)))))))
 
+(put 'ruby-mode 'mode-definition-name 'rgr-ruby-def-name)
+
 ;;;###autoload
 (defun rgr-ruby-mode-hook ()
   (define-key ruby-mode-map "\C-\M-u" 'ruby-backward-up-list)
