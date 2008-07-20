@@ -124,11 +124,16 @@ when asked to compare a working directory to the original CVS version
 output buffer from '*vc-diff*' to '*vc-project-diff*'.  This is so that
 the \\[rgr-vc-log-insert-skeleton] command can use this output."
   (interactive)
-  ;; need an explicit require, because vc-version-diff is not autoloaded.
-  (require 'vc)
-  (vc-version-diff (expand-file-name ".") nil nil)
-  (save-excursion
-    (set-buffer "*vc-diff*")
+  (if (>= rgr-emacs-major-version 23)
+      ;; The new way uses filesets (and vc-version-diff ignores its first arg).
+      (let* ((files (list (expand-file-name ".")))
+	     (backend (vc-responsible-backend default-directory))
+	     (fileset (list backend files files nil nil)))
+	(vc-diff-internal t fileset nil nil))
+      ;; The old way just requires us to pass the directory name.
+      (vc-version-diff (expand-file-name ".") nil nil))
+  ;; Rename the buffer to "*vc-project-diff*".
+  (with-current-buffer "*vc-diff*"
     (let ((old-buf (get-buffer "*vc-project-diff*")))
       (and old-buf
 	   (kill-buffer old-buf)))
@@ -189,7 +194,7 @@ get the diff between the revision at point and its previous revision.
 Otherwise, get the diff between the revisions where the region starts
 and ends.
 
-[This works better for Subversion than it does for CVS, simply because
+\[This works better for Subversion than it does for CVS, simply because
 Subversion has well-defined revision numbers, and CVS has fuzzier dates.
 -- rgr, 12-Mar-06.]"
   (interactive
@@ -204,7 +209,6 @@ Subversion has well-defined revision numbers, and CVS has fuzzier dates.
         (setq to (vc-history-current-tag))))
     (message "[default dir %S backend %S]"
 	     default-directory (vc-responsible-backend default-directory))
-    ;; (message "[got tags %S and %S.]" fr to)
     (vc-version-diff default-directory to fr)))
 
 ;;;; Committing multiple files via the revision comment.
@@ -214,10 +218,15 @@ Subversion has well-defined revision numbers, and CVS has fuzzier dates.
   ;; Based on log-edit-done and vc-next-action-dired fns.  -- rgr, 15-Feb-05.
   "Do the next logical version control operation (as by \\[vc-next-action]) on
 the files named in the current buffer, using its contents as the log comment.
-Only those files mentioned explicitly in the buffer in style of the
-\\[rgr-vc-log-insert-skeleton] command will be included."
+Only those files will be included that are mentioned explicitly in the
+following style:
+
+    * foo.el:
+    * quux.el, ruux.el:
+    * bar.el (added), baz.c (deleted):
+
+The '*' must be at the start of the line.  Other comments are ignored."
   (interactive)
-  (require 'vc)
   (require 'log-edit)
   (let ((files-to-commit (or (rgr-vc-all-comment-files)
 			     (error "Can't find any comment files in %s."
