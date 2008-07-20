@@ -1,4 +1,4 @@
-;;;; Hacks for CVS.
+;;;; Hacks for version control.
 ;;;
 ;;; [created.  -- rgr, 4-Dec-03.]
 ;;;
@@ -215,6 +215,7 @@ Subversion has well-defined revision numbers, and CVS has fuzzier dates.
 ;;;###autoload
 (defun rgr-vc-commit-with-comments ()
   ;; Based on log-edit-done and vc-next-action-dired fns.  -- rgr, 15-Feb-05.
+  ;; [this probably doesn't work any more.  -- rgr, 20-Jul-08.]
   "Do the next logical version control operation (as by \\[vc-next-action]) on
 the files named in the current buffer, using its contents as the log comment.
 Only those files will be included that are mentioned explicitly in the
@@ -283,6 +284,8 @@ The '*' must be at the start of the line.  Other comments are ignored."
 	  ;; no.
 	  (message "Oh, well!  Later maybe?")))))
 
+;;;; Finding definition names and adding definition comments.
+
 (defun rgr-makefile-definition-name ()
   (if (re-search-backward "^\\([^: \t\n]+\\):" nil t)
       (match-string 1)))
@@ -337,12 +340,12 @@ The '*' must be at the start of the line.  Other comments are ignored."
     (and (re-search-backward "^\\* +" nil t)
 	 (rgr-vc-comment-file-names))))
 
-(defun rgr-vc-all-comment-files ()
+(defun rgr-vc-all-comment-files (&optional start end)
   ;; Get the name of all files commented in this buffer.
   (save-excursion
-    (goto-char (point-min))
+    (goto-char (or start (point-min)))
     (let ((result nil))
-    (while (re-search-forward "^\\* +" nil t)
+    (while (re-search-forward "^\\* +" end t)
       (setq result (nconc result (rgr-vc-comment-file-names))))
     result)))
 
