@@ -6,11 +6,13 @@
 ;;;
 ;;; $Id$
 
-(defvar rgr-emacs (expand-file-name
-		    "rgr-hacks"
-		    (or load-file-name
-			;; use explicit user id so su works.
-			"~rogers/emacs/")))
+(defvar rgr-emacs (if load-file-name
+		      (file-name-directory load-file-name)
+		      ;; use explicit user id so su works.
+		      (expand-file-name "~rogers/emacs/rgr-hacks"))
+  "Where rgr-hacks files live.
+This is a defvar so that it can be set globally by some prior .emacs file,
+but it is usually sufficient to take the default.")
 (or (member rgr-emacs load-path)
     (setq load-path (cons rgr-emacs load-path)))
 (load (expand-file-name "rgr-hacks-autoloads.el" rgr-emacs))
