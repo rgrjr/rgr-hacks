@@ -67,21 +67,19 @@
 ;; Turn off paging in subordinate shells.  -- rgr, 17-Feb-00.
 (setenv "PAGER" "cat")
 
-(cond ((rgr-emacs-version-p 22)
-        ;; [something i'm doing seems to break font-lock in makefile-gmake-mode
-        ;; . . .  -- rgr, 4-May-06.]
-	(setq font-lock-global-modes '(not makefile-gmake-mode))
-	;; [temp hack for 22.0 debugging; this makes vm available, for one
-	;; thing.  -- rgr, 28-Apr-06.]
-	(or (member "/usr/share/emacs/site-lisp" load-path)
-	    (setq load-path (cons "/usr/share/emacs/site-lisp" load-path)))
-	(cond ((and (eq rgr-site 'home)
-		    ;; [lap always thinks it's home, but /shared/emacs/site-lisp
-		    ;; is not always mounted.  -- rgr, 29-Jun-07.]
-		    (file-directory-p "/shared/emacs/site-lisp")
-		    (not (member "/shared/emacs/site-lisp" load-path)))
-	        (setq load-path (cons "/shared/emacs/site-lisp" load-path))
-	        (load "/shared/emacs/site-lisp/site-start.el")))))
+;; [something i'm doing seems to break font-lock in makefile-gmake-mode . . .
+;; -- rgr, 4-May-06.]
+(if (rgr-emacs-version-p 22)
+    (setq font-lock-global-modes '(not makefile-gmake-mode)))
+
+;; Set up /shared/emacs/site-lisp/ at home.
+(cond ((and (eq rgr-site 'home)
+	    ;; [lap always thinks it's home, but /shared/emacs/site-lisp is not
+	    ;; always mounted.  -- rgr, 29-Jun-07.]
+	    (file-directory-p "/shared/emacs/site-lisp")
+	    (not (member "/shared/emacs/site-lisp" load-path)))
+        (setq load-path (cons "/shared/emacs/site-lisp" load-path))
+        (load "/shared/emacs/site-lisp/site-start.el")))
 
 (add-hook 'dired-load-hook 'rgr-dired-load-hook)
 
@@ -287,9 +285,6 @@
         ;; old solution.  -- rgr, 3-Dec-05.
         (require 'local-vc-svn)))
 
-;; Run this after all load-path directories are set up.
-(rgr-make-tags-table-list-hook)
-
 ;; Fix MANPATH to include /usr/local/share/man/, which gets missed by the
 ;; $PATH-oriented "man" implementation.  -- rgr, 1-May-03.  [probably moot after
 ;; the OS upgrade.  -- rgr, 29-May-03.]
@@ -326,6 +321,9 @@
   (define-key erlang-mode-map "-" 'rgr-c-electric-dash)
   (setq fill-column 80))
 (add-hook 'erlang-mode-hook 'rgr-erlang-mode-hook)
+
+;; Run this after all load-path directories are set up.
+(rgr-make-tags-table-list-hook)
 
 ;;; Additional inits.
 (cond ((and (eq rgr-site 'bmerc)
