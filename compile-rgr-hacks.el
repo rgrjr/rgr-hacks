@@ -42,6 +42,7 @@ rgr-hacks-compile-module (see below).")
 	  ("rgr-allegro" load-p nil)
 	  "rgr-backup"
 	  "rgr-compile-hacks"
+	  "rgr-new-vc-hacks"
 	  "rgr-cvs-hacks"
 	  "rgr-diff-hacks"
 	  "rgr-dired"

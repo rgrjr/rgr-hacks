@@ -281,6 +281,9 @@ but it is usually sufficient to take the default.")
 (cond ((null rgr-new-vc-file)
         ;; Skip.
         )
+      ((= rgr-emacs-major-version 23)
+        ;; Use the native Emacs 23 version control stuff.
+        )
       ((file-readable-p rgr-new-vc-file)
         (load-file rgr-new-vc-file))
       ((eq rgr-site 'home)

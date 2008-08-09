@@ -471,7 +471,9 @@ This is useful, for instance, when a definition has been deleted."
   (set (make-local-variable 'paragraph-start) "^[ \t]*\\($\\|[*+]\\)")
   (define-key log-edit-mode-map "\C-cj"
     'rgr-vc-log-join-consecutive-file-headings)
-  (define-key log-edit-mode-map "\C-c+" 'rgr-vc-log-plus))
+  (define-key log-edit-mode-map "\C-c+" 'rgr-vc-log-plus)
+  (if (rgr-emacs-version-p 23)
+      (new-vc-install-log-edit-mode-keys)))
 
 ;;;###autoload
 (defun rgr-change-log-insert-plus ()
