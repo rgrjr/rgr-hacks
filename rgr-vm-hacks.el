@@ -31,6 +31,8 @@
   (require 'vm-mime)
   (require 'mail-parse))
 
+(require 'vm-mime)	;; [must load first so we can bash.  -- rgr, 24-Sep-99.]
+
 (defun rgr-vm-preprocess-spool-files (entries)
   "Given a list of (list &optional folder inbox crash list-address)
 entries, expand it into a list of vm-spool-files entries using standard
@@ -314,78 +316,6 @@ goals and use them to compose today's message."
     (or (member entry vm-mime-mule-charset-to-coding-alist)
 	(setq vm-mime-mule-charset-to-coding-alist
 	      (cons entry vm-mime-mule-charset-to-coding-alist)))))
-
-;;; Putting "content-disposition: inline" into random text with attachments.
-
-(require 'vm-mime)	;; [must load first so we can bash.  -- rgr, 24-Sep-99.]
-
-;; [original definition.  -- rgr, 22-Sep-99.]
-(defun vm-orig-mime-text-description (start end)
-  (save-excursion
-    (goto-char start)
-    (if (looking-at "[ \t\n]*-- \n")
-	".signature"
-      (if (re-search-forward "^-- \n" nil t)
-	  "message body and .signature"
-	"message body text"))))
-
-;; [hacked version.  -- rgr, 22-Sep-99.]
-(defun vm-mime-text-description (start end)
-  ;; [kludge:  cheesy way to get an extra mime header for the free text in the
-  ;; composition buffer.  -- rgr, 22-Sep-99.]
-  (concat (vm-orig-mime-text-description start end)
-	  "\nContent-Disposition: inline"))
-
-(defun rgr-vm-w3-layout (layout)
-  ;; this is the original vm-mime-display-internal-text/html core code.  -- rgr,
-  ;; 23-Jan-00.
-  (let ((start (point))
-	end buffer-size)
-    (message "Inlining text/html, be patient...")
-    (progn ;; vm-with-unibyte-buffer
-     ;; We need to keep track of where the end of the
-     ;; processed text is.  Best way to do this is to
-     ;; avoid markers and save-excursion, and just use
-     ;; buffer size changes as an indicator.
-     (vm-mime-insert-mime-body layout)
-     (setq end (point))
-     (setq buffer-size (buffer-size))
-     (vm-mime-transfer-decode-region layout start end)
-     (setq end (+ end (- (buffer-size) buffer-size)))
-     (setq buffer-size (buffer-size))
-     (w3-region start end)
-     (setq end (+ end (- (buffer-size) buffer-size)))
-     ;; remove read-only text properties
-     (let ((inhibit-read-only t))
-       (remove-text-properties start end '(read-only nil)))
-     (goto-char end))
-    (message "Inlining text/html... done")))
-
-;; hacked to do HTML parsing in a separate buffer.  -- rgr, 23-Jan-00.
-;; [no work yet.  -- rgr, 23-Jan-00.]
-;;;###autoload
-(defun rgr-vm-mime-display-internal-text/html (layout)
-  (if (fboundp 'w3-region)
-      (condition-case error-data
-	  (let ((scratch-buffer (get-buffer-create "*vm-mime convert HTML*")))
-	    (unwind-protect
-		 (progn (save-excursion
-			  (set-buffer scratch-buffer)
-			  (rgr-vm-w3-layout layout))
-			(let ((buffer-read-only nil))
-			  (insert-buffer scratch-buffer)
-			  t))
-	      (kill-buffer scratch-buffer)))
-	(error (vm-set-mm-layout-display-error
-		 layout
-		 (format "Inline HTML display failed: %S" error-data))
-	       nil))
-      (vm-set-mm-layout-display-error layout "Need W3 to inline HTML")
-      nil))
-
-;; these restore broken things:
-;; (setq adaptive-fill-mode t)
-;; (setq case-fold-search t)
 
 ;;; Changing Content-Disposition to "inline" on request.
 
