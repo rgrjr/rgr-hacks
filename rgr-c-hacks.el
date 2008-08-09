@@ -12,7 +12,9 @@
 ;;;
 ;;; $Id$
 
-(eval-when-compile
+;; [for some very wierd reason, this doesn't work in emacs 23; it tries to read
+;; the ")" at the end of eval-when-compile and fails.  -- rgr, 20-Jul-08.]
+'(eval-when-compile
   (require 'cc-mode))
 
 (defvar rgr-c-use-electric-dash-p nil
