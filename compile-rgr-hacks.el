@@ -42,7 +42,7 @@ rgr-hacks-compile-module (see below).")
 	  ("rgr-allegro" load-p nil)
 	  "rgr-backup"
 	  "rgr-compile-hacks"
-	  "rgr-new-vc-hacks"
+	  ("rgr-new-vc-hacks" version 23)
 	  "rgr-cvs-hacks"
 	  "rgr-diff-hacks"
 	  "rgr-dired"
@@ -86,31 +86,42 @@ rgr-hacks-compile-module (see below).")
   "List of source file specs, which can be either the file stem, or a
 pair of (file-stem . properties), where properties is a disembodied plist.")
 
-(defun rgr-hacks-compile-module (name &rest options)
-  ;; Compile and load the file if it needs it, returning t iff we decided to
-  ;; compile.  -- rgr, 21-Sep-02.
-  (let* ((force-p (rgr-hacks-getf options 'force-p))
-	 (must-load-p (rgr-hacks-getf options 'load-p t))
-	 (requirements (rgr-hacks-getf options 'require))
-	 (name-stem (if (symbolp name) (symbol-name name) name))
-	 (source-name (concat name-stem ".el"))
-	 (binary-name (concat source-name "c"))
-	 (bin-date nil)
-	 (skipped-p nil)
-	 (compiled-p nil)
-	 (need-to-load-p nil))
-
-    ;; Check for requirements.
-    (let ((tail requirements))
+(defun rgr-check-module-requirements (module-name options)
+  ;; Check for requirements, returning true and printing message(s) if we must
+  ;; skip this module.  Note that we always let all checks run, even if we get
+  ;; an early failure, so that all "must skip" messages are shown.
+  (let ((skipped-p nil)
+	(version (rgr-hacks-getf options 'version)))
+    (cond ((and version
+		(string-match "^[0-9]+" emacs-version)
+		(< (string-to-number (match-string 0 emacs-version)) version))
+	    (setq skipped-p 'version)
+	    (message "Module %s skipped because it requires Emacs version %s."
+			 module-name version)))
+    (let ((tail (rgr-hacks-getf options 'require)))
       (while tail
 	(cond ((condition-case error (not (require (car tail)))
 		 (error
 		  ;; (message "Error loading %S:  %S" (car tail) error)
 		  t))
 		(setq skipped-p (car tail))
-	        (message "File %S skipped because '%s' could not be loaded."
-			 source-name skipped-p)))
+	        (message "Module %s skipped because '%s' could not be loaded."
+			 module-name skipped-p)))
 	(setq tail (cdr tail))))
+    skipped-p))
+
+(defun rgr-hacks-compile-module (name &rest options)
+  ;; Compile and load the file if it needs it, returning t iff we decided to
+  ;; compile.  -- rgr, 21-Sep-02.
+  (let* ((force-p (rgr-hacks-getf options 'force-p))
+	 (must-load-p (rgr-hacks-getf options 'load-p t))
+	 (name-stem (if (symbolp name) (symbol-name name) name))
+	 (source-name (concat name-stem ".el"))
+	 (binary-name (concat source-name "c"))
+	 (bin-date nil)
+	 (skipped-p (rgr-check-module-requirements name options))
+	 (compiled-p nil)
+	 (need-to-load-p nil))
 
     ;; Compile if necessary.
     (cond (skipped-p)
