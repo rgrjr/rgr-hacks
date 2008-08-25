@@ -357,7 +357,7 @@ Just does the regular M-q (fill-paragraph) if it can't find a comment."
 ;;;###autoload
 (defun rgr-sh-mode-hook ()
   "sh-mode (aka shell-script-mode) is for editing shell scripts."
-  (define-key sh-mode-map "\r" 'sh-newline-and-indent)
+  (define-key sh-mode-map "\r" 'newline-and-indent)
   (define-key sh-mode-map "\M-q" 'rgr-fill-script-comment)
   (define-key sh-mode-map "\M-*" 'rgr-add-to-shell-modification-history)
   (define-key sh-mode-map "-" 'rgr-c-electric-dash)
