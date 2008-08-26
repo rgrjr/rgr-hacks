@@ -53,6 +53,10 @@ but it is usually sufficient to take the default.")
 (setq tags-build-completion-table nil)
 (setq zmacs-regions nil)
 
+;; Initialize these to the coordinates of Boston.
+(setq calendar-latitude 42.358)
+(setq calendar-longitude -71.06)
+
 ;; Turn off the toolbar when working remotely, because it can be very slow over
 ;; ssh.  -- rgr, 5-May-03.  [actually, it's just as useless locally.  -- rgr,
 ;; 12-May-03.]
