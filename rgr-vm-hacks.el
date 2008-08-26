@@ -499,6 +499,7 @@ directory."
   ;; vm-6.89 binds vm-expunge-folder to "###", which is annoying.  -- rgr,
   ;; 3-Jan-01.
   (define-key vm-mode-map "#" 'vm-expunge-folder)
+
   ;; This effectively swaps the notion of "this window" and "other window",
   ;; which seems to be what I need, since I keep scrolling the summary window
   ;; when I mean to scroll the message window.  -- rgr, 27-Nov-00.
@@ -512,14 +513,30 @@ directory."
   (define-key vm-summary-mode-map [prior] 'scroll-other-window-down)
   ;; new hack.  -- rgr, 14-Jan-02.
   (define-key vm-summary-mode-map "\C-c=" 'rgr-vm-compare-message-bodies)
+
+  ;; Tune MIME image behavior.  [Except we still get image/jpeg content
+  ;; displayed by default.  -- rgr, 9-Aug-08.]
+  (setq vm-auto-displayed-mime-content-types
+	'("text" "multipart"))
+  (setq vm-auto-displayed-mime-content-type-exceptions
+	'("text/html" "image/jpeg"))
+  (setq vm-mime-use-image-strips nil)
+  (cond ((file-executable-p "/shared/emacs/vm-7.19-patched/base64-encode")
+	  (setq vm-mime-base64-encoder-program
+		"/shared/emacs/vm-7.19-patched/base64-encode")
+	  (setq vm-mime-base64-decoder-program
+		"/shared/emacs/vm-7.19-patched/base64-decode")))
+
+  ;; Bring URL browsing behavior into the 21st century.
+  (setq vm-netscape-program "firefox")
+
   ;; define charsets.  if these aren't on the list, then i have to click middle
   ;; to seem messages from people whose mailers advertise funny charsets
   ;; (e.g. Hongxian, windows users) even if there are no non-ascii characters in
   ;; the message.  it would be better if vm had as a default rule "use
   ;; 'no-conversion for an unknown charset if the message body contains only
   ;; ascii characters."  -- rgr, 8-Aug-00.
-  (rgr-vm-mime-define-charset-coding "gb2312" 'cn-gb-2312)
-  (rgr-vm-mime-define-charset-coding "big5" 'big5)
+  ;; [not sure if these are still needed in emacs 22/23.  -- rgr, 9-Aug-08.]
   (rgr-vm-mime-define-charset-coding "windows-1252" 'no-conversion)
   (rgr-vm-mime-define-charset-coding "windows-1255" 'no-conversion)
   ;; some mailers seem to generate "x-unknown" for "unknown".  sheesh.
