@@ -60,6 +60,41 @@
 	(forward-line -2)
 	(rgr-backup-change-stars-to-dots level)))))
 
+(defvar rgr-backup-line-prefix-regexp
+  (concat "^ \\([ .*]\\) *[0-9]+ \\([^ ]+-l\\([0-9]\\)\\)"
+	  ;; This is to prove that it's about a backup file.
+	  "\\(-cat\\)?\\."))
+
+;;;###autoload
+(defun rgr-backup-update-stars ()
+  "Change \"*\" flags to \" \" for backups obsoleted by this one.
+This is intended to work on the output of the show-backups.pl script; after
+pasting in a new set of dumps, stars on some old ones must be changed."
+  (interactive)
+  (let ((last-prefix nil)
+	(last-level nil)
+	(n-lines-changed 0))
+    (save-excursion
+      (beginning-of-line)
+      (while (looking-at rgr-backup-line-prefix-regexp)
+	(let* ((prefix (match-string 2))
+	       (level (string-to-number (match-string 3)))
+	       (current-p (cond ((null last-level))
+				((string-equal last-prefix prefix)
+				  (<= level last-level))
+				(t (< level last-level))))
+	       (replacement (if current-p "*" " ")))
+	  (cond ((not (equal (match-string 1) replacement))
+		  (setq n-lines-changed (1+ n-lines-changed))
+		  (replace-match replacement t t nil 1)))
+	  (if current-p
+	      (setq last-prefix prefix last-level level)))
+	(forward-line 1))
+      (message "Done; %d line%s changed."
+	       n-lines-changed
+	       (if (= n-lines-changed 1) "" "s"))
+      (sit-for 1))))
+
 (provide 'rgr-backup)
 
 ;; (setq debug-on-error t)
