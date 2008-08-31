@@ -8,12 +8,12 @@
 
 (defvar rgr-ffap-file-to-application-map
 	'(("\\.gnumeric$" "gnumeric")
-	  ("\\.sxc$" "OOo-calc")
-	  ("\\.xls$" "OOo-calc")
+	  ("\\.sxc$" "oocalc")
+	  ("\\.xls$" "oocalc")
 	  ("\\.xls$" "gnumeric")
 	  ;; ("\\.csv$" "gnumeric")	;; [doesn't work.  -- rgr, 18-Feb-04.]
-	  ("\\.ppt$" "OOo-impress")
-	  ("\\.doc$" "OOo-writer")
+	  ("\\.ppt$" "ooimpress")
+	  ("\\.doc$" "oowriter")
 	  ("\\.doc$" "abiword")
 	  ("\\.pdf$" "acroread")
 	  ("\\.dia$" "dia")
