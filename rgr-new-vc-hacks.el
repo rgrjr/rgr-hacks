@@ -39,8 +39,8 @@
   (interactive)
   (let ((fileset-files (rgr-vc-all-comment-files)))
     (set (make-local-variable 'vc-log-fileset) fileset-files)
-    (messages "Updated fileset to %d files %S."
-	      (length fileset-files) fileset-files)))
+    (message "Updated fileset to %d files %S."
+	     (length fileset-files) fileset-files)))
 
 (defvar vc-log-buffer-gensym-index 0
   "Index of the last log buffer created.")
@@ -111,6 +111,7 @@ be committed independently."
       (set (make-local-variable 'vc-parent-buffer-name)
 	   tmp-vc-parent-buffer-name)
       (set (make-local-variable 'vc-log-extra) tmp-vc-log-extra)
+      (message "[new buffer extra is %S]" vc-log-extra)
       ;; (if log-file (vc-mode-line log-file))
       (vc-log-edit files-after)
       (message "[new buffer fileset is %S]" vc-log-fileset)
