@@ -24,7 +24,7 @@
 	 (label (concat (if (eq rgr-emacs-flavor 'fsf)
 			    "emacs"
 			    (symbol-name rgr-emacs-flavor))
-			(if (string-match "^22\\.2" version)
+			(if (string-match "^22\\.3" version)
 			    ;; don't show the standard version(s).
 			    ""
 			    ;; add spacing.
