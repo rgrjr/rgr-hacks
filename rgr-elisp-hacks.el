@@ -108,16 +108,16 @@ first occurrence is always renumbered to one."
   (setq tags-table-set-list
 	(list
 	  (rgr-make-tags-table-list
-	    (append (list "/shared/mgi/oligo" "~/projects/mgi/oligo"
+	    (append (list "~/projects/mgi/modest"
 			  "~/projects/system/scripts"
 			  "/usr/local/src/rogers/bmerc/pima-profile-0.1/src"
 			  "/usr/local/src/rogers/bmerc/PIMA-0.6_2"
+			  ;; [this is for openSUSE 10.2.  -- rgr, 18-Sep-08.]
+			  "/usr/lib/perl5/site_perl/5.8.8/Bio"
 			  ;; [this works for SuSE 9.0.  -- rgr, 28-Jan-05.]
 			  "/usr/lib/perl5/site_perl/5.8.1/Bio"
 			  ;; [this is for SuSE 8.1.  -- rgr, 15-Jun-04.]
-			  "/usr/lib/perl5/site_perl/5.6.1/Bio"
-			  ;; and this needs to come after.
-			  "~/projects/database/code")
+			  "/usr/lib/perl5/site_perl/5.6.1/Bio")
 		    load-path
 		    ;; BMERC stuff.
 		    (list "~psa/psa-test/bin"
