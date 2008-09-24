@@ -382,10 +382,19 @@ The '*' must be at the start of the line.  Other comments are ignored."
   (let* ((source-buffer (or source-buffer (current-buffer)))
 	 (changed-file (buffer-file-name source-buffer)))
     (switch-to-buffer-other-window
-      (or (and (fboundp 'vc-log-buffer-for-file)
+      (or (and vc-parent-buffer
+	       ;; Take the parent buffer if it's a log buffer.
+	       (save-excursion
+		 (set-buffer vc-parent-buffer)
+		 (eq major-mode 'log-edit-mode))
+	       vc-parent-buffer)
+	  (and buffer-file-name
+	       ;; If in a file buffer, look for the corresponding log buffer.
+	       (fboundp 'vc-log-buffer-for-file)
 	       (save-excursion
 		 (set-buffer source-buffer)
 		 (vc-log-buffer-for-file buffer-file-name)))
+	  ;; Obsolescent comment.text file support.
 	  (rgr-current-comment-buffer source-buffer)
 	  (find-file-noselect "comment.text")))
     (let ((current-comment-files (rgr-vc-current-comment-files))
