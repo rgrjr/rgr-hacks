@@ -103,7 +103,11 @@ first occurrence is always renumbered to one."
       (setq tail (cdr tail)))
     (nreverse result)))
 
-(defun rgr-make-tags-table-list-internal ()
+;;;###autoload
+(defun rgr-make-tags-table-list-hook ()
+  "Hook function that initializes the tags-table-list variable to
+include all emacs-lisp files, plus other interesting directories.  This
+should be called from .emacs files."
   ;; FSF emacs version.
   (setq tags-table-set-list
 	(list
@@ -139,25 +143,6 @@ first occurrence is always renumbered to one."
 			      (list oligo-web
 				    "/usr/lib/perl5/site_perl/5.8.1/Bio"
 				    load-path))))))))
-
-(defun rgr-make-tag-table-alist-internal ()
-  ;; xemacs version, still in development.  note the change of variable name and
-  ;; format.  unfortunately, M-x visit-tags-table doesn't add to this list.  --
-  ;; rgr, 26-Jul-01.
-  ;; (setq tags-file-name nil)
-  (setq tag-table-alist
-	(mapcar (function (lambda (file)
-		  (cons "\\.el$" file)))
-		(rgr-make-tags-table-list load-path))))
-
-;;;###autoload
-(defun rgr-make-tags-table-list-hook ()
-  "Hook function that initializes the tags-table-list variable to
-include all emacs-lisp files, plus other interesting directories.  This
-should be called from .emacs files."
-  (if (eq rgr-emacs-flavor 'fsf)
-      (rgr-make-tags-table-list-internal)
-      (rgr-make-tag-table-alist-internal)))
 
 ;;;; Arglists
 
