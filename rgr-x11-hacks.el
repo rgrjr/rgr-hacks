@@ -12,10 +12,15 @@
   ;; it unavailable to xemacs, and the rest of the bmerc-hacks.el file is no
   ;; longer useful anyway.  -- rgr, 26-Jul-01.]
   (let* ((version
-	  ;; In the version (e.g.) "19.34.1", the last component is not
-	  ;; significant (it's the number of times I recompiled it before I got
-	  ;; it right).  -- rgr, 19-Oct-98.
-	  (format "%s.%s" rgr-emacs-major-version rgr-emacs-minor-version))
+	  (if (and (= rgr-emacs-major-version 22)
+		   (= rgr-emacs-minor-version 3))
+	      ;; don't show the standard version(s).
+	      ""
+	      ;; In the version (e.g.) "19.34.1", the last component is not
+	      ;; significant (it's the number of times I recompiled it before I
+	      ;; got it right).  -- rgr, 19-Oct-98.
+	      (format " %s.%s"
+		      rgr-emacs-major-version rgr-emacs-minor-version)))
 	 (real-login-name (user-real-login-name))
 	 (su-p (not (equal real-login-name
 			   ;; SUDO_USER is also defined by kdesu (e.g.).
@@ -24,11 +29,7 @@
 	 (label (concat (if (eq rgr-emacs-flavor 'fsf)
 			    "emacs"
 			    (symbol-name rgr-emacs-flavor))
-			(if (string-match "^22\\.3" version)
-			    ;; don't show the standard version(s).
-			    ""
-			    ;; add spacing.
-			    (concat " " version))
+			version
 			(if (or su-p ssh-p)
 			    (let ((name (system-name)))
 			      (format " %s@%s"
