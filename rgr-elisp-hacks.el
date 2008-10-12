@@ -154,17 +154,15 @@ should be called from .emacs files."
 	(setq fn (cdr fn)))
     (cond ((subrp fn)
 	    (rgr-guess-arglist-from-documentation name t))
-	  ((and (rgr-emacs-version-p 19)
-		(byte-code-function-p fn))
+	  ((byte-code-function-p fn)
 	    ;; byte-code object (acts like a vector, though).
 	    (aref fn 0))
-	  ((or (not (consp fn)) (eq (car fn) 'autoload))
-	    (error "%s is %s, can't get its args." name fn))
-	  ((not (eq (car fn) 'lambda))
-	    (error "%s is %s; expected a lambda." name fn))
-	  (t
+	  ((and (consp fn)
+		(eq (car fn) 'lambda))
 	    ;; Pluck out the lambda list.
-	    (car (cdr fn))))))
+	    (car (cdr fn)))
+	  (t
+	    (error "%s is %s, can't get its args." name fn)))))
 
 (defun rgr-find-elisp-function-tag-default ()
   ;; Look for the relevant function name near point.  This will generally be the
