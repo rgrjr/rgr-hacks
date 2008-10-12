@@ -112,11 +112,11 @@ defmethod forms."
 		      (t
 			(setq specializers (cons t specializers)))))
 	      (setq arglist (cdr arglist)))
-	    ;; Put it all together (but as a string).
-	    (format "%s%s"
-		    (if namep "defmethod " "")
-		    (append '(method) (nreverse qualifiers-and-name)
-			    (list (nreverse specializers))))))
+	    ;; Put it all together (but as a string), and drop the parens.
+	    (let ((string
+		    (format "%s" (append '(method) (nreverse qualifiers-and-name)
+					 (list (nreverse specializers))))))
+	      (substring string 1 (- (length string) 2)))))
 	;; Try the standard recipe.
 	(rgr-original-lisp-def-name namep))))
 
@@ -290,7 +290,8 @@ expression are replaced with the bound variable name."
     (if (not slime-dir)
 	(error "Can't find slime."))
     (message "Loading slime.")
-    (add-to-list 'load-path (expand-file-name slime-dir)))
+    (add-to-list 'load-path (expand-file-name slime-dir))
+    (push (expand-file-name "TAGS" slime-dir) tags-table-list))
   ;; Set up for CMU Common Lisp.
   (setq inferior-lisp-program "/usr/local/bin/lisp")
   ;; Set up for Steel Bank Common Lisp.  [not working yet.  -- rgr, 2-Mar-08.]
