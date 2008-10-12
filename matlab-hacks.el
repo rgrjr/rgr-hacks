@@ -12,30 +12,7 @@
 ;;;    Bug:  indent-line-function (e.g. matlab-indent-line) should accept a
 ;;; numeric arg; see the indent-for-tab-command fn.  -- rgr, 21-Sep-99.
 ;;;
-;;;    Modification history:
-;;;
-;;; created (still working on this).  -- rgr, 4-Jan-99.
-;;; bmerc-matlab-shell-mode-hook: fix matlab-mode-install-path.  -- rgr,
-;;;	25-Mar-99.
-;;; bmerc-matlab-find-file-on-path-other-window, bmerc-matlab-indent-buffer,
-;;;	bmerc-matlab-indent-sexp, and related hacks.  -- rgr, 21-Sep-99.
-;;; bmerc-matlab-mode-hook: added fill-column init.  -- rgr, 23-Sep-99.
-;;; matlab-rsh: new command, set matlab-shell-echoes, both for new
-;;;	matlab.el version 2.2.2.  -- rgr, 24-Sep-99.
-;;; bmerc-matlab-delete-indentation: new.  -- rgr, 6-Mar-00.
-;;; bmerc-matlab-indent-sexp: use bmerc-matlab-indent-region.  -- rgr, 7-Mar-00.
-;;; bmerc-matlab-add-to-modification-history, bmerc-matlab-indent-line (made
-;;;	somewhat smarter that matlab-indent-line).  -- rgr, 9-Mar-00.
-;;; bmerc-matlab-line-type: fix continuation bug.  -- rgr, 10-Mar-00.
-;;; fix bmerc-matlab-id-at-point bug, unbind M-a, M-e, M-q.  -- rgr, 13-Mar-00.
-;;; bmerc-matlab-shell-mode-hook: add C-c . etc. here.  -- rgr, 26-Jul-00.
-;;; bmerc-matlab-shell-mode-hook: comint-process-echoes.  -- rgr, 8-Sep-00.
-;;; bmerc-matlab-indent-region: use one % instead of two.  -- rgr, 19-Dec-00.
-;;; bmerc-matlab-resync-path: new.  -- rgr, 11-Jan-01.
-;;; bmerc-matlab-append-path-directory: fix typo.  -- rgr, 18-Jan-01.
-;;; bmerc-matlab-resync-path: say if not changed.  -- rgr, 26-Feb-01.
-;;; bmerc-matlab-grovel-path-output: Solaris toolbox dir.  -- rgr, 6-Mar-01.
-;;;
+;;; $Id:$
 
 ;; Note that matlab.el needs (require 'cl) to compile correctly.  -- rgr,
 ;; 24-Sep-99.
@@ -58,23 +35,6 @@ line.")
 			       (concat "\\|" (symbol-name name) "\\>")))
 			     bmerc-matlab-statement-names)))
   "Regexp that matches interesting statement types, including comments.")
-
-;;;###autoload
-(defun bmerc-matlab-add-to-modification-history
-       (&optional insert-definition-name-p)
-  "Add to a modification history at the end of the first paragraph.
-Sets the mark before moving there, and inserts a fresh comment line.
-If no history exists (which it determines by searching for the string
-in the rgr-modification-history-herald variable), then you are asked
-about starting one.  (If you are asked this when there already is one,
-then somebody probably inserted a blank line at the beginning of the
-file.)"
-  (interactive "P")
-  (require 'rgr-hacks)
-  (rgr-add-to-modification-history-internal
-    "%    " "^%+ *" "%"
-    ;; Use %* so we don't skip blank lines.
-    "^%* *$"))
 
 ;;;; Indentation
 
@@ -469,7 +429,6 @@ frame."
   (define-key matlab-mode-map "\C-i" 'bmerc-matlab-indent-line)
   (define-key matlab-mode-map "\M-^" 'bmerc-matlab-delete-indentation)
   (define-key matlab-mode-map "\C-\M-q" 'bmerc-matlab-indent-sexp)
-  (define-key matlab-mode-map "\M-*" 'bmerc-matlab-add-to-modification-history)
   (define-key matlab-mode-map "\M-q" 'rgr-fill-comment)
   ;; the matlab-mode versions of these are kinda useless.  -- rgr, 13-Mar-00.
   (define-key matlab-mode-map "\M-e" nil)

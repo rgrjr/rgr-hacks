@@ -42,34 +42,6 @@
 ;;; rgr-perl-mode-install-extra-hacks, but be aware that the latter includes
 ;;; commands that depend on other rgr-hacks functions not defined in this file.
 ;;;
-;;;    Modification history:
-;;;
-;;; created with rgr-perl-quick-arglist hack.  -- rgr, 26-Jul-96.
-;;; rgr-get-man-buffer: now does the unspeakable.  -- rgr, 2-Aug-96.
-;;; rgr-get-man-buffer: fix (require 'man) bug.  -- rgr, 7-Aug-96.
-;;; rgr-perl-show-documentation: new.  -- rgr, 8-Aug-96.
-;;; rgr-add-to-perl-modification-history: new hack.  -- rgr, 13-Aug-96.
-;;; rgr-perl-show-arglist: msg instead of showing doc buf.  -- rgr, 23-Oct-96.
-;;; rgr-perl-mode-hook: add rgr-c-electric-dash.  -- rgr, 20-Dec-96.
-;;; rgr-perl-mode-hook: (executable-set-magic "perl").  -- rgr, 29-Apr-97.
-;;; rgr-perl-mode-hook: no electric-perl-terminator on ':'.  -- rgr, 16-May-97.
-;;; rgr-perl-get-name-around-point: made much smarter.  -- rgr, 13-Aug-97.
-;;; rgr-perl-definition-name: new.  -- rgr, 14-Oct-97.
-;;; rgr-perl-get-name-around-point: allow (e.g.) -T.  -- rgr, 27-Jan-98.
-;;; rgr-perl-function-documentation-prefix: OSF1 hack.  -- rgr, 29-Apr-98.
-;;; rgr-perl-mode-hook: executable-set-magic path kludge.  -- rgr, 22-May-98.
-;;; rgr-get-man-buffer: err if magic line not found.  -- rgr, 11-Sep-98.
-;;; rgr-perl-mode-hook: Learn subroutine names.  -- rgr, 14-Dec-98.
-;;; rgr-perl-mode-hook: rgr-comment-region-lisp.  -- rgr, 7-Sep-99.
-;;; rgr-get-man-buffer: try to make more robust.  -- rgr, 13-Sep-99.
-;;; rgr-perl-mode-hook: linux executable-set-magic version.  -- rgr, 16-Apr-00.
-;;; rgr-perldoc: new hack.  -- rgr, 9-May-00.
-;;; rgr-perldoc: must require man.  -- rgr, 20-Jun-00.
-;;; rgr-perl-function-documentation-prefix: linux case.  -- rgr, 2-Sep-00.
-;;; rgr-perl-mode-hook: prefer /usr/bin/perl for #! magic.  -- rgr, 22-Oct-02.
-;;; rgr-perl-function-documentation-prefix: add SuSE support.  -- rgr, 4-Nov-02.
-;;; rgr-perl-newline-and-maybe-indent: new POD hack.  -- rgr, 8-Nov-02.
-;;;
 ;;; $Id$
 
 (eval-when-compile
@@ -124,23 +96,6 @@ somewhat system-dependent.")
 
 (put 'perl-mode 'mode-definition-name 'rgr-perl-definition-name)
 (put 'cperl-mode 'mode-definition-name 'rgr-perl-definition-name)
-
-(defun rgr-add-to-perl-modification-history (&optional insert-definition-name-p)
-  ;; [syntax-independent version.  -- rgr, 13-Aug-96.]
-  "Add to a modification history near the top of the file.
-Sets the mark before moving there, and starts a new line before the end
-of the perl comment.  If no history exists (which it determines by
-searching for the string in the rgr-modification-history-herald
-variable), then you are asked about starting one.  (If you are asked
-this when there already is one, then somebody probably inserted extra
-crud at the beginning of the file.)  If given a numeric argument,
-inserts the definition name (if it can find one) [presently nonworking
-for perl syntax]."
-  (interactive "P")
-  (rgr-add-to-modification-history-internal
-    "#    " "^# *" "#" "^#* *$"
-    (if insert-definition-name-p
-	(rgr-perl-definition-name))))
 
 ;;;; perl documentation support.
 
@@ -462,7 +417,6 @@ the page."
   (setq rgr-definition-line-regexp "^ *sub +.*{")
   (rgr-relearn-buffer-definition-names)
   ;; Standard modification history.
-  (define-key map "\M-*" 'rgr-add-to-perl-modification-history)
   (define-key map "\M-q" 'rgr-fill-script-comment)
   ;; Put in interpreter magic.  -- rgr, 29-Apr-97.  [but not in library modules.
   ;; -- rgr, 16-May-97.]  [/usr/bin/perl is more standard, so prefer that.  --

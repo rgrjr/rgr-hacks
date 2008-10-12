@@ -228,23 +228,6 @@ mostly for compatibility with the rgr-lisp-def-name fn.)"
 (put 'c-mode 'mode-definition-name 'rgr-c-mode-definition-name)
 (put 'cc-mode 'mode-definition-name 'rgr-c-mode-definition-name)
 
-(defun rgr-add-to-c-modification-history (&optional insert-definition-name-p)
-  ;; [syntax-independent version.  -- rgr, 13-Aug-96.]
-  "Add to a modification history near the top of the file.
-Sets the mark before moving there, and starts a new line before the end
-of the C comment.  If no history exists (which it determines by
-searching for the string in the rgr-modification-history-herald
-variable), then you are asked about starting one.  (If you are asked
-this when there already is one, then somebody probably inserted extra
-crud at the beginning of the file.)  If given a numeric argument,
-inserts the definition name (if it can find one) [presently nonworking
-for C syntax]."
-  (interactive "P")
-  (rgr-add-to-modification-history-internal
-    "/*    " "^/\\* *" "  " "^ *\\*/$"
-    (and insert-definition-name-p
-	 (rgr-c-def-name t))))
-
 ;;;###autoload
 (defun rgr-c-mode-hook ()
   (setq fill-column 80)
@@ -258,7 +241,6 @@ for C syntax]."
   (define-key c-mode-map "-" 'rgr-c-electric-dash)
   (define-key c-mode-map "\M-#" 'rgr-c-frob-comment)
   (define-key c-mode-map "\M-s" 'rgr-center-line)
-  (define-key c-mode-map "\M-*" 'rgr-add-to-c-modification-history)
   (define-key c-mode-map "\C-cl" 'rgr-c-ify-identifier)
   (define-key lisp-mode-map "\C-cl" 'rgr-c-ify-identifier))
 

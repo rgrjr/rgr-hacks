@@ -129,30 +129,6 @@ defmethod forms."
 (put 'lisp-mode 'mode-definition-name 'rgr-lisp-mode-definition-name)
 (put 'emacs-lisp-mode 'mode-definition-name 'rgr-lisp-mode-definition-name)
 
-;;;###autoload
-(defun rgr-add-to-lisp-modification-history (&optional insert-definition-name-p)
-  "Add to a modification history at the end of the first paragraph.
-Sets the mark before moving there, and inserts a fresh comment line.
-If no history exists (which it determines by searching for the string
-in the rgr-modification-history-herald variable), then you are asked
-about starting one.  (If you are asked this when there already is one,
-then somebody probably inserted a blank line at the beginning of the
-file.)  If given a numeric argument, inserts the definition name (if it
-can find one).  Presently it doesn't do anything smart about inserting
-name or date automatically.  It probably should, if for no other reason
-than to standardize the format.  It also depends on Lisp syntax."
-  (interactive "P")
-  (require 'rgr-hacks)
-  (rgr-add-to-modification-history-internal
-    ";;;    " "^;+ *" ";;;"
-    ;; Use ;* so we don't skip blank lines.
-    "^;* *$"
-    (cond (insert-definition-name-p
-	    (save-excursion
-	      (if (not (looking-at "^("))
-		  (beginning-of-defun))
-	      (rgr-lisp-def-name t))))))
-
 ;; Comment region
 ;; [taken from the ilisp comment-region-lisp function, with an added space for
 ;; readability.  -- rgr, 7-Sep-99.]

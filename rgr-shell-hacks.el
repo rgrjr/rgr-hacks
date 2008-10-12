@@ -335,18 +335,6 @@ Communication with HOST is recorded in a buffer `*ssh-HOST*'."
   (setq comint-prompt-regexp "^[a-z]*[#$%>?] +"))
 
 ;;;###autoload
-(defun rgr-add-to-shell-modification-history ()
-  "Add to a modification history near the top of the file.
-Sets the mark before moving there, and starts a new line before the end
-of the comment.  If no history exists (which it determines by searching
-for the string in the rgr-modification-history-herald variable), then
-you are asked about starting one.  (If you are asked this when there
-already is one, then somebody probably inserted extra crud at the
-beginning of the file.)"
-  (interactive)
-  (rgr-add-to-modification-history-internal "#    " "^# *" "#" "^#* *$"))
-
-;;;###autoload
 (defun rgr-fill-script-comment (arg)
   "Fill the shell script comment around point.
 Just does the regular M-q (fill-paragraph) if it can't find a comment."
@@ -359,7 +347,6 @@ Just does the regular M-q (fill-paragraph) if it can't find a comment."
   "sh-mode (aka shell-script-mode) is for editing shell scripts."
   (define-key sh-mode-map "\r" 'newline-and-indent)
   (define-key sh-mode-map "\M-q" 'rgr-fill-script-comment)
-  (define-key sh-mode-map "\M-*" 'rgr-add-to-shell-modification-history)
   (define-key sh-mode-map "-" 'rgr-c-electric-dash)
   ;; Reinstall the global M-a and M-e bindings, since moving by commands is not
   ;; enough different from moving by lines to be useful.

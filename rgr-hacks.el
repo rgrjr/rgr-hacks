@@ -383,48 +383,6 @@ backup file has already been made)."
 		  (or signature-login-name (user-login-name))
 		  (rgr-date-string))))
 
-(defvar rgr-modification-history-herald "Modification history:"
-  "*Variable used by \\[rgr-add-to-lisp-modification-history] and \\[rgr-add-to-c-modification-history] to find the history.  This is used
-both as a quoted search string and inserted as a herald.  See the
-rgr-add-to-lisp-modification-history command for details.")
-
-;;;###autoload
-(defun rgr-add-to-modification-history-internal
-       (header-start header-start-re header-comment header-comment-re
-		     &optional fspec)
-  ;; Guts of the rgr-add-to-foo-modification-history commands, for language
-  ;; customization.  -- rgr, 13-Aug-96.
-  (let ((header-regexp (concat header-start-re
-			       (regexp-quote rgr-modification-history-herald))))
-    (push-mark)
-    (goto-char (point-min))
-    (forward-paragraph)
-    (cond ((re-search-backward header-regexp nil t)
-	    (forward-line 2))
-	  ((re-search-forward header-regexp
-			      (save-excursion (forward-sexp 1) (point))
-			      t)
-	    (forward-line 2))
-	  ((not (yes-or-no-p "Buffer has no modification history; make one? "))
-	    (error "Aborted."))
-	  (t
-	    (insert header-start rgr-modification-history-herald "\n"
-		    header-comment "\n")
-	    (if (eq major-mode 'c-mode)
-		 ;; [***kludge for C.  -- rgr, 12-Dec-96.]
-		 (insert header-comment " */\n")
-		 ;; normal case.
-		 (insert header-comment "\n"))
-	    (forward-line -1)))
-    (while (not (or (eobp) ;; just in case
-		    (looking-at header-comment-re)))
-      (forward-line))
-    (insert header-comment " ")
-    (if fspec
-	(insert fspec ": "))
-    (insert "\n")
-    (forward-char -1)))
-
 ;;; A backward-up-list that does strings.
 
 (defun rgr-in-string-p ()

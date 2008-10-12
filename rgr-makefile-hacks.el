@@ -19,6 +19,5 @@
 ;;;###autoload
 (defun rgr-makefile-mode-hook ()
   "makefile-mode is for editing 'make' files."
-  (define-key makefile-mode-map "\M-q" 'rgr-fill-makefile-comment)
-  (define-key makefile-mode-map "\M-*" 'rgr-add-to-shell-modification-history))
+  (define-key makefile-mode-map "\M-q" 'rgr-fill-makefile-comment))
 
