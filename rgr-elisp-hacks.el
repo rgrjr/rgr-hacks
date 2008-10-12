@@ -108,7 +108,6 @@ first occurrence is always renumbered to one."
   "Hook function that initializes the tags-table-list variable to
 include all emacs-lisp files, plus other interesting directories.  This
 should be called from .emacs files."
-  ;; FSF emacs version.
   (setq tags-table-set-list
 	(list
 	  (rgr-make-tags-table-list
@@ -122,27 +121,8 @@ should be called from .emacs files."
 			  "/usr/lib/perl5/site_perl/5.8.1/Bio"
 			  ;; [this is for SuSE 8.1.  -- rgr, 15-Jun-04.]
 			  "/usr/lib/perl5/site_perl/5.6.1/Bio")
-		    load-path
-		    ;; BMERC stuff.
-		    (list "~psa/psa-test/bin"
-			  ;; [way old.  -- rgr, 10-Feb-05.]
-			  ;; "~thread/code/stat"
-			  ;; this will only be available on the alphas, but
-			  ;; rgr-make-tags-table-list will figure this out.  --
-			  ;; rgr, 4-Nov-98.
-			  "/usr/local/etc/httpd/htdocs/needle-doc/new")))))
-  (setq tags-table-list (car tags-table-set-list))
-  (let ((oligo-web (expand-file-name "~/projects/oligo")))
-    ;; these directories contain just the essentials for oligo tools web
-    ;; development.  if they exist, add them as a second (separate) set.  --
-    ;; rgr, 10-Feb-05.
-    (if (file-directory-p oligo-web)
-	(setq tags-table-set-list
-	      (append tags-table-set-list
-		      (list (rgr-make-tags-table-list
-			      (list oligo-web
-				    "/usr/lib/perl5/site_perl/5.8.1/Bio"
-				    load-path))))))))
+		    load-path))))
+  (setq tags-table-list (car tags-table-set-list)))
 
 ;;;; Arglists
 
