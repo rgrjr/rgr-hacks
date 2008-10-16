@@ -116,7 +116,7 @@ defmethod forms."
 	    (let ((string
 		    (format "%s" (append '(method) (nreverse qualifiers-and-name)
 					 (list (nreverse specializers))))))
-	      (substring string 1 (- (length string) 2)))))
+	      (substring string 1 (1- (length string))))))
 	;; Try the standard recipe.
 	(rgr-original-lisp-def-name namep))))
 
