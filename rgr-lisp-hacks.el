@@ -116,7 +116,10 @@ defmethod forms."
 	    (let ((string
 		    (format "%s" (append '(method) (nreverse qualifiers-and-name)
 					 (list (nreverse specializers))))))
-	      (substring string 1 (1- (length string))))))
+	      (if namep
+		  ;; Leave off the parens for commit comments.
+		  (substring string 1 (1- (length string)))
+		  string))))
 	;; Try the standard recipe.
 	(rgr-original-lisp-def-name namep))))
 
@@ -128,6 +131,23 @@ defmethod forms."
 
 (put 'lisp-mode 'mode-definition-name 'rgr-lisp-mode-definition-name)
 (put 'emacs-lisp-mode 'mode-definition-name 'rgr-lisp-mode-definition-name)
+
+(defun rgr-slime-kill-definition (symbol-name)
+  "Unbind the function slot of SYMBOL-NAME."
+  (interactive
+    (list (let* ((default (save-excursion
+			    (if (not (looking-at "^("))
+				(beginning-of-defun))
+			    (rgr-lisp-def-name)))
+		 (result
+		   (read-from-minibuffer
+		    (if default
+			(format "Kill definition (default %S): " default)
+			"Kill definition: ")
+		    nil nil nil nil default)))
+	    (if (equal result "") default result))))
+  (slime-eval-async `(swank:undefine-function ,symbol-name)
+                    (lambda (result) (message "%s" result))))
 
 ;; Comment region
 ;; [taken from the ilisp comment-region-lisp function, with an added space for
