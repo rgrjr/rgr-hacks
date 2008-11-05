@@ -144,9 +144,13 @@ buffer."
   ;; is current.  but don't force reparsing, since the appropriate variables are
   ;; buffer local anyway.  -- rgr, 23-Dec-98.]
   (setq compilation-last-buffer (current-buffer))
-  ;(compile-reinitialize-errors nil (point))
-  ;; Move to bol; the marker for the error on this line will point there.
   (beginning-of-line)
+  ;; [this is unfortunately dependent on compilation-mode internals.  -- rgr,
+  ;; 27-Oct-08.]
+  (if (not (get-text-property (point) 'message))
+      (let ((pos (next-single-property-change (point) 'message)))
+	(and pos
+	     (goto-char pos))))
   (compile-goto-error))
 
 (put 'compilation-mode 'reset-possibilities-from-point
