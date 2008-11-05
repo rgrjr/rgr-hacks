@@ -15,6 +15,9 @@
 ;;; can deal with them generically.
 ;;;
 
+(eval-when-compile
+  (require 'compile))
+
 (defvar ilisp-possibilities-buffers nil
   "List of buffer names, some of which may have been deleted in the
 interval.")
