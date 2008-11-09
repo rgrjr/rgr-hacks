@@ -62,7 +62,7 @@ rgr-hacks-compile-module (see below).")
 	  ("rgr-html-tags" require (psa-defstruct html-helper-mode))
 	  "rgr-intervals"
 	  "rgr-lisp-hacks"
-	  "rgr-mail-hacks"
+	  ("rgr-mail-hacks" require (vm))
 	  "rgr-makefile-hacks"
 	  ("rgr-mouse-21"
 	   if (member rgr-emacs-major-version '(21 22))
