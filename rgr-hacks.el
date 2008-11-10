@@ -2,20 +2,9 @@
 ;;;
 ;;;    GNU Emacs hackery.
 ;;;
-;;;    To compile this (almost) without error, do the following:
-;;;
-;;;	(mapcar 'require '(rgr-mouse t-mouse))
-;;;
-;;; (But colon-double-space is a free reference in 19.27 and prior.)  [and must
-;;; do (require 't-mouse) under linux.  -- rgr, 9-Dec-99.]
-;;;
 ;;; [started history.  -- rgr, 2-Mar-94.]
 ;;;
 ;;; $Id$
-
-(eval-when-compile
-  ;; for t-mouse-run.
-  (require 't-mouse))
 
 ;;;; Variables.
 
@@ -99,7 +88,7 @@ layer.  That actually works best for rgr-subordinate-emacs-p purposes.
 -- rgr, 18-Apr-01.]")
 
 (defvar rgr-subordinate-emacs-p
-	(and (equal (getenv "TERM") "emacs")
+	(and (> (length (getenv "EMACS")) 0)
 	     ;; Require that the connection be local, i.e. rule out ssh
 	     ;; connections across domain boundaries (we don't know how to
 	     ;; recognize telnet connections, but we shouldn't be doing these
