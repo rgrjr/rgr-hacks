@@ -460,26 +460,53 @@ This is useful, for instance, when a definition has been deleted."
 	  (forward-char -1)))
   (insert "   + "))
 
+(defvar rgr-vc-log-join-respect-fill-column t
+  "Whether to skip joining if it would cross over the fill-column.")
+
 (defun rgr-vc-log-join-consecutive-file-headings ()
-  "Join consecutive '* foo:' lines with a comma."
+  "Join consecutive '* foo:' lines with a comma, from here to EOB."
   (interactive)
   (save-excursion
-    (goto-char (point-min))
     (while (search-forward ":\n*" nil t)
-      (replace-match "," t t)
-      (end-of-line)
-      ;; see if we need to break the line.
-      (if auto-fill-function
-	  (funcall auto-fill-function))
-      ;; move back before the colon, so we can join this with the next line.
-      (forward-char -1))))
+      (goto-char (match-end 0))
+      (cond ((not auto-fill-function)
+	      (replace-match "," t t))
+	    (rgr-vc-log-join-respect-fill-column
+	      (let ((new-end-col
+		     (+ (save-excursion
+			  (goto-char (match-beginning 0))
+			  (end-of-line)
+			  (current-column))
+			(1- (- (match-end 0) (match-beginning 0)))
+			(save-excursion
+			  (goto-char (match-end 0))
+			  (end-of-line)
+			  (current-column)))))
+		(if (<= new-end-col fill-column)
+		    (replace-match "," t t))))
+	    (t
+	      (replace-match "," t t)
+	      (funcall auto-fill-function))))
+    ;; Move back before the colon, so we can join this with the next line.
+    (forward-char -1)))
+
+(defun rgr-vc-log-join-previous-file-heading ()
+  "Join this line with the '* foo:' on the previous line."
+  (interactive)
+  (save-excursion
+    (beginning-of-line)
+    (skip-chars-backward " \t\n:")
+    (or (looking-at ":[ \t]*\n[ \t\n]*\\*")
+	(error "Not in the second of two file heading lines.")))
+  (replace-match "," t t))
 
 ;;;###autoload
 (defun rgr-vc-log-edit-hook ()
   ;; This makes fill-paragraph operate on each comment individually.
   (set (make-local-variable 'paragraph-start) "^[ \t]*\\($\\|[*+]\\)")
-  (define-key log-edit-mode-map "\C-cj"
+  (define-key log-edit-mode-map "\C-cJ"
     'rgr-vc-log-join-consecutive-file-headings)
+  (define-key log-edit-mode-map "\C-cj" 'rgr-vc-log-join-previous-file-heading)
   (define-key log-edit-mode-map "\C-c+" 'rgr-vc-log-plus)
   (if (rgr-emacs-version-p 23)
       (new-vc-install-log-edit-mode-keys)))
