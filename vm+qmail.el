@@ -171,7 +171,7 @@ inboxes/maildirs (so be careful of . and ..!).")
       (setq directory-tail (cdr directory-tail)))
     (if result
 	(v+q-display-message (concat result "."))
-	(message "No messages"))))
+	(message "No messages."))))
 
 ;;;###autoload
 (defun v+q-mbox-status ()
