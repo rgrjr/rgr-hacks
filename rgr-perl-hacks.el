@@ -78,21 +78,55 @@ somewhat system-dependent.")
 
 ;;;; general stuff.
 
+(defun rgr-perl-this-line-definition-name ()
+  ;; Get the definition name on the current line, without moving point,
+  ;; returning nil if we can't find one.
+  (let ((perl-name "\\([$:a-zA-Z0-9_]+\\)"))
+    (save-excursion
+      (beginning-of-line)
+      (cond ((looking-at (concat "^[ \t]*sub[ \t]+" perl-name))
+	      (match-string-no-properties 1))
+	    ((looking-at (concat "^[ \t]*\\(my[ \t]*\\)?" perl-name
+				 "[ \t]*=[ \t]*sub[ \t]*{"))
+	      ;; [note that the "my" will not be present if put in a separate
+	      ;; statement so that the sub can recur.  -- rgr, 28-Nov-08.]
+	      (match-string-no-properties 2))))))
+
+(defun rgr-perl-def-name-tail (suffix)
+  ;; Given any inner names in suffix (which may be nil), return it if there are
+  ;; no more outer names, else concatenate the new outer name and recur.  Does
+  ;; not preserve point.
+  (condition-case err
+      (let* ((outer-name (progn
+			   (backward-up-list)
+			   (rgr-perl-this-line-definition-name)))
+	     (full-name (if (and outer-name suffix)
+			    (concat outer-name " " suffix)
+			    outer-name)))
+	(cond ((null outer-name) suffix)
+	      ((not (= (aref outer-name 0) ?$))
+		full-name)
+	      (t
+		(rgr-perl-def-name-tail full-name))))
+    (error
+      ;; This happens when backward-up-list runs out of list.
+      suffix)))
+
 (defun rgr-perl-definition-name ()
-  (let ((start (point)))
-    (condition-case nil
-	(if (and (re-search-backward "^sub[ \t\n]+\\([a-zA-Z_]+\\)" nil t)
-		 (progn
-		   (skip-chars-forward "^{")
-		   (forward-sexp)
-		   (< start (point))))
-	    (let ((name (match-string 1)))
-	      (if (equal name "BEGIN")
-		  ;; not an interesting name for a sub.  [might want to filter
-		  ;; others as well.  -- rgr, 2-Feb-06.]
-		  nil
-		  name)))
-      (error nil))))
+  "Snarf the name of the Perl sub containing point.
+If point is inside a named lexical (i.e. \"my $inner = sub { ... }\"),
+then the returned name will be a series of names in the form
+
+    \"outermost $inner $innermost\".
+
+The first line of a sub is always considered inside it, even if point
+is not inside the curly braces."
+  (let ((inner-name (rgr-perl-this-line-definition-name)))
+    (cond (inner-name
+	    (beginning-of-line)
+	    (rgr-perl-def-name-tail inner-name))
+	  (t
+	    (rgr-perl-def-name-tail nil)))))
 
 (put 'perl-mode 'mode-definition-name 'rgr-perl-definition-name)
 (put 'cperl-mode 'mode-definition-name 'rgr-perl-definition-name)
