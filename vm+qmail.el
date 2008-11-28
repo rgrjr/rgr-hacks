@@ -29,10 +29,8 @@
 
 (eval-when-compile
   (require 'sendmail)
-  (require 'message))
-
-;; [disabled, so we can leave rmail-mbox-status here.  -- rgr, 13-May-03.]
-;; (require 'vm)
+  (require 'message)
+  (require 'vm))
 
 (require 'message)
 
@@ -185,14 +183,6 @@ inbox in the vm-spool-files list.  Doesn't handle POP or IMAP drops."
   ;; properly.  -- rgr, 11-Feb-01.
   (vm-session-initialization)
   (v+q-mbox-status-internal v+q-mbox-directory))
-
-;;;###autoload
-(defun rmail-mbox-status ()
-  "Summarize how many messages are waiting in all known mbox files,
-controlled by the rmail-primary-inbox-list variable."
-  (interactive)
-  (require 'rmail)
-  (v+q-mbox-status-internal rmail-primary-inbox-list))
 
 ;;; Munging return addresses.
 
