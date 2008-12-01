@@ -16,7 +16,7 @@
 (defvar rgr-mail-buffer-index 0
   "Counter for generating mail buffer names.")
 (defvar rgr-email-signature-strings '("\t\t\t\t\t-- Bob" " Rogers" "
-					   http://rgrjr.dyndns.org/" "
+					   http://www.rgrjr.com/" "
 					   home: 781-646-9215" "
 					   work: 617-441-6015")
   "List of strings to insert on successive rgr-sign-email calls.")
