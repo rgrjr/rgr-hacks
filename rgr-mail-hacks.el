@@ -39,14 +39,7 @@
 	    (skip-chars-backward " \t")
 	    (delete-region start (point))
 	    (insert "
-------------------------------------------------------------------------
-")
-	    ;; Get rid of silly rmail "forwarded message" boilerplate.
-	    (if (looking-at "^-+ Start of forwarded message -+\n")
-		(replace-match ""))
-	    (if (re-search-forward
-		 "^-+ End of forwarded message -+\n" nil t)
-		(replace-match ""))))))
+------------------------------------------------------------------------\n")))))
 
 ;;;###autoload
 (defun rgr-sign-email (&optional n)
