@@ -9,7 +9,7 @@
 (eval-when-compile
   ;; [This still warns on vm-user-composition-folder-buffer and
   ;; rmail-summary-get-new-mail.  -- rgr, 23-Sep-07.]
-  (mapc 'require '(rmail sendmail mailabbrev vm)))
+  (mapc 'require '(sendmail mailabbrev vm)))
 
 ;;;; mail mode hacks.
 
@@ -155,43 +155,6 @@ top window.  A numeric argument prompts for an RMAIL or vm file to read."
 	    ;; Three or more windows.  Let rmail reset things.
 	    (delete-other-windows)
 	    (rmail file-name-arg)))))
-
-(defun rgr-reinvoke-rmail (&optional file-name-arg)
-  "Invoke rmail (or vm) from an rmail buffer.  As with the
-rgr-invoke-rmail command, a numeric argument prompts for an RMAIL or vm
-file to read."
-  (interactive (if current-prefix-arg
-		   (list (read-file-name "Run rmail or vm on file: "
-					 nil nil t))))
-  (if file-name-arg
-      (rgr-invoke-rmail file-name-arg)
-      (let ((summary-buffer (rmail-summary-exists)))
-	(rmail-get-new-mail)
-	(cond ((or (not (= (rgr-count-windows) 2))
-		   (null summary-buffer))
-		;; let rmail-summary make the buffer and/or change the windows.
-		(rmail-summary))
-	      ((eq (window-buffer (next-window)) summary-buffer)
-		;; the other window is now looking at the headers; just go
-		;; there.  [probably a bad assumption.  -- rgr, 4-Apr-96.]
-		;; [definitely.  -- rgr, 17-Apr-96.]  [ok, ok; I'm working on
-		;; it.  -- rgr, 6-Feb-98.]  [finally fixed?  -- rgr, 13-Nov-98.]
-		(other-window 1))
-	      (t
-		;; two windows and a summary buffer; just put it there.
-		(other-window 1)
-		(switch-to-buffer summary-buffer))))))
-
-(defun rgr-reinvoke-rmail-from-summary (&optional file-name-arg)
-  "Invoke rmail (or vm) from an rmail summary buffer.  As with the
-rgr-invoke-rmail command, a numeric argument prompts for an RMAIL or vm
-file to read."
-  (interactive (if current-prefix-arg
-		   (list (read-file-name "Run rmail or vm on file: "
-					 nil nil t))))
-  (if file-name-arg
-      (rgr-invoke-rmail file-name-arg)
-      (rmail-summary-get-new-mail)))
 
 ;;;; Hook functions.
 
