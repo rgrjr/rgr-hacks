@@ -75,7 +75,6 @@ rgr-hacks-compile-module (see below).")
 	  "rgr-parrot-hacks"
 	  "rgr-rect-hacks"
 	  "rgr-log-view"
-	  "rgr-rmail-hacks"
 	  "rgr-shell-hacks"
 	  "rgr-squid-log"
 	  "rgr-tcl"
