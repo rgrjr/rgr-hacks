@@ -41,8 +41,9 @@ but it is usually sufficient to take the default.")
 			  "linen"))
 (set-foreground-color "black")
 
-;; disable transient-mark-mode (seems to be on by default in the SuSE 20.7
-;; version).  -- rgr, 27-Jun-01.
+;; Disable transient-mark-mode (seems to be on by default in the SuSE 20.7
+;; version).  -- rgr, 27-Jun-01.  [not to mention openSUSE 11.0.  -- rgr,
+;; 9-Dec-08.]
 (setq transient-mark-mode nil)
 ;; get command bindings in apropos.  -- rgr, 9-Apr-03.
 (setq apropos-do-all t)
@@ -54,8 +55,8 @@ but it is usually sufficient to take the default.")
 (setq zmacs-regions nil)
 
 ;; Initialize these to the coordinates of Boston.
-(setq calendar-latitude 42.358)
-(setq calendar-longitude -71.06)
+(setq calendar-latitude   42.358)
+(setq calendar-longitude -71.060)
 
 ;; Turn off the toolbar when working remotely, because it can be very slow over
 ;; ssh.  -- rgr, 5-May-03.  [actually, it's just as useless locally.  -- rgr,
@@ -72,11 +73,6 @@ but it is usually sufficient to take the default.")
 
 ;; Turn off paging in subordinate shells.  -- rgr, 17-Feb-00.
 (setenv "PAGER" "cat")
-
-;; [something i'm doing seems to break font-lock in makefile-gmake-mode . . .
-;; -- rgr, 4-May-06.]
-(if (rgr-emacs-version-p 22)
-    (setq font-lock-global-modes '(not makefile-gmake-mode)))
 
 ;; Set up /shared/emacs/site-lisp/ at home.
 (cond ((and (eq rgr-site 'home)
