@@ -133,7 +133,6 @@ but it is usually sufficient to take the default.")
   (if (file-readable-p parrot)
       (load-file parrot)))
 
-(add-hook 'rmail-mode-hook 'rgr-rmail-mode-hook)
 (add-hook 'mail-mode-hook 'rgr-mail-mode-hook)
 (add-hook 'mail-setup-hook 'rgr-mail-setup-hook)
 (add-hook 'mail-setup-hook 'rgr-mail-abbrevs-setup)
