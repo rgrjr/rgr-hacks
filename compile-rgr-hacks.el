@@ -31,9 +31,6 @@ rgr-hacks-compile-module (see below).")
 	  ("rgr-random-hacks" require (autoload chistory))
 	  "bagels"
 	  "rgr-c-hacks"
-	  ;; this requires that the PSA software be installed.  [oops; can't
-	  ;; even compile this.  -- rgr, 23-Apr-03.
-	  ("psa-support" require (psa-server))
 	  "rgr-abbrev-completion"
 	  "tags-grep"
 	  ;; this requires that ACL be installed, and we don't want to test for

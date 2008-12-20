@@ -358,6 +358,13 @@ if (e.g.) the pathname does not indicate a server."
 			 string)))
 	   (rgr-browse-url-netscape url)))))
 
+;;;###autoload
+(defun rgr-delete-non-sequence-characters ()
+  "Hack to convert the rest of the file to something resembling a
+protein sequence."
+  (interactive)
+  (replace-regexp "[^ \t\nacdefghiklmnpqrstvwy]+" ""))
+
 '(defun rgr-foo ()
   ;; Batch percent identity computation.
   (interactive)
