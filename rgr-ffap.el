@@ -6,6 +6,9 @@
 ;;;
 ;;; $Id$
 
+(eval-when-compile
+  (require 'ffap))
+
 (defvar rgr-ffap-file-to-application-map
 	'(("\\.gnumeric$" "gnumeric")
 	  ("\\.sxc$" "oocalc")
