@@ -45,6 +45,9 @@ but it is usually sufficient to take the default.")
 ;; version).  -- rgr, 27-Jun-01.  [not to mention openSUSE 11.0.  -- rgr,
 ;; 9-Dec-08.]
 (setq transient-mark-mode nil)
+;; Disable "visual" C-n and C-p (Emacs 23), which screws up counting.  -- rgr,
+;; 25-Dec-08.
+(setq line-move-visual nil)
 ;; get command bindings in apropos.  -- rgr, 9-Apr-03.
 (setq apropos-do-all t)
 ;; use unified diffs.  -- rgr, 6-Jul-03.
@@ -199,16 +202,14 @@ but it is usually sufficient to take the default.")
 
 ;; Add html-helper-mode plus my HTML code hacks.
 (autoload 'html-helper-mode "html-helper-mode" "Yay HTML" t)
-(cond ((boundp 'magic-mode-alist)
-	;; [in emacs 22, magic-mode-alist trumps auto-mode-alist.  -- rgr,
-	;; 28-Dec-06.]
-	(let ((cell (rassoc 'html-mode magic-mode-alist)))
-	  (if cell
-	      (setcdr cell 'html-helper-mode))))
-      (t
-	;; [not needed in 22?  -- rgr, 28-Dec-06.]
-	(setq auto-mode-alist
-	      (cons '("\\.html$" . html-helper-mode) auto-mode-alist))))
+(let ((cell (and (boundp 'magic-mode-alist)
+		 ;; [in emacs 22, magic-mode-alist trumps auto-mode-alist.  --
+		 ;; rgr, 28-Dec-06.]
+		 (rassoc 'html-mode magic-mode-alist))))
+  (if cell
+      (setcdr cell 'html-helper-mode)
+      ;; [not needed in 22?  -- rgr, 28-Dec-06.]
+      (add-to-list 'auto-mode-alist '("\\.html?$" . html-helper-mode))))
 (add-hook 'html-helper-load-hook 'rgr-html-define-commands)
 (add-hook 'html-helper-load-hook 'rgr-html-fix-regexps)
 (add-hook 'rgr-html-tags-load-hook '(lambda () (load "rgr-html-servers")))
@@ -244,12 +245,10 @@ but it is usually sufficient to take the default.")
 	      '("rogers@rgrjr.dyndns.org" "rogers@huxley.bu.edu")))
 (if (eq rgr-site 'home)
     ;; Enable tunnelling to make the MGI database and intranet Web servers
-    ;; available from home.  This requires corresponding ~/.mgi.conf and
-    ;; /usr/sbin/redirect.pl hacks to make it work.  -- rgr, 29-Feb-04.
+    ;; available from home.  -- rgr, 29-Feb-04.
     (setq ssh-per-host-option-alist
 	  '(("modulargenetics\\.com$"
-	     ;; "-L" "9123:carthage:3306"
-	     "-L" "8080:alexandria:8080"
+	     "-L" "8080:babylon:8080"
 	     "-L" "8081:alexandria:80"
 	     "-L" "8082:karnak:80"
 	     "-L" "8083:thebes:80"
@@ -277,22 +276,17 @@ but it is usually sufficient to take the default.")
 		   (if (>= rgr-emacs-major-version 22) "new-vc-22" "new-vc")
 		   base-dir)))
     (expand-file-name "new-vc.el" subdir)))
-(cond ((null rgr-new-vc-file)
-        ;; Skip.
-        )
-      ((= rgr-emacs-major-version 23)
-        ;; Use the native Emacs 23 version control stuff.
-        )
-      ((file-readable-p rgr-new-vc-file)
-        (load-file rgr-new-vc-file))
-      ((eq rgr-site 'home)
-        ;; old solution.  -- rgr, 3-Dec-05.
-        (require 'local-vc-svn)))
+(if (and rgr-new-vc-file
+	 ;; Use the native version control stuff in Emacs 23.
+	 (<= rgr-emacs-major-version 22)
+	 (file-readable-p rgr-new-vc-file))
+    (load-file rgr-new-vc-file))
 
 ;; Fix MANPATH to include /usr/local/share/man/, which gets missed by the
 ;; $PATH-oriented "man" implementation.  -- rgr, 1-May-03.  [probably moot after
 ;; the OS upgrade.  -- rgr, 29-May-03.]
-(and (file-directory-p "/usr/local/share/man")
+;; [this does seem to be a noop now.  -- rgr, 19-Dec-08.]
+'(and (file-directory-p "/usr/local/share/man")
      (rgr-fix-manpath "/usr/local/share/man"))
 ;; Prevent attempts by nroff to inflict novel Unicode characters on us.
 (setq manual-program "LANG=en_US man")
