@@ -33,26 +33,6 @@
 	(setq tail (cdr tail))))
     best))
 
-(defun rgr-comment-buffers (&optional buffer-directory)
-  (let ((tail (buffer-list))
-	(dir (or buffer-directory default-directory))
-	(result nil))
-    (while tail
-      (let ((buffer (car tail)))
-	(save-excursion
-	  (set-buffer buffer)
-	  ;; (message "[dir %S default %S]" dir default-directory)
-	  (if (and (eq major-mode 'text-mode)
-		   (string-match "^comment" (buffer-name))
-		   (let ((dd-len (length default-directory)))
-		     (and (<= dd-len (length dir))
-			  (equal default-directory (substring dir 0 dd-len)))))
-	      (setq result (cons buffer result))))
-	(setq tail (cdr tail))))
-    (nreverse result)))
-
-;; (rgr-comment-buffers)
-
 ;;;; Log stuff.
 
 (defvar rgr-vc-backend-to-log-command
@@ -365,17 +345,6 @@ The '*' must be at the start of the line.  Other comments are ignored."
 	      (setq result star))))
       result)))
 
-(defun rgr-current-comment-buffer (&optional for-buffer)
-  ;; Given a buffer (which defaults to the current buffer), find the appropriate
-  ;; comment buffer, if one exists.  [we may need a better theory for how to
-  ;; identify the right comment buffer.  -- rgr, 25-Feb-05.]
-  (save-excursion
-    (and for-buffer
-	 (set-buffer for-buffer))
-    (apply (function rgr-find-more-recent-buffer)
-	   (get-buffer "*VC-log*")
-	   (rgr-comment-buffers))))
-
 (defun rgr-add-definition-comment-internal (name &optional source-buffer)
   ;; Given a name in source-buffer (which defaults to the current buffer),
   ;; insert "   + (def-name): " into to the current comment buffer.
@@ -394,9 +363,7 @@ The '*' must be at the start of the line.  Other comments are ignored."
 	       (save-excursion
 		 (set-buffer source-buffer)
 		 (vc-log-buffer-for-file buffer-file-name)))
-	  ;; Obsolescent comment.text file support.
-	  (rgr-current-comment-buffer source-buffer)
-	  (find-file-noselect "comment.text")))
+	  (error "No associated *VC-log* buffer.")))
     (let ((current-comment-files (rgr-vc-current-comment-files))
 	  (comment-start nil))
       (cond ((member changed-file current-comment-files)
