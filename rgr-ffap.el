@@ -15,10 +15,11 @@
 	  ("\\.xls$" "oocalc")
 	  ("\\.xls$" "gnumeric")
 	  ;; ("\\.csv$" "gnumeric")	;; [doesn't work.  -- rgr, 18-Feb-04.]
-	  ("\\.ppt$" "ooimpress")
+	  ("\\.pp[st]$" "ooimpress")
 	  ("\\.doc$" "oowriter")
 	  ("\\.doc$" "abiword")
 	  ("\\.pdf$" "acroread")
+	  ("\\.svg$" "inkscape")
 	  ("\\.dia$" "dia")
 	  ;; ("\\.vsd$" "dia")		;; [doesn't work.  -- rgr, 27-Apr-05.]
 	  ;; [this doesn't work; ffap hacks it.  -- rgr, 24-Dec-04.]
@@ -73,15 +74,10 @@
 					; needs host
 		"\\)."			; require one more character
 		))
-  ;; [enable this if you want "C-u C-x C-f" to invoke the regular find-file
-  ;; command and "C-u C-x C-f" to use the extra ffap features.  -- rgr,
-  ;; 9-Aug-03.]
+  ;; [enable this if you want "C-x C-f" to invoke the regular find-file command
+  ;; and "C-u C-x C-f" to use the extra ffap features.  -- rgr, 9-Aug-03.]
   ;; (setq ffap-require-prefix t)
   (global-set-key "\C-x\C-f" 'find-file-at-point)
-  (global-set-key "\C-x4\C-f" 'ffap-other-window)
-  ;; Put these somewhere generally available.  [kept for backward compatibility.
-  ;; -- rgr, 9-Aug-03.]
-  (global-set-key "\C-x\M-\C-f" 'find-file-at-point)
-  (global-set-key "\C-x4\M-\C-f" 'ffap-other-window))
+  (global-set-key "\C-x4\C-f" 'ffap-other-window))
 
 (provide 'rgr-ffap)
