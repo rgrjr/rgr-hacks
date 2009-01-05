@@ -115,6 +115,8 @@ should be called from .emacs files."
 			  "~/projects/system/scripts"
 			  "/usr/local/src/rogers/bmerc/pima-profile-0.1/src"
 			  "/usr/local/src/rogers/bmerc/PIMA-0.6_2"
+			  ;; [this is for openSUSE 11.x.  -- rgr, 7-Dec-08.]
+			  "/usr/lib/perl5/site_perl/5.8.10/Bio"
 			  ;; [this is for openSUSE 10.2.  -- rgr, 18-Sep-08.]
 			  "/usr/lib/perl5/site_perl/5.8.8/Bio"
 			  ;; [this works for SuSE 9.0.  -- rgr, 28-Jan-05.]
