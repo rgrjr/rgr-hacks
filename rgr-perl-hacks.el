@@ -372,6 +372,22 @@ rgr, 8-Nov-06.\]"
     ;; Done.
     (goto-char start)))
 
+;;; Adding CGI::Carp to Web scripts.
+
+(defun rgr-perl-carpify ()
+  "Add a \"use CGI::Carp\" line to the current Perl buffer.
+This comes in a paragraph of its own after \"use warnings\"."
+  (interactive)
+  (save-excursion
+    (goto-char (point-min))
+    (or (re-search-forward "^use warnings;" nil t)
+	(error "Buffer has no 'use warnings' line."))
+    (skip-chars-forward " \t\n")
+    (if (looking-at "use CGI::Carp")
+	(error "Already using 'CGI::Carp' here."))
+    (insert "use CGI::Carp qw(fatalsToBrowser);\n\n")
+    (message "Done.")))
+
 ;;; perldoc interface.
 
 ;;;###autoload
@@ -478,6 +494,8 @@ the page."
   ;; leave whitespace as indentation on otherwise empty lines.
   (setq paragraph-start "[ \t]*$\\|^")
   (setq paragraph-separate paragraph-start)
+  ;; Bind rgr-perl-carpify.
+  (define-key perl-mode-map "C-c%" 'rgr-perl-carpify)
   ;; Take the whole enchilada.
   (rgr-perl-mode-fix-indentation)
   (rgr-perl-mode-install-documentation-hacks perl-mode-map)
@@ -490,6 +508,8 @@ the page."
   (setq cperl-indent-level 4)
   (setq cperl-continued-statement-offset 4)
   (setq cperl-close-paren-offset 0)
+  ;; Bind rgr-perl-carpify.
+  (define-key cperl-mode-map "C-c%" 'rgr-perl-carpify)
   (rgr-perl-mode-install-documentation-hacks cperl-mode-map)
   (rgr-perl-mode-install-extra-hacks cperl-mode-map))
 
