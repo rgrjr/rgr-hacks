@@ -14,21 +14,10 @@
 ;;; read-event returns (but see ./encode-key.el).  Use (e.g.) [?\C-\M-%] in
 ;;; define-key calls.
 ;;;
-;;;    [old] Modification history:
-;;;
-;;; rgr-update-autoloads: 19.31 updated.  -- rgr, 20-Jul-96.
-;;; rgr-command-history-hook: new, not working well.  -- rgr, 12-Aug-96.
-;;; psa-status: remodularize to handle different servers.  -- rgr, 6-Mar-98.
-;;; psa-status: (&optional test-p).  -- rgr, 6-May-98.
-;;; rgr-update-public-autoloads: new command.  -- rgr, 23-Mar-98.
-;;; rgr-update-autoloads: update for emacs 20.  -- rgr, 11-Aug-99.
-;;; rgr-update-dist-autoloads: new.  -- rgr, 12-Aug-99.
-;;; rgr-list-files-needing-compile: new.  -- rgr, 20-Dec-99.
-;;; rgr-update-directory-autoloads: split out internal fn.  -- rgr, 21-Mar-00.
-;;; psa-status-internal: do server-running check only at BU.  -- rgr, 16-Jun-00.
-;;; new rgr-batch-update-autoloads, minor updating.  -- rgr, 21-Dec-00.
-;;; psa-get-server-pid: make work when "." is not on PATH.  -- rgr, 23-Jan-01.
-;;;
+;;; $Id$
+
+(eval-when-compile
+  (require 'ffap))
 
 ;;;; Autoload-generating commands.
 
@@ -340,6 +329,7 @@ if (e.g.) the pathname does not indicate a server."
 ;;;###autoload
 (defun rgr-view-sequence-at-point ()
   (interactive)
+  (require 'ffap)
   (let ((string (ffap-string-at-point 'url))
 	(host "localhost"))
     (if (and string
@@ -363,20 +353,8 @@ if (e.g.) the pathname does not indicate a server."
   "Hack to convert the rest of the file to something resembling a
 protein sequence."
   (interactive)
-  (replace-regexp "[^ \t\nacdefghiklmnpqrstvwy]+" ""))
-
-'(defun rgr-foo ()
-  ;; Batch percent identity computation.
-  (interactive)
-  (let ((files (directory-files
-		"/home/shared/monsanto/rogers/icp/profile/collin"
-		t "\\.seqaln$")))
-    (while files
-      (let ((file (car files)))
-	(save-excursion
-	  (set-buffer (find-file-noselect file))
-	  (rgr-seqaln-percent-homology (point-min) (point-max))))
-      (setq files (cdr files)))))
+  (while (re-search-forward "[^ \t\nacdefghiklmnpqrstvwy]+" nil t)
+    (replace-match "" t t)))
 
 ;;;; Done.
 
