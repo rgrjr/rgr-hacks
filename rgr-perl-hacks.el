@@ -495,7 +495,7 @@ the page."
   (setq paragraph-start "[ \t]*$\\|^")
   (setq paragraph-separate paragraph-start)
   ;; Bind rgr-perl-carpify.
-  (define-key perl-mode-map "C-c%" 'rgr-perl-carpify)
+  (define-key perl-mode-map "\C-c%" 'rgr-perl-carpify)
   ;; Take the whole enchilada.
   (rgr-perl-mode-fix-indentation)
   (rgr-perl-mode-install-documentation-hacks perl-mode-map)
@@ -509,7 +509,7 @@ the page."
   (setq cperl-continued-statement-offset 4)
   (setq cperl-close-paren-offset 0)
   ;; Bind rgr-perl-carpify.
-  (define-key cperl-mode-map "C-c%" 'rgr-perl-carpify)
+  (define-key cperl-mode-map "\C-c%" 'rgr-perl-carpify)
   (rgr-perl-mode-install-documentation-hacks cperl-mode-map)
   (rgr-perl-mode-install-extra-hacks cperl-mode-map))
 
