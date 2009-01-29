@@ -30,6 +30,7 @@ rgr-hacks-compile-module (see below).")
 	  ;; [provides the rgr-update-autoloads command.  -- rgr, 26-Apr-03.]
 	  ("rgr-random-hacks" require (autoload chistory))
 	  "bagels"
+	  "rgr-date"
 	  "rgr-c-hacks"
 	  "rgr-abbrev-completion"
 	  "tags-grep"
