@@ -79,8 +79,7 @@ shows the log for that many days."
 		 ((consp number-of-days) (car number-of-days))
 		 (t (error "got number-of-days %S" number-of-days))))
 	 (n-days-ago (subtract-time (current-time)
-				    (seconds-to-time
-				      (* number-of-days 24 60 60))))
+				    (days-to-time number-of-days)))
 	 (n-days-ago-string
 	   ;; this is an easy-to-parse format that is understood by all the VC
 	   ;; backends I use.  -- rgr, 26-Nov-05.
