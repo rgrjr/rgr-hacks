@@ -2,33 +2,14 @@
 ;;;
 ;;;    These work with vm-6.75 and later.
 ;;;
-;;;    [old] Modification history:
-;;;
-;;; created (split out of rgr-mail-hacks.el).  -- rgr, 12-Jan-00.
-;;; rgr-vm-quit-no-save: clean up dangling pointers.  -- rgr, 13-Jan-00.
-;;; rgr-vm-mail-mode-hook: new.  -- rgr, 19-Jan-00.
-;;; rgr-vm-mime-display-internal-text/html: attempting to fix w3 munging of
-;;;	reply buffer state.  -- rgr, 23-Jan-00.
-;;; rgr-vm-mime-define-charset-coding: new.  -- rgr, 8-Aug-00.
-;;; windows-1252 charset.  -- rgr, 8-Aug-00.
-;;; rgr-vm-install-hacks: x-unknown charset.  -- rgr, 18-Aug-00.
-;;; rgr-vm-install-hacks: windows-1255 (seen on bugtraq).  -- rgr, 21-Aug-00.
-;;; rgr-vm-install-hacks: add "big5" (doesn't seem to work).  -- rgr, 22-Sep-00.
-;;; rgr-vm-install-hacks: swap "this win" and "other win."  -- rgr, 27-Nov-00.
-;;; rgr-vm-preprocess-spool-files: new.  -- rgr, 2-Jan-01.
-;;; rgr-vm-install-hacks: revert vm-expunge-folder binding.  -- rgr, 3-Jan-01.
-;;; rgr-vm-install-hacks: support xemacs key syntax.  -- rgr, 27-Jul-01.
-;;; new rgr-vm-compare-to-last-message hack.  -- rgr, 14-Jan-02.
-;;; rgr-vm-compare-message-bodies: new version, prompts for message numbers,
-;;;	defaults are this msg, and previous with same subject.  now skips
-;;;	deleted msgs when searching subjects.  -- rgr, 19-Jan-02.
-;;; rgr-vm-compare-message-bodies: change "diff -c" to "-u".  -- rgr, 16-Sep-02.
-;;; rgr-vm-preprocess-spool-files: deal with POP drops.  -- rgr, 27-Mar-03.
-;;;
+;;; $Id:$
 
 (eval-when-compile
   (require 'vm)
   (require 'vm-mime)
+  (require 'vm-menu)
+  (require 'vm-misc)
+  (require 'dired)
   (require 'mail-parse))
 
 (require 'vm-mime)	;; [must load first so we can bash.  -- rgr, 24-Sep-99.]
