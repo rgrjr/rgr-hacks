@@ -383,6 +383,52 @@ directory."
     (message "Done; saved %d message%s."
 	     n-saved (if (= n-saved 1) "" "s"))))
 
+;;; Selective expunging.
+
+(defun vm-region-expunge-folder (beg end &optional shaddap)
+  "Expunge messages with the `deleted' attribute with headers in the region.
+For normal folders this means that the deleted messages are
+removed from the message list and the message contents are
+removed from the folder buffer.
+
+For virtual folders, messages are removed from the virtual
+message list.  If virtual mirroring is in effect for the virtual
+folder, the corresponding real messages are also removed from real
+message lists and the message contents are removed from real folders."
+  (interactive "r")
+  (or (eq major-mode 'vm-summary-mode)
+      (error "Not in summary."))
+  (vm-select-folder-buffer)
+  (vm-check-for-killed-summary)
+  (vm-error-if-folder-read-only)
+  (let ((mp vm-message-list)
+	(messages nil))
+
+    ;; Skip messages before beg.
+    (while (and mp
+		(<= (vm-su-end-of (car mp)) beg))
+      (setq mp (cdr mp)))
+    ;; (message "got %d messages after beg" (length mp))
+
+    ;; Collect deleted messages between beg and end.
+    (while (and mp
+		(< (vm-su-start-of (car mp)) end))
+      (if (vm-deleted-flag (car mp))
+	  (setq messages (cons (car mp) messages)))
+      (setq mp (cdr mp)))
+
+    ;; Operate on them.
+    (cond (shaddap
+	    (and messages
+		 (vm-expunge-folder shaddap t messages))
+	    messages)
+	  ((null messages)
+	    (error "No deleted messages in the region."))
+	  ((yes-or-no-p (format "OK to expunge %d message%s? "
+				(length messages)
+				(if (cdr messages) "s" "")))
+	    (vm-expunge-folder nil t messages)))))
+
 ;;; Attaching files from dired.
 
 (defun vm-dired-attach-files-to-message (files message-buffer)
