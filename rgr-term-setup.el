@@ -6,34 +6,7 @@
 ;;; Sets up terminal type & installs goodies based on the value of the TERM
 ;;; environment variable.
 ;;;
-;;;    Modification history:
-;;;
-;;; . . .
-;;; rgr-term-setup: ncsa telnet support.  -- rgr, 28-Mar-96.
-;;; rgr-term-setup: no mail peeker when su.  -- rgr, 30-Mar-96.
-;;; rgr-term-setup: telnet function key hacking.  -- rgr, 31-Mar-96.
-;;; rgr-term-setup: more telnet function key bindings.  -- rgr, 1-Apr-96.
-;;; remodularized rgr-install-window-system-hacks and rgr-term-setup; now
-;;;	data-driven.  -- rgr, 4-Apr-96.
-;;; rgr-vt200-term-setup: update for emacs 19.30.  -- rgr, 5-Apr-96.
-;;; rgr-vt200-term-setup: IT 19.31 kludge.  -- rgr, 1-Jun-96.
-;;; rgr-term-setup: kill line-number-mode.  -- rgr, 15-Mar-97.
-;;; rgr-paper-over-broken-ncsa-telnet-function-keys: new.  -- rgr, 6-Feb-98.
-;;; rgr-vt200-term-setup: update for 19.34.  -- rgr, 22-Oct-98.
-;;; split out of rgr-hacks.el, move ffap stuff here.  -- rgr, 28-Oct-98.
-;;; rgr-vt100-term-setup: kludge for mcclintock.  -- rgr, 18-Dec-98.
-;;; don't put find-file-at-point on C-x C-f.  -- rgr, 23-Jan-99.
-;;; rgr-dialup-term-setup: start after 1 minute.  -- rgr, 13-Feb-99.
-;;; rgr-vt200-term-setup: fn keys still broke on SunOS.  -- rgr, 17-Feb-99.
-;;; rgr-dialup-term-setup: reorganize; call this always.  -- rgr, 18-Feb-99.
-;;; rgr-vt100-hack-ie: new.  -- rgr, 7-Jul-99.
-;;; rgr-vt100-hack-ie: fix typos.  -- rgr, 8-Jul-99.
-;;; rgr-vt220-term-setup: QVT/Term under Win9x.  -- rgr, 8-Jul-99.
-;;; rgr-xterm-term-setup stub.  -- rgr, 10-Sep-99.
-;;; rgr-vt220-term-setup: C-x SPC for rgr-set-mark-command.  -- rgr, 26-Nov-99.
-;;; rgr-vt102-term-setup: NiftyTelnet 1.3 SSH 1.1 patch.  -- rgr, 29-Dec-00.
-;;; flush obsolete rgr-supdup-term-setup fn.  -- rgr, 13-Apr-03.
-;;;
+;;; $Id$
 
 (defun rgr-dialup-term-setup ()
   "Common terminal setup tasks."
@@ -191,6 +164,18 @@
   ;; nothing useful yet, but it suppresses the warning message.  -- rgr,
   ;; 10-Sep-99.
   )
+
+(defun rgr-setfont ()
+  "Run 'setfont' without any args in order to re-establish the console font.
+In openSUSE 11.0 on rgr, switching to an X11 session garbles the
+font, and this seems to be the only way to put it back.  Note
+that the 'setfont' command will only work if you are root."
+  (interactive)
+  (shell-command-on-region (point) (point) "setfont" "*setfont output*"))
+
+(defun rgr-linux-term-setup ()
+  ;; Set up 
+  (global-set-key [f9] 'rgr-setfont))
 
 ;;;###autoload
 (defun rgr-term-setup ()
