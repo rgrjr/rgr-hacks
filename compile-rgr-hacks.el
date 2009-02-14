@@ -24,6 +24,7 @@ rgr-hacks-compile-module (see below).")
 	'(;; [this comes first because it has some emacs version stuff.
 	  ;; -- rgr, 23-Apr-03.]
 	  "rgr-hacks"
+	  "rgr-term-setup"
 	  ;; orphaned features.
 	  ("ilisp-possibilities" require (diff-mode))
 	  "ilisp-mouse"
