@@ -742,7 +742,7 @@ useful if you want everything."
 	  ;; Running on a Linux virtual terminal without X11, but the t-mouse
 	  ;; package is available; t-mouse will give us a passable imitation of
 	  ;; mouse behavior.  -- rgr, 27-Nov-99.
-	  (t-mouse-run)
+	  (t-mouse-mode)
 	  ;; But it's still a terminal.
 	  (rgr-term-setup))
 	(t
