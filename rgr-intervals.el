@@ -78,8 +78,14 @@ long as hours < 60."
   ;; series of states, [I0, I1, I2, I3, ...] and [O0, O1, O2, O3 ...].  The I
   ;; states corresond to "effectively in" and the O states to "effectively out".
   ;; The numeric part of the state is carried by the sigma-signs counter; it
-  ;; reflects the number of concurrent logins at a given point.  The state
-  ;; transition logic is as follows:
+  ;; reflects the number of concurrent logins at a given point.  If two or more
+  ;; ordinary "in" or "out" transitions in a row happen for the same host and
+  ;; terminal within 10 seconds, all but the first are considered redundant and
+  ;; are ignored.  The "redundancy" processing is necessary because KDE login
+  ;; seems to run the .bash_login file multiple times; different KDE versions
+  ;; stutter to different extents.
+  ;;
+  ;; The state transition logic is as follows:
   ;;
   ;;    1.  Start in the I0 state.
   ;;
@@ -99,10 +105,13 @@ long as hours < 60."
   ;;    5.  Finally, logging "effectively in" transitions between O_n to I_n,
   ;; for any n, and records the event time in pending-login-time if (plusp n).
   ;;
-  ;; If the final state is I_n where (plusp n), then we accumulate the interval
-  ;; between pending-login-time and now, and mention that in the generated
-  ;; message.
-  (let ((sigma-signs 0) (effectively-out nil)
+  ;;    6a:  If we end in the I0 state, or any O state, then we report the exact
+  ;; accumulated interval.
+  ;;
+  ;;    6b.  Otherwise, the final state is I_n where (plusp n); accumulate the
+  ;; interval between pending-login-time and now, and mention that in the
+  ;; generated message.
+  (let ((sigma-signs 0) (last nil) (effectively-out nil)
 	(total nil) (pending-login-time nil))
     ;; No save-excursion so that if we get a syntax error, the user gets to
     ;; see where (but still has to guess within dates.)
@@ -134,7 +143,7 @@ long as hours < 60."
 	(let ((machine (read (current-buffer)))
 	      (at (read (current-buffer)))
 	      (terminal nil) (day nil) (time nil)
-	      (accumulate-p nil))
+	      (accumulate-p nil) (this nil))
 	  (if (eq at 'via)
 	      (setq terminal (read (current-buffer))
 		    at (read (current-buffer))))
@@ -147,6 +156,8 @@ long as hours < 60."
 		         (progn (end-of-line) (point)))))
 	  '(message "Got %s%s %s on %s"
 		   sign (if effectively-p " (eff)" "") time machine)
+	  (or effectively-p
+	      (setq this (list time sign machine terminal)))
 	  ;; Perform state transition.  We only count times if transitioning
 	  ;; between I0 and I1, or I_n and O_n for n>0.  (Note that the
 	  ;; illegal zero-to-minus-one case has already been taken care of;
@@ -159,6 +170,14 @@ long as hours < 60."
 		  (setq effectively-out (not effectively-out))
 		  ;; check for I_n => O_n for n>0.
 		  (setq accumulate-p (and (= sign -1) (> sigma-signs 0))))
+		((and last
+		      (equal (cdr this) (cdr last))
+		      (< (time-to-seconds
+			   (subtract-time (car this) (car last)))
+			 10))
+		  ;; Ignore redundant entries; KDE generates these on login.
+		  ;; (message "Redundant entry %S within 10s of %S" this last)
+		  )
 		(t
 		  (if (zerop sigma-signs)
 		      ;; I0 => I1.
@@ -179,7 +198,7 @@ long as hours < 60."
 		(setq total (if total (add-time total delta) delta))
 		(setq pending-login-time nil)))
 	  ;; (message "%S => %S total" time total)
-	  )))
+	  (setq last this))))
     (goto-char end)
     (cond ((not (or total pending-login-time))
 	    (error "No intervals."))
