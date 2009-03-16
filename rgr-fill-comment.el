@@ -9,8 +9,9 @@
 ;;; rgr-find-lisp-fill-prefix: fix after-comment whitespace.  -- rgr, 23-Feb-99.
 ;;; rgr-fill-string-paragraph: disable lisp-fill-paragraph.  -- rgr, 28-Dec-99.
 ;;;
+;;; $Id$
 
-(defvar lisp-comment-fill-column 80
+(defvar lisp-comment-fill-column 79
   "*Fill Lisp comments to this column number.")
 (defvar string-paragraph-fill-column 72
   "*Fill paragraphs in Lisp strings to this column number.")
