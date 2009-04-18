@@ -183,7 +183,7 @@ but it is usually sufficient to take the default.")
 ;; and autosave files, and CVS ".#file.version" files.  -- rgr, 28-Feb-05.]
 (setq grep-find-command
       (concat "find . -type f "
-	      "| grep -Ev '/\\.?#|~$|/TAGS$|/\.svn/|/cover_|/CVS/|\.patch$' "
+	      "| grep -Ev '/\\.?#|~$|/TAGS$|/\.svn/|/old|/cover_|/CVS/|\.(patch|tmp)$' "
 	      "| xargs -e grep -n -e "))
 (add-hook 'compilation-mode-hook 'rgr-compilation-mode-hook)
 (add-hook 'makefile-mode-hook 'rgr-makefile-mode-hook)
