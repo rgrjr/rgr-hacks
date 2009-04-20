@@ -6,40 +6,6 @@
 ;;;
 ;;; $Id$
 
-(defun rgr-nth-buffer (n)
-  ;; Find the nth previous buffer.  This would be equivalent to
-  ;;	(nth n (buffer-list))
-  ;; except that internal buffers are ignored.
-  (let ((tail (buffer-list))
-	(result nil))
-    (while tail
-      (let ((first (car tail)))
-	(cond ((eq (aref (buffer-name first) 0) ? )
-		;; invisible buffer; don't count it.
-		(setq tail (cdr tail)))
-	      ((<= n 0)
-		(setq result first)
-	        ;; force loop exit
-	        (setq tail nil))
-	      (t
-		(setq tail (cdr tail))
-		(setq n (1- n))))))
-    result))
-
-;;;###autoload
-(defun rgr-switch-to-other-buffer (&optional arg)
-  "Select the previous buffer in this window.
-With a numeric arg, select the nth previous (defaults to 2)."
-  ;; This is what C-M-L does on the Lispm.  The CMULisp package overrides this
-  ;; with essentially the same behavior.  Note that the default behavior (the
-  ;; case for arg=2) may be different from what other-buffer returns.
-  (interactive "P")
-  (setq arg (if (null arg)
-		2
-		(prefix-numeric-value arg)))
-  (switch-to-buffer (or (rgr-nth-buffer (1- arg))
-			(error "Number out of range."))))
-
 ;; [this was originally lisp-def-name out of the ilisp package, but i got tired
 ;; of requiring ilisp just to grab an elisp definition name.  could be
 ;; simplified on that account.  -- rgr, 15-Sep-99.]

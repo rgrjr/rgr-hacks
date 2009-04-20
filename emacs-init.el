@@ -27,7 +27,6 @@ but it is usually sufficient to take the default.")
 	  (load autoloads))
       t))
 
-(setq rgr-space-means-execute-and-exit t)
 (setq signature-login-name "rgr")
 (rgr-install-hacks)
 

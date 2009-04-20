@@ -147,9 +147,6 @@ really supported.")
   "Emacs minor version (the second number), for dealing with configuration
 differences.")
 
-(defvar rgr-space-means-execute-and-exit nil
-  "*Set this to get Symbolics-compatible behavior in buffer menu.")
-
 ;;;; Support hacks.
 
 ;;;###autoload
@@ -414,25 +411,6 @@ A negative argument means move forward but still to a less deep spot."
 
 ;;;; Edit-buffers hacks.
 
-(defun rgr-buffer-menu-exit ()
-  "Execute lines marked for save & deletion and exit from the buffer menu.
-This does what Zmacs List Buffers mode SPC does, except that it doesn't
-ask for confirmation before killing buffers."
-  (interactive)
-  (let ((buffer (current-buffer)))
-    (Buffer-menu-execute)
-    (Buffer-menu-this-window)
-    (bury-buffer buffer)))
-
-(defun rgr-buffer-menu-execute-and-select-current ()
-  "Execute marked lines and exit, selecting the old current buffer."
-  (interactive)
-  (let ((old-point (point)))
-    (goto-char (point-min))
-    (or (re-search-forward "^\\." nil t)
-	(goto-char old-point))
-    (rgr-buffer-menu-exit)))
-
 (defun rgr-buffer-menu-view-other ()
   "View the buffer on the current line in the other window.
 Stays in buffer-menu mode."
@@ -523,7 +501,7 @@ The default argument is equivalent to 2 (just exchange point and mark)."
 (defun rgr-fill-rectangle (start end)
   "Replace the rectangle with the last char of the command typed."
   (interactive "r")
-  (string-rectangle start end (string last-command-char)))
+  (string-rectangle start end (string last-command-event)))
 
 ;;;; Installing these goodies.
 
@@ -534,21 +512,14 @@ M-x buffer-menu)."
   ;; Intended for .emacs calling.  [but let's also make this a command, so they
   ;; can be installed as an afterthought.  -- rgr, 3-Oct-99.]
   (interactive)
-  (if (not (eq rgr-emacs-major-version 18))
-      ;; [this is not usable under KDE.  -- rgr, 27-May-06.]
-      (global-set-key "\C-\M-l" 'rgr-switch-to-other-buffer))
   (global-set-key "\C-x\C-b" 'rgr-list-buffers)
   ;; [new in emacs 22.1.  the default is 26, but 30 is slightly less
   ;; claustrophobic.  -- rgr, 27-May-06.]
   (setq Buffer-menu-buffer+size-width 30)
-  (if rgr-space-means-execute-and-exit
-      ;; was next-line.  -- rgr, 21-Mar-94.
-      (define-key Buffer-menu-mode-map " " 'rgr-buffer-menu-exit))
   ;; view in other window, staying in buffer menu.
   (define-key Buffer-menu-mode-map "O" 'rgr-buffer-menu-view-other)
   ;; execute and exit, going back to the former current buffer.
-  (define-key Buffer-menu-mode-map "."
-    'rgr-buffer-menu-execute-and-select-current))
+  (define-key Buffer-menu-mode-map "." "xq"))
 
 ;; (local-key-binding "\C-\M-u")
 ;; (global-key-binding [S-delete])
