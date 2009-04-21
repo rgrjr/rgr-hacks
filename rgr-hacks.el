@@ -265,6 +265,27 @@ the name of its immediately containing directory."
 	    (rename-buffer (rgr-parent-dir-and-file-name name) t)))))
 
 ;;;###autoload
+(defun rgr-set-buffer-backed-up (&optional query-p)
+  "Unconditionally sets the buffer-backed-up flag in the current buffer.
+If this flag is already set, then a message to that effect is printed.
+A numeric argument queries (but only if not already set)."
+  (interactive "P")
+  (cond (buffer-backed-up
+	  (or (eq query-p 'all)
+	      (message "The %S flag in %s is already set."
+		       'buffer-backed-up (buffer-name)))
+	  nil)
+	((or (not query-p)
+	     (y-or-n-p (format "Set %S flag in buffer %s? "
+			       'buffer-backed-up (buffer-name))))
+	  (setq buffer-backed-up t)
+	  (message "Set %S flag in %s." 'buffer-backed-up (buffer-name))
+	  t)
+	(query-p
+	  (message "Not set.")
+	  nil)))
+
+;;;###autoload
 (defun rgr-reset-buffer-backed-up (&optional query-p)
   "Unconditionally resets the buffer-backed-up flag in the current buffer.
 If this flag is not set, then a message to that effect is printed.
@@ -411,6 +432,16 @@ A negative argument means move forward but still to a less deep spot."
 
 ;;;; Edit-buffers hacks.
 
+(defun rgr-buffer-menu-exit ()
+  "Execute lines marked for save & deletion and exit from the buffer menu.
+This does what Zmacs List Buffers mode SPC does, except that it doesn't
+ask for confirmation before killing buffers."
+  (interactive)
+  (let ((buffer (current-buffer)))
+    (Buffer-menu-execute)
+    (Buffer-menu-this-window)
+    (bury-buffer buffer)))
+
 (defun rgr-buffer-menu-view-other ()
   "View the buffer on the current line in the other window.
 Stays in buffer-menu mode."
@@ -516,6 +547,8 @@ M-x buffer-menu)."
   ;; [new in emacs 22.1.  the default is 26, but 30 is slightly less
   ;; claustrophobic.  -- rgr, 27-May-06.]
   (setq Buffer-menu-buffer+size-width 30)
+  ;; was next-line.  -- rgr, 21-Mar-94.
+  (define-key Buffer-menu-mode-map " " 'rgr-buffer-menu-exit)
   ;; view in other window, staying in buffer menu.
   (define-key Buffer-menu-mode-map "O" 'rgr-buffer-menu-view-other)
   ;; execute and exit, going back to the former current buffer.
@@ -709,11 +742,24 @@ useful if you want everything."
 	      (condition-case error
 		  (require 't-mouse)
 		(error nil))
-	      (t-mouse-tty))
+	      (if (fboundp 't-mouse-tty)
+		  ;; Emacs 22.3 and prior.
+		  (t-mouse-tty)
+		  ;; Emacs 23.1.
+		  (let ((found-terminal-p nil) (tail (terminal-list)))
+		    (while (and tail (not found-terminal-p))
+		      (let ((terminal (car tail)))
+			(if (eq t (terminal-live-p terminal))
+			    (setq found-terminal-p t)
+			    (setq tail (cdr tail))))))))
 	  ;; Running on a Linux virtual terminal without X11, but the t-mouse
 	  ;; package is available; t-mouse will give us a passable imitation of
 	  ;; mouse behavior.  -- rgr, 27-Nov-99.
-	  (t-mouse-mode)
+	  (if (fboundp 't-mouse-mode)
+	      ;; Emacs 22.3 and prior.
+	      (t-mouse-mode)
+	      ;; Emacs 23.1.
+	      (gpm-mouse-mode))
 	  ;; But it's still a terminal.
 	  (rgr-term-setup))
 	(t
