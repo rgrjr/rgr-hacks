@@ -66,7 +66,7 @@ time to kill.")
   "Regexp that matches 'evil' protocols, ones for which a connection
 attempt is unambiguously malevolent.")
 
-(defvar rgr-unauth-minimum-evil-attempts 1
+(defvar rgr-unauth-minimum-evil-attempts 50
   "Minimum number of 'evil' attempts (defined as matching
 rgr-unauth-evil-protocol-regexp) on a given day before an IP is worth
 noticing.")
@@ -178,24 +178,6 @@ start at most one emacs per day."
     ;; (delete-region start (point))
     (nreverse result)))
 
-;; [doesn't work on suse 8.1, where hostname is "rgrjr" and the IP is for the
-;; internal network.  -- rgr, 21-May-03.]
-'(defun rgr-unauth-insert-local-hostname (&optional ip-address-p)
-  (let ((start (point)))
-    (apply (function call-process) "hostname" nil t nil
-	   (if ip-address-p '("-i") nil))
-    ;; handle hostname wierdness.
-    (while (member (char-after (1- (point))) '(?\ ?\n ?\t))
-      (delete-char -1))
-    (if (save-excursion
-	  (goto-char start)
-	  (looking-at "hostname:"))
-	;; must be an error message.
-	(let ((string (buffer-substring start (point))))
-	  (delete-region start (point))
-	  (message "%s" string)
-	  (sit-for 2)))))
-
 (defun rgr-unauth-insert-local-host-ip ()
   ;; [the name is a misnomer; this fn no longer inserts.  -- rgr, 5-Aug-04.]
   (save-excursion
@@ -232,20 +214,13 @@ start at most one emacs per day."
 	(setq last-month 12
 	      last-year (1- last-year)))
     (let* ((log-dir "/var/log/")
-	   (last-log-file (expand-file-name
-			    (format "%s.%04d%02d.log"
-				    (or log-file-name "messages")
-				    last-year last-month)
-			    log-dir))
-	   (numbered-log-file (expand-file-name
-			        (format "%s.1" (or log-file-name "messages"))
-				log-dir)))
-      (cond ((file-readable-p last-log-file)
-	      last-log-file)
-	    ((file-readable-p numbered-log-file)
-	      numbered-log-file)
-	    ;; [desperate fallback.  -- rgr, 6-Jan-08.]
-	    (t last-log-file)))))
+	   (old-log-files
+	     (directory-files log-dir t
+			      (format "%s-[0-9]+\\.bz2"
+				      (or log-file-name "messages")))))
+      (cond ((null old-log-files) "/dev/null")
+	    (t
+	      (car (last old-log-files)))))))
 
 (defun rgr-unauth-parse-date (date)
   ;; [it's a pain that we have to do this, but date-to-time can't deal with
@@ -298,39 +273,13 @@ start at most one emacs per day."
     ;; (message "Got %S" previous-reports)
     (save-excursion
       (goto-char (point-max))
-      (insert "  I got the following unauthorized connection attempt"
+      (insert "  I got the unauthorized connection attempt"
 	      (if plural-p "s" "")
-	      proto-insert "\nfrom ")
+	      proto-insert " shown below\nfrom ")
       (if host-name
 	  (insert host-name " (" host-ip ")")
 	  (insert host-ip))
       (insert " " (rgr-unauth-relative-date-phrase log-report-date) ":")
-      (rgr-mail-fill-paragraph nil)
-      (insert "\n\n")
-      ;; Grab complete log entries for this IP.
-      (let ((start (point)))
-	;; look for hits in the previous month first.  if this file doesn't
-	;; exist, then we probably just rolled the logs last night, so we should
-	;; try /var/log/messages.1 instead.  [also look in the old system.  --
-	;; rgr, 3-May-03.]
-	(funcall (function call-process) "fgrep" nil t nil
-		 "-he" host-ip
-		 (rgr-unauth-previous-month-log-file-name "messages")
-		 (rgr-unauth-previous-month-log-file-name "firewall")
-		 "/var/log/messages"
-		 "/var/log/firewall")
-	(save-excursion
-	  (save-restriction
-	    (narrow-to-region start (point))
-	    ;; Prune log entries to eliminate anything we've already reported.
-	    (setq previous-attempts
-		  (rgr-unauth-extract-previous-attempts
-		    last-report-date
-		    (and rgr-unauth-use-log-report-date-p
-			 log-report-date)))))
-	;; Indent for prettiness (inasmuch as one can ever make a log report
-	;; pretty).
-	(indent-rigidly start (point) 4))
       ;; Insert boilerplate characterizing previous attempts.
       (if previous-reports
 	  (let ((n-previous (length previous-attempts))
@@ -370,26 +319,42 @@ start at most one emacs per day."
 			  "]\" in the subject."))
 		(insert "[not?] previously reported."))))
       ;; finish boilerplate.
-      (insert "\nThe destination host is ")
-      (if (or (equal abuse-address "abuse@mediaone.net")
-	      (equal abuse-address "abuse@attbi.com")
-	      (equal abuse-address "abuse@comcast.net"))
-	  ;; cheating for our ISP.
-	  (insert "h009027bdf26f.ne.client2.attbi.com")
-	  (insert (system-name)))
-      (insert " (" (rgr-unauth-insert-local-host-ip) ").  ")
+      (insert "\nThe destination host is rgrjr.dyndns.org ("
+	      (rgr-unauth-insert-local-host-ip) ").  ")
       (let* ((zone (current-time-zone))
 	     (hrs (/ (car zone) 3600))
 	     (mins (/ (mod (car zone) 3600) 60)))
-	(insert (if plural-p "Times are " "Time is ")
-		(car (cdr zone))
-		(format " (%.2d%.2d)" hrs mins)
-		", and this machine is an NTP server (see 
-http://www.ntp.org/) that operates at stratum 3,
-so it generally keeps time within a fraction of a second."))
+	(insert (if plural-p "Times are" "Time is")
+		" US " (car (cdr zone)) (format " (%.2d%.2d)" hrs mins)
+		", and this machine is an NTP server, so is fairly accurate."))
       (fill-paragraph nil)
-      (insert "\n\n   Thanks in advance for taking care of this,"
-	      "\n\n\t\t\t\t\t-- Bob Rogers\n"))))
+      (insert "\n\n   Thanks in advance for taking care of this,
+      
+					-- Bob Rogers
+					   http://www.rgrjr.com/
+
+------------------------------------------------------------------------\n")
+      ;; Grab complete log entries for this IP.
+      (let ((start (point)))
+	;; Look for hits in the previous month first.
+	(funcall (function call-process) "fgrep" nil t nil
+		 "-he" host-ip
+		 (rgr-unauth-previous-month-log-file-name "messages")
+		 (rgr-unauth-previous-month-log-file-name "firewall")
+		 "/var/log/messages"
+		 "/var/log/firewall")
+	(save-excursion
+	  (save-restriction
+	    (narrow-to-region start (point))
+	    ;; Prune log entries to eliminate anything we've already reported.
+	    (setq previous-attempts
+		  (rgr-unauth-extract-previous-attempts
+		    last-report-date
+		    (and rgr-unauth-use-log-report-date-p
+			 log-report-date)))
+	    ;; Now sort them (implicitly by date) to allow for the fact that
+	    ;; we're merging from different logs.
+	    (sort-lines nil start (point-max))))))))
 
 (defun rgr-unauth-make-abuse-address (host-name)
   ;; Construct a plausible guess at an abuse address from the host domain name

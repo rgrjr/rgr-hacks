@@ -107,9 +107,9 @@ rgr-unauth-scarf-whois-data fn for details.  -- rgr, 29-Dec-02.")
 (defun rgr-unauth-query-arin (host-ip &optional query-host)
   ;; based on the shell-command fn.  fills and displays a buffer with output
   ;; from the query host, and returns the buffer.
-  (let* ((query-host (or query-host "whois.arin.net"))
-	 (jpnic-p (equal query-host "whois.nic.ad.jp"))
-	 (buffer (get-buffer-create (concat "*" query-host "*")))
+  (let* ((jpnic-p (equal query-host "whois.nic.ad.jp"))
+	 (buffer (get-buffer-create
+		   (concat "*" (or query-host "whois.arin.net") "*")))
 	 ;; This forces shell-command to show the thing in a window of its own.
 	 (resize-mini-windows nil)
 	 (netblk-regexp (car (cdr (assoc query-host rgr-unauth-whois-servers))))
@@ -123,6 +123,14 @@ rgr-unauth-scarf-whois-data fn for details.  -- rgr, 29-Dec-02.")
     (save-excursion
       (save-window-excursion
 	(set-buffer buffer)
+	(cond (query-host)
+	      ((save-excursion
+		 (re-search-forward "whois\\.[a-z]+\\.net" nil t))
+		(setq query-host (match-string 0)))
+	      ((save-excursion
+		 (re-search-forward "RIPE Whois query server" nil t))
+		(setq query-host "whois.ripe.net"))
+	      (t (setq query-host "whois.arin.net")))
 	;; we assume that delegation to other name authorities for a given IP is
 	;; complete and unidirectional, e.g. always from ARIN => APNIC => JPNIC,
 	;; and never the other way.  So we only need to worry about remembering
