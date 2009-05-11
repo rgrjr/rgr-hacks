@@ -133,7 +133,11 @@ top window.  A numeric argument prompts for an RMAIL or vm file to read."
 	    ;; Use vm as the standard mail reader.  If we are in a composition
 	    ;; buffer, go to the related mail folder.
 	    (require 'vm)
-	    (let ((related-folder-buffer (vm-user-composition-folder-buffer)))
+	    (let ((related-folder-buffer
+		   ;; This is defined in vm 7.19, but not in vm 8.x.  -- rgr,
+		   ;; 20-Apr-09.
+		   (and (fboundp 'vm-user-composition-folder-buffer)
+			(vm-user-composition-folder-buffer))))
 	      (if (bufferp related-folder-buffer)
 		  (vm (buffer-file-name related-folder-buffer))
 		  (vm))))
