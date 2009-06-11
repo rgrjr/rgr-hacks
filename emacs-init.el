@@ -139,6 +139,14 @@ but it is usually sufficient to take the default.")
 (add-hook 'mail-setup-hook 'rgr-mail-setup-hook)
 (add-hook 'mail-setup-hook 'rgr-mail-abbrevs-setup)
 (add-hook 'vm-mail-mode-hook 'rgr-vm-mail-mode-hook)
+(cond ((file-directory-p "/usr/src/viewmail/lisp")
+	;; Enable the BZR version of vm 8.  -- rgr, 20-Apr-09.
+	(setq load-path (cons "/usr/src/viewmail/lisp" load-path))
+	;; [installed version goes into /usr/local/share/emacs/site-lisp/vm/,
+	;; fwiw.  -- rgr, 20-Apr-09.]
+        ; (setq debug-on-error t)
+        (autoload 'vm-decode-postponed-mime-message "vm/vm-pine.el")
+        (require 'vm-autoloads)))
 (if (fboundp 'vm-mail)
     (global-set-key "\C-xm" 'vm-mail))
 (setq mail-self-blind t)
@@ -243,16 +251,17 @@ but it is usually sufficient to take the default.")
 		  '("rogers@modulargenetics.com"))
 	      '("rogers@rgrjr.dyndns.org" "rogers@huxley.bu.edu")))
 (if (eq rgr-site 'home)
-    ;; Enable tunnelling to make the MGI database and intranet Web servers
+    ;; Enable tunnelling to make the ModGen database and intranet Web servers
     ;; available from home.  -- rgr, 29-Feb-04.
     (setq ssh-per-host-option-alist
 	  '(("modulargenetics\\.com$"
-	     "-L" "8080:babylon:8080"
+	     "-L" "8080:rome:80"
 	     "-L" "8081:alexandria:80"
 	     "-L" "8082:karnak:80"
 	     "-L" "8083:thebes:80"
 	     "-L" "8084:carthage:80"
-	     "-L" "8085:granada:80")
+	     "-L" "8085:granada:80"
+	     "-L" "8086:xanadu:80")
 	    ;; This must be in the "home" list because lap on the road currently
 	    ;; thinks its at home.
 	    ("rgrjr\\.dyndns\\.org$"
