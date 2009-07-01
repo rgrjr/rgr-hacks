@@ -582,17 +582,8 @@ M-x buffer-menu)."
   ;; Similarly, if I type "C-x C-v d RET" instead of "C-x v d RET", I get a
   ;; buffer named "d", and the previous buffer is toast.  -- rgr, 1-Jul-09.
   (global-set-key "\C-x\C-v" nil)
-  ;; Patch fill to be smarter about sentences.  -- rgr, 11-Feb-96.  [This has
-  ;; been implemented as part of version 19.30, though I'm still gonna need
-  ;; fill-patch functionality for HTML fill.  -- rgr, 21-Mar-96.]
-  (cond ((rgr-emacs-version-p 19 30)
-	  (setq colon-double-space t))
-	((rgr-emacs-version-p 19)
-	  (require 'fill-patch)
-	  ;; Then use said feature to make "The items:  Item number 1.  Item
-	  ;; number 2."  appear as three sentences.  (Note the added ":" in the
-	  ;; first char set.)
-	  (setq sentence-end "[:.?!][]\"')}]*\\($\\| $\\|\t\\|  \\)[ \t\n]*")))
+  ;; Make fill put two spaces after colons.
+  (setq colon-double-space t)
   ;; For when C-n moves off the screen.  In my usual configuration, the
   ;; split-screen windows are 30 lines tall, and the default amount to move
   ;; seems to be more than half a screen.  -- rgr, 1-Mar-94.
@@ -603,12 +594,6 @@ M-x buffer-menu)."
   (setq delete-old-versions t) ;; was nil
   (setq kept-old-versions 0) ;; was 2
   (setq kept-new-versions 3) ;; was 2
-  ;; Emacs 18 compatibility.  [But this is probably not possible anyway if
-  ;; running emacs 20.  -- rgr, 3-Oct-99.]
-  (cond ((not (rgr-emacs-version-p 20))
-	  (setq byte-compile-compatibility t)
-	  ;; More emacs-19.30 compatibility.  -- rgr, 25-Mar-96.
-	  (setq byte-compile-dynamic-docstrings nil)))
   ;; New rgr-fasta-goto-base command.
   (global-set-key "\C-cgb" 'rgr-fasta-goto-base)
   (global-set-key "\M-g\M-b" 'rgr-fasta-goto-base)
@@ -631,10 +616,6 @@ M-x buffer-menu)."
   ;; Make these the default everywhere, in case I get used to typing them.
   (global-set-key "\C-c." 'ilisp-next-possibility)
   (global-set-key "\C-c;" 'rgr-comment-region-lisp)
-  ;; [actually, I'm now used to C-x C-x . . .  -- rgr, 15-Mar-97.]  [and we
-  ;; need to put rgr-set-mark-command there.  -- rgr, 8-Dec-99.]
-  ;; (global-set-key "\C-c " 'rgr-exchange-point-and-mark)
-  (global-set-key "\C-c\e " 'rgr-exchange-point-and-mark)
   ;; The standard version doesn't deal with quoted strings . . .
   (global-set-key "\C-\M-u" 'rgr-backward-up-list)
   ;; Try to give *helpful* unique buffer names.  -- rgr, 17-Dec-97.
@@ -680,22 +661,9 @@ M-x buffer-menu)."
   (global-set-key [f8] 'rgr-find-shell)
   (global-set-key [f9] 'rgr-recompile))
 
-(defun rgr-dns-lookup-ip (ip-address)
-  ;; this is here for no good reason.
-  (with-temp-buffer
-    (call-process "nslookup" nil t nil "-q=ptr" ip-address)
-    (goto-char (point-min))
-    (and (re-search-forward "[ \t]name = \\([^ \t\n]+\\)$" nil t)
-	 (downcase (match-string 1)))))
-
-;; (setq debug-on-error t)
-
 ;;;###autoload
 (defun rgr-install-window-system-hacks ()
   ;; Window system hacks (only defined for X11 at present).  -- rgr, 29-Mar-96.
-  ;; Shorten the frame on sigler, which has a small screen.  -- rgr, 7-Mar-01.
-  (if (equal rgr-x11-display-host "sigler.bu.edu")
-      (modify-frame-parameters (selected-frame) '((height . 52))))
   ;; Commands.
   (cond ((not (eq rgr-emacs-flavor 'fsf))
 	  (global-set-key [(control space)] 'rgr-set-mark-command)
