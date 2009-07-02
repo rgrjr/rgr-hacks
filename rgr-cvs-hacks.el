@@ -183,9 +183,12 @@ Subversion has well-defined revision numbers, and CVS has fuzzier dates.
         (goto-char end)
         (log-view-msg-next)
         (setq to (vc-history-current-tag))))
-    (message "[default dir %S backend %S]"
+    '(message "[default dir %S backend %S]"
 	     default-directory (vc-responsible-backend default-directory))
-    (vc-version-diff default-directory to fr)))
+    (let ((vc-log-fileset (list default-directory)))
+      ;; [kludge:  bind vc-log-fileset here so that the vc-deduce-fileset hack
+      ;; in rgr-new-vc-hacks.el for Emacs 23 can use it.  -- rgr, 2-Jul-09.]
+      (vc-version-diff default-directory to fr))))
 
 ;;;; Committing multiple files via the revision comment.
 
