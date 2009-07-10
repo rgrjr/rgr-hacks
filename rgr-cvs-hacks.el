@@ -143,10 +143,14 @@ output buffer from '*vc-diff*' to '*vc-project-diff*'."
   "VC-History's keymap."
   :group 'vc-history)
 
+(defvar vc-log-fileset)
+
 ;;;###autoload
 (define-derived-mode vc-history-mode log-view-mode "VC-History"
   "Major mode for browsing VC summary log output."
-  (set (make-local-variable 'log-view-message-re) vc-history-message-re))
+  (set (make-local-variable 'log-view-message-re) vc-history-message-re)
+  ;; This makes "d" work in history buffers.
+  (set (make-local-variable 'vc-log-fileset) (list default-directory)))
 
 (defun vc-history-current-tag (&optional where)
   "Return a tag that describes the revision at point, or at WHERE if supplied.
