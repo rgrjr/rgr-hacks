@@ -113,6 +113,9 @@ but it is usually sufficient to take the default.")
 ;; 17-Dec-00.
 (global-set-key "\C-c\M-." 'rgr-elisp-find-tag-for-emacs-key)
 
+;; The default is after-completion (and used to be nil); setting it to t makes
+;; it behave like Zmacs.  -- rgr, 1-Jul-09.
+(setq confirm-nonexistent-file-or-buffer t)
 ;; We want to ignore these extensions during completion regardless of whether we
 ;; are actually running the relevant programs.
 (setq completion-ignored-extensions
