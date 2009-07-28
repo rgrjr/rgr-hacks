@@ -48,20 +48,6 @@ are incremented lexicographically."
 					      last ".")
 				   t t nil 1)))))))))
 
-;; this just handles single-component numbers.
-(defun rgr-old-renumber-region-paragraphs (start end)
-  "If the region contains a series of numbered paragraphs, renumber them
-sequentially, beginning with the first."
-  (interactive "r")
-  (let ((index nil))
-    (save-excursion
-      (goto-char start)
-      (while (re-search-forward "^[ \t]+\\([0-9]+\\)\\. " end t)
-	(if index
-	    (replace-match (format "%d" (setq index (1+ index)))
-			   t t nil 1)
-	    (setq index (string-to-int (match-string 1))))))))
-
 ;;;###autoload
 (defun rgr-enumerate-region-sentences (start end)
   "Turn the sentences in the region into a series of numbered paragraphs.
