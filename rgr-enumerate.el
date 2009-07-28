@@ -8,7 +8,7 @@
   (let ((result nil) (start 0))
     (save-match-data
       (while (string-match "\\([0-9]+\\)\\.?" string start)
-	(setq result (cons (string-to-int (match-string 1 string)) result))
+	(setq result (cons (string-to-number (match-string 1 string)) result))
 	(setq start (match-end 0))))
     (nreverse result)))
 
