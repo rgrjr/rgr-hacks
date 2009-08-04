@@ -12,13 +12,14 @@
   ;; it unavailable to xemacs, and the rest of the bmerc-hacks.el file is no
   ;; longer useful anyway.  -- rgr, 26-Jul-01.]
   (let* ((version
-	  (if (and (= rgr-emacs-major-version 22)
-		   (= rgr-emacs-minor-version 3))
+	  (if (and (= rgr-emacs-major-version 23)
+		   (= rgr-emacs-minor-version 1))
 	      ;; don't show the standard version(s).
 	      ""
 	      ;; In the version (e.g.) "19.34.1", the last component is not
 	      ;; significant (it's the number of times I recompiled it before I
-	      ;; got it right).  -- rgr, 19-Oct-98.
+	      ;; got it right).  -- rgr, 19-Oct-98.  [except for pre-release
+	      ;; versions.  -- rgr, 4-Aug-09.]
 	      (format " %s.%s"
 		      rgr-emacs-major-version rgr-emacs-minor-version)))
 	 (real-login-name (user-real-login-name))
