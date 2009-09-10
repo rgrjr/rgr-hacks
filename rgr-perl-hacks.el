@@ -372,6 +372,40 @@ rgr, 8-Nov-06.\]"
     ;; Done.
     (goto-char start)))
 
+;;;###autoload
+(defun rgr-perl-renumber-region-pod-items (start end)
+  "If the region contains a series of numbered \"=item\" lines, renumber them
+sequentially, beginning with the number of the first.  Numbers must have a
+trailing dot, and may consist of two or more dot-separated subcomponents,
+which are incremented lexicographically."
+  (interactive "r")
+  (let ((last nil))
+    (save-excursion
+      (goto-char start)
+      (while (re-search-forward "^=item[ \t]+\\(\\([0-9.]+\\.\\)?[0-9]+\\)\\."
+				end t)
+	(let ((dots (rgr-renumber-explode-dots (match-string 1))))
+	  (cond ((not dots))
+		((not last)
+		  (setq last dots))
+		(t
+		  (let ((ll (length last)) (ld (length dots)))
+		    (cond ((> ld ll)
+			    ;; down to a lower level; take the initial value of
+			    ;; the new dotted component(s) as given.
+			    (setcdr (nthcdr (1- ll) last)
+				    (nthcdr (1- ll) dots)))
+			  (t
+			    (if (> ll ld)
+				;; up to a higher level
+				(setcdr (nthcdr (1- ld) last) nil))
+			    (setcar (nthcdr (1- ld) last)
+				    (1+ (car (nthcdr (1- ld) last))))))
+		    (replace-match (mapconcat (function (lambda (x)
+						(format "%d" x)))
+					      last ".")
+				   t t nil 1)))))))))
+
 ;;; Adding CGI::Carp to Web scripts.
 
 (defun rgr-perl-carpify ()
