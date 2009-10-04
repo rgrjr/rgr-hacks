@@ -113,6 +113,10 @@ but it is usually sufficient to take the default.")
 ;; 17-Dec-00.
 (global-set-key "\C-c\M-." 'rgr-elisp-find-tag-for-emacs-key)
 
+;; Display the battery status if we have a battery.
+(if (file-directory-p "/proc/acpi/battery")
+    (display-battery-mode 1))
+
 ;; The default is after-completion (and used to be nil); setting it to t makes
 ;; it behave like Zmacs.  -- rgr, 1-Jul-09.
 (setq confirm-nonexistent-file-or-buffer t)
