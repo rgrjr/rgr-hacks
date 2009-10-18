@@ -231,68 +231,6 @@ exists, or the previous message."
       (condition-case () (delete-file file2)
 	(file-error nil)))))
 
-;;; Generating "stuff to do" messages.
-
-(defun rgr-extract-message-to-do-list (message)
-  (let ((temp-buf (get-buffer-create "*rgr-to-do-temp*")))
-    (unwind-protect
-	 (save-excursion
-	   (set-buffer (vm-buffer-of message))
-	   (save-restriction
-	     (widen)
-	     (append-to-buffer temp-buf (vm-headers-of message)
-			       (vm-text-end-of message)))
-	   (set-buffer temp-buf)
-	   (goto-char (point-min))
-	   (if (search-forward "*** To do today:\n" nil t)
-	       (let ((start (1+ (point))))
-		 (goto-char (point-max))
-		 (while (looking-at "^[ \t]*--\\|^[ \t]*$")
-		   (forward-line -1))
-		 (forward-line 1)
-		 (buffer-substring start (point)))))
-      (and temp-buf
-	   (kill-buffer temp-buf)))))
-
-(defun rgr-message-dow-string (message)
-  (require 'time-date)		;; for time-to-days
-  (require 'mail-parse)		;; for mail-header-parse-date
-  (let* ((date-header (vm-get-header-contents message "Date:"))
-	 (date (mail-header-parse-date date-header))
-	 (yesterday-p (= (1+ (time-to-days date))
-			 (time-to-days (current-time)))))
-    (if yesterday-p
-	"yesterday"
-	(nth (nth 6 (decode-time date))
-	     '("Sunday" "Monday" "Tuesday" "Wednesday"
-	       "Thursday" "Friday" "Saturday")))))
-
-(defun rgr-stuff-to-do ()
-  "In a message buffer with a 'Stuff to do' list, extract that day's
-goals and use them to compose today's message."
-  (interactive)
-  (let* ((message (or (and (boundp 'vm-message-pointer)
-			   (car vm-message-pointer))
-		      (error "No current message.")))
-	 (to-do-list (or (rgr-extract-message-to-do-list message)
-			 (error "Not in a 'Stuff to do' message buffer")))
-	 (day-string (rgr-message-dow-string message))
-	 (start nil))
-    ;; (message "Got message date %S day-string %S" date day-string)
-    (vm-mail-internal nil "kjarrell" "Stuff to do")
-    (goto-char (point-min))
-    ;; Damage the "To:" line to prevent premature transmission.
-    (insert "x")
-    (goto-char (point-max))
-    (insert "*** " (capitalize day-string) "'s list:\n\n")
-    (setq start (point))
-    (insert to-do-list "\n"
-	    "Other things done " day-string ":\n\n"
-	    "*** To do today:\n\n"
-	    to-do-list "\n"
-	    "\t\t\t\t\t-- Bob\n")
-    (goto-char start)))
-
 ;;; Defining new charset mappings.
 
 (defun rgr-vm-mime-define-charset-coding (charset coding)
