@@ -2,7 +2,7 @@
 ;;;
 ;;;    These work with vm-6.75 and later.
 ;;;
-;;; $Id:$
+;;; $Id$
 
 (eval-when-compile
   (require 'vm)
@@ -56,6 +56,13 @@ defaults."
       ;; if all the headers are gone, delete the trailing blank line, too.
       (if (eq (following-char) ?\n)
 	  (delete-char 1)))
+    (save-excursion
+      (if (save-restriction
+	    (widen)
+	    (forward-line -1)
+	    (not (looking-at "^--text follows this line--$")))
+	  ;; Second or subsequent message.
+	  (insert "\n================\n")))
     (indent-rigidly (point) (point-max) 3)))
 
 (defun rgr-vm-quit-no-save ()
