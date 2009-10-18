@@ -39,7 +39,6 @@ rgr-hacks-compile-module (see below).")
 	  ;; its presence by loading it, because that's what the rgr-allegro.el
 	  ;; file is supposed to do.  -- rgr, 23-Apr-03.
 	  ("rgr-allegro" load-p nil)
-	  "rgr-backup"
 	  "rgr-compile-hacks"
 	  ("rgr-new-vc-hacks" version 23)
 	  "rgr-cvs-hacks"
