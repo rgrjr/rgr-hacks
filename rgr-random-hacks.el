@@ -356,6 +356,71 @@ protein sequence."
   (while (re-search-forward "[^ \t\nacdefghiklmnpqrstvwy]+" nil t)
     (replace-match "" t t)))
 
+;;;; Hacking sequence annotation.
+
+(defun rgr-add-entry (alist dir key value)
+  (let ((entry (assoc key alist)))
+    (if (null entry)
+	(setq entry (list key)
+	      alist (cons entry alist)))
+    (let ((subentry (assoc dir (cdr entry))))
+      (cond ((null subentry)
+	     (setq subentry (list dir))
+	     (setcdr entry (cons subentry (cdr entry)))))
+      (setcdr subentry (cons value (cdr subentry))))
+    alist))
+
+;;;###AUTOLOAD
+(defun rgr-diff-annotation (start end)
+  "Show differences between sequence annotation found in diff output."
+  (interactive "r")
+  (save-excursion
+    (let ((alist nil))
+      ;; Collect attribute values.
+      (goto-char start)
+      (beginning-of-line)
+      (while (< (point) end)
+	(if (looking-at "^\\([-+]\\)> *\\([^ ]+\\) *")
+	    (let ((dir (aref (match-string-no-properties 1) 0))
+		  (locus (match-string-no-properties 2)))
+	      (setq alist (rgr-add-entry alist dir "(locus)" locus))
+	      (goto-char (match-end 0))
+	      (while (looking-at "\\([^ ]+\\)=\\([^,\r\n]+\\)*")
+		(let ((key (match-string-no-properties 1))
+		      (value (match-string-no-properties 2)))
+		  (setq alist (rgr-add-entry alist dir key value)))
+		(goto-char (match-end 0))
+		(skip-chars-forward ", \t\r\n")))
+	    (forward-line)))
+      ;; Find and display differences.
+      '(message "%S" alist)
+      (with-output-to-temp-buffer "*annotation-diffs*"
+	(let ((tail (sort alist #'(lambda (cell1 cell2)
+				    (string-lessp (car cell1) (car cell2)))))
+	      (need-final-delimiter-p nil))
+	  (while tail
+	    (let* ((entry (car tail))
+		   (key (car entry))
+		   (add (cdr (assoc ?+ (cdr entry))))
+		   (del (cdr (assoc ?- (cdr entry))))
+		   (printed-p nil))
+	      (while (or add del)
+		(cond ((not (equal (car del) (car add)))
+		        (cond ((not printed-p)
+			        (princ "@@\n")
+			        (setq printed-p t
+				      need-final-delimiter-p t)))
+			(if (car del)
+			    (princ (format "-%s=%s\n" key (car del))))
+			(if (car add)
+			    (princ (format "+%s=%s\n" key (car add))))))
+		(setq add (cdr add))
+		(setq del (cdr del))))
+	    (setq tail (cdr tail)))
+	  (if need-final-delimiter-p
+	      (princ "@@\n"))))
+      (message "Done."))))
+
 ;;;; Done.
 
 (provide 'rgr-random-hacks)
