@@ -11,16 +11,23 @@
 ;;; 180 lines (including comments), and took less than two hours.  -- rgr,
 ;;; 5-Mar-96.
 ;;;
+;;;    [Much later:  This is really the same game as "Master Mind" (see
+;;; http://en.wikipedia.org/wiki/Mastermind_(board_game)), invented in 1970, but
+;;; the PCC undoubtedly changed the name to avoid copyright and/or trademark
+;;; issues.  The "My Computer ... BASIC" book was published around 1974.  --
+;;; rgr, 15-Nov-09.]
+;;;
 ;;;    Modification history:
 ;;;
 ;;; created.  -- rgr, 5-Mar-96.
 ;;; bagels-position: eql -> eq.  -- rgr, 1-May-00.
 ;;;
+;;; $Id$
 
 (defvar bagels-available-symbols "!@$%&*+=;~"
   "Set of symbols from which to construct a code word to guess.
 Don't change this unless you know which ones are special to the code.")
-(defvar bagels-number-of-symbols 7
+(defvar bagels-number-of-symbols 6
   "*Number of symbols to choose from when making a code word.")
 (defvar bagels-symbols nil
   "Subset of bagels-available-symbols of length bagels-number-of-symbols
