@@ -296,6 +296,8 @@ but it is usually sufficient to take the default.")
 	 (<= rgr-emacs-major-version 22)
 	 (file-readable-p rgr-new-vc-file))
     (load-file rgr-new-vc-file))
+;; vc-dir-mode only appeared in Emacs 23.1
+(add-hook 'vc-dir-mode-hook 'rgr-new-vc-install-vc-dir-mode-keys)
 
 ;; Fix MANPATH to include /usr/local/share/man/, which gets missed by the
 ;; $PATH-oriented "man" implementation.  -- rgr, 1-May-03.  [probably moot after

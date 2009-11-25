@@ -7,10 +7,15 @@
 (require 'vc)
 
 (eval-when-compile
-  (require 'vc))
+  (require 'vc)
+  (require 'vc-dir)
+  (require 'log-edit))
 
 (if (not (rgr-emacs-version-p 23))
     (error "Loading %S, which only works in Emacs 23.x." load-file-name))
+
+(defvar vc-log-extra)
+(defvar vc-log-fileset)
 
 ;;;###autoload
 (defun vc-log-insert-fileset-skeleton ()
@@ -197,6 +202,53 @@ current buffer."
 	      (list buffer-file-name))))
      (t (error "No fileset is available here.")))))
 
+;;;; vc-dir hacks.
+
+(defvar vc-ewoc)
+
+(defun ewoc-goto-next-prev-p (ewoc arg)
+  ;; The sign of arg determines the direction.  Returns true if we moved.
+  (let ((loc (ewoc-locate ewoc)))
+    (cond ((= arg 0))
+	  ((>= arg 0) (ewoc-goto-next ewoc 1))
+	  (t (ewoc-goto-prev ewoc 1)))
+    (not (eq (ewoc-locate ewoc) loc))))
+
+(defun vc-dir-next-interesting-line (arg)
+  ;; not finished.  -- rgr, 24-Nov-09.
+  "Go to the next line with a modified file on it.
+If a prefix argument is given, move by that many lines."
+  (interactive "p")
+  (let* ((direction (or arg 1))
+	 (distance (abs direction)))
+    (if (and (< direction 0)
+	     (save-excursion
+	       (skip-chars-forward " \t\n")
+	       (eobp)))
+	;; Deal with a curious asymmetry of ewoc:  You can go past the last
+	;; line, but not before the first.  Accordingly, this moves us to the
+	;; line of the last entry.
+	(ewoc-goto-prev vc-ewoc 1))
+    (while (and (> distance 0)
+		(ewoc-goto-next-prev-p vc-ewoc direction))
+      ;; Make sure we're on an interesting line, if possible.
+      (while (let ((loc (ewoc-locate vc-ewoc)))
+	       (and loc
+		    (let ((data (ewoc-data loc)))
+		      (message "data %S" data)
+		      (member (vc-dir-fileinfo->state data)
+			      '(nil unregistered ignored)))
+		    (ewoc-goto-next-prev-p vc-ewoc direction)))
+	)
+      (setq distance (1- distance)))
+    (vc-dir-move-to-goal-column)))
+
+(defun vc-dir-previous-interesting-line (arg)
+  "Go to the previous line.
+If a prefix argument is given, move by that many lines."
+  (interactive "p")
+  (vc-dir-next-interesting-line (- (or arg 1))))
+
 ;;;; Installation.
 
 ;;;###autoload
@@ -204,4 +256,9 @@ current buffer."
   (define-key log-edit-mode-map "\C-xvK" 'vc-log-insert-fileset-skeleton)
   (define-key log-edit-mode-map "\C-xvU" 'vc-log-update-fileset-from-skeleton))
 
-;; (setq debug-on-error t)
+;;;###autoload
+(defun rgr-new-vc-install-vc-dir-mode-keys ()
+  (define-key vc-dir-mode-map "n" 'vc-dir-next-interesting-line)
+  (define-key vc-dir-mode-map "p" 'vc-dir-previous-interesting-line))
+
+(provide 'rgr-new-vc-hacks)
