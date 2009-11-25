@@ -75,9 +75,9 @@ Don't change this unless you know which ones are special to the code.")
   (use-local-map bagels-mode-map)
   (setq major-mode 'bagels-mode)
   (setq mode-name "Bagels")
-  (mapcar 'make-local-variable '(bagels-number-of-symbols bagels-symbols
-				 bagels-code-word-length bagels-code-word
-				 bagels-game-in-progress-p bagels-guess-number))
+  (mapc 'make-local-variable '(bagels-number-of-symbols bagels-symbols
+			       bagels-code-word-length bagels-code-word
+			       bagels-game-in-progress-p bagels-guess-number))
   (bagels-start-new-game))
 
 ;;; The core of the game itself.
