@@ -146,6 +146,8 @@ but it is usually sufficient to take the default.")
 (add-hook 'mail-setup-hook 'rgr-mail-setup-hook)
 (add-hook 'mail-setup-hook 'rgr-mail-abbrevs-setup)
 (add-hook 'vm-mail-mode-hook 'rgr-vm-mail-mode-hook)
+;; [this seems to be necessary, even with vm, in 23.2.  -- rgr, 11-Dec-09.]
+(setq mail-signature nil)
 (cond ((file-directory-p "/usr/src/viewmail/lisp")
 	;; Enable the BZR version of vm 8.  -- rgr, 20-Apr-09.
 	(setq load-path (cons "/usr/src/viewmail/lisp" load-path))
