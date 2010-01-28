@@ -180,6 +180,7 @@ Subversion has well-defined revision numbers, and CVS has fuzzier dates.
   (interactive
     (list (if mark-active (region-beginning) (point))
 	  (if mark-active (region-end) (point))))
+  (require 'rgr-new-vc-hacks)	;; for the updated vc-deduce-fileset
   (let ((fr (vc-history-current-tag beg))
         (to (vc-history-current-tag end)))
     (when (string-equal fr to)
