@@ -85,8 +85,7 @@ shows the log for that many days."
     ;; (error "Date '%s'." n-days-ago-string)
     (let ((output (get-buffer-create "*vc-recent-changes*")))
       (shell-command (format command-format n-days-ago-string) output)
-      (save-excursion
-	(set-buffer output)
+      (with-current-buffer output
 	;; must preserve the default directory so that vc-history-diff knows
 	;; where to operate.
 	(setq default-directory original-directory)
@@ -358,15 +357,13 @@ The '*' must be at the start of the line.  Other comments are ignored."
     (switch-to-buffer-other-window
       (or (and vc-parent-buffer
 	       ;; Take the parent buffer if it's a log buffer.
-	       (save-excursion
-		 (set-buffer vc-parent-buffer)
+	       (with-current-buffer vc-parent-buffer
 		 (eq major-mode 'log-edit-mode))
 	       vc-parent-buffer)
 	  (and buffer-file-name
 	       ;; If in a file buffer, look for the corresponding log buffer.
 	       (fboundp 'vc-log-buffer-for-file)
-	       (save-excursion
-		 (set-buffer source-buffer)
+	       (with-current-buffer source-buffer
 		 (vc-log-buffer-for-file buffer-file-name)))
 	  (error "No associated *VC-log* buffer.")))
     (let ((current-comment-files (rgr-vc-current-comment-files))
@@ -406,8 +403,7 @@ This is useful, for instance, when a definition has been deleted."
 	 (pos (nth 2 loc))
 	 (src-buf-start (if (consp pos) (car pos) pos))
 	 (src (nth 3 loc))
-	 (name (save-excursion
-		 (set-buffer source-buffer)
+	 (name (with-current-buffer source-buffer
 		 (goto-char (+ src-buf-start (cdr src)))
 		 (rgr-mode-definition-name))))
     (rgr-add-definition-comment-internal name source-buffer)))
