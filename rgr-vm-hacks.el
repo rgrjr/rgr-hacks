@@ -103,7 +103,7 @@ defaults."
 
 (defun rgr-vm-quit ()
   "Saves the mail buffer, like vm-quit (\\[vm-quit]), but buries instead
-of killling it.  Kills the summaries, though."
+of killing it.  Kills the summaries, though."
   (interactive)
   (vm-select-folder-buffer)
   ;; [should expunge here?  -- rgr, 12-Jan-00.]
@@ -111,6 +111,13 @@ of killling it.  Kills the summaries, though."
 	   (or buffer-file-name buffer-offer-save))
       (vm-save-folder))
   (rgr-vm-quit-no-save))
+
+(defun rgr-vm-quit-and-lower-frame ()
+  "Saves the mail buffer, like rgr-vm-quit (\\[rgr-vm-quit]), but lowers
+the frame after burying the VM buffer."
+  (interactive)
+  (rgr-vm-quit)
+  (lower-frame))
 
 ;;; Comparing message bodies.
 
@@ -464,10 +471,8 @@ message lists and the message contents are removed from real folders."
 ;;;###autoload
 (defun rgr-vm-install-hacks ()
   (define-key vm-mode-map "q" 'rgr-vm-quit)
+  (define-key vm-mode-map "Q" 'rgr-vm-quit-and-lower-frame)
   (define-key vm-mode-map "x" 'rgr-vm-quit-no-save)
-  ;; keep originals available.
-  (define-key vm-mode-map "Q" 'vm-quit)
-  (define-key vm-mode-map "X" 'vm-quit-no-change)
   ;; vm-6.89 binds vm-expunge-folder to "###", which is annoying.  -- rgr,
   ;; 3-Jan-01.
   (define-key vm-mode-map "#" 'vm-expunge-folder)
