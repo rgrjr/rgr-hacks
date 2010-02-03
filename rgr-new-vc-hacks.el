@@ -235,7 +235,6 @@ If a prefix argument is given, move by that many lines."
       (while (let ((loc (ewoc-locate vc-ewoc)))
 	       (and loc
 		    (let ((data (ewoc-data loc)))
-		      (message "data %S" data)
 		      (member (vc-dir-fileinfo->state data)
 			      '(nil unregistered ignored)))
 		    (ewoc-goto-next-prev-p vc-ewoc direction)))
