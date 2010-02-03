@@ -40,8 +40,8 @@ rgr-hacks-compile-module (see below).")
 	  ;; file is supposed to do.  -- rgr, 23-Apr-03.
 	  ("rgr-allegro" load-p nil)
 	  "rgr-compile-hacks"
-	  ("rgr-new-vc-hacks" version 23)
 	  "rgr-cvs-hacks"
+	  ("rgr-new-vc-hacks" version 23)
 	  "rgr-diff-hacks"
 	  "rgr-dired"
 	  "rgr-elisp-hacks"
