@@ -61,11 +61,36 @@
   (let ((interprogram-paste-function 'x-cut-buffer-or-selection-value))
     (yank arg)))
 
+(defun rgr-x11-install-nondefault-fontset ()
+  (let ((font nil))
+    (dolist (fontset (fontset-list))
+      (or (string-match "fontset-default$" fontset)
+	  (string-match "fontset-auto[0-9]+$" fontset)
+	  (setq font fontset)))
+    (when font
+      ;; [this is all magic from the menu-set-font fn.  -- rgr, 3-Feb-10.]
+      (set-face-attribute 'default (selected-frame)
+			  :width 'normal
+			  :weight 'normal
+			  :slant 'normal
+			  :font font)
+      (let ((font-object (face-attribute 'default :font)))
+	(dolist (f (frame-list))
+	  (and (not (eq f (selected-frame)))
+	       (display-graphic-p f)
+	       (set-face-attribute 'default f :font font-object)))
+	(set-face-attribute 'default t :font font-object))
+      (let ((spec (list (list t (face-attr-construct 'default)))))
+	(put 'default 'customized-face spec)
+	(custom-push-theme 'theme-face 'default 'user 'set spec))
+      (put 'default 'face-modified nil))))
+
 ;;;###autoload
 (defun rgr-install-x11-hacks ()
   (require 'rgr-mouse)
   (rgr-install-mouse-commands)
   (rgr-install-frame-properties)
+  (rgr-x11-install-nondefault-fontset)
   (global-set-key [?\C-\.] 'ilisp-next-possibility)
   ;; [not sure if this autoloads . . .  -- rgr, 27-Nov-95.]  [it didn't, but I
   ;; seem to have taken care of that in the mean time.  -- rgr, 4-Apr-96.]
