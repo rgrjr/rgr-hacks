@@ -101,10 +101,11 @@ buffer."
 		    (set-buffer buffer)
 		    ilisp-next-possibility))
 	 (old-point (point)) (old-buffer (current-buffer))
-	 (result (funcall command buffer n)))
+	 (result (and command (funcall command buffer n))))
     ;; (message "%s in %s returned %s." command buffer result)
     (cond ((null result)
-	    (ilisp-pop-possibilities (format "No more %s possibilities" buffer)))
+	    (ilisp-pop-possibilities
+	      (format "No more %s possibilities" buffer)))
 	  ((eq old-buffer (current-buffer))
 	    ;; Moved in the same buffer; remember where we were.  Don't generate
 	    ;; a message, in case the command said something useful.
