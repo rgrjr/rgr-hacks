@@ -38,8 +38,7 @@
 	 (patch-file (expand-file-name (format "foo-%d.patch" (emacs-pid))
 				       dir)))
     (write-region (point-min) (point-max) patch-file nil nil nil 'excl)
-    (save-excursion
-      (set-buffer (get-buffer-create "*patch*"))
+    (with-current-buffer (get-buffer-create "*patch*")
       (setq default-directory dir)
       ;; (message "in %S" default-directory)
       (toggle-read-only -1)
@@ -66,11 +65,69 @@
   (diff-hunk-prev count)
   (recenter 0))
 
+(defun rgr-diff-goto-vc-file ()
+  "Go to the current file in a vc-dir buffer."
+  (interactive)
+  (let ((current-file
+	  (or (expand-file-name (diff-find-file-name))
+	      (error "No current file.")))
+	(vc-dir-buffer nil) (vc-dir-default-directory-len 0)
+	(vc-dir-node nil))
+    ;; Look for a vc-dir buffer that includes current-file, or a buffer that
+    ;; might contain current-file if it were visible.
+    (let ((tail (buffer-list)))
+      (while (and tail (not vc-dir-node))
+	(let ((buffer (car tail)))
+	  (with-current-buffer buffer
+	    (if (and (eq major-mode 'vc-dir-mode))
+		;; Search for a node for current-file.
+		(let ((node (ewoc-nth vc-ewoc 0))
+		      (dd-len (length default-directory)))
+		  (while node
+		    (let ((nodefile (vc-dir-fileinfo->name (ewoc-data node))))
+		      ;; (message "[checking %S]" nodefile)
+		      (if (string-equal (expand-file-name nodefile)
+					current-file)
+			  ;; Success:  Don't set vc-dir-default-directory-len,
+			  ;; which is only used for finding a fallback.
+			  (setq vc-dir-buffer buffer
+				vc-dir-node node
+				tail nil node nil)))
+		    (setq node (ewoc-next vc-ewoc node)))
+		  ;; If not found, but the directory is a prefix of
+		  ;; current-file, then remember the buffer as a fallback.
+		  (if (and (null vc-dir-node)
+			   (> (length current-file) dd-len)
+			   (string-equal (substring current-file 0 dd-len)
+					 default-directory)
+			   ;; When we have multiple candidates, pick the one
+			   ;; deeper in the directory hierarchy.
+			   (or (null vc-dir-buffer)
+			       (> dd-len vc-dir-default-directory-len)))
+		      (setq vc-dir-buffer buffer
+			    vc-dir-default-directory-len dd-len))))))
+	(setq tail (cdr tail))))
+    ;; Go to it.
+    '(message "got %S in %S" vc-dir-node vc-dir-buffer)
+    (cond ((not vc-dir-buffer)
+	    ;; Totally failed, so offer to start vc-dir.
+	    (call-interactively 'vc-dir))
+	  ((not vc-dir-node)
+	    (switch-to-buffer-other-window vc-dir-buffer)
+	    (ewoc-goto-node vc-ewoc (ewoc-nth vc-ewoc 0))
+	    (vc-dir-move-to-goal-column)
+	    (message "File is under this buffer, but not visible."))
+	  (t
+	    (switch-to-buffer-other-window vc-dir-buffer)
+	    (ewoc-goto-node vc-ewoc vc-dir-node)
+	    (vc-dir-move-to-goal-column)))))
+
 ;;;###autoload
 (defun rgr-diff-mode-hook ()
   (define-key diff-mode-map "\C-cp" 'rgr-diff-patch-directory)
   (define-key diff-mode-map "\C-c!" 'rgr-diff-add-definition-comment)
   (define-key diff-mode-map "\C-cd" 'rgr-diff-run-diffstat)
+  (define-key diff-mode-map "\C-cf" 'rgr-diff-goto-vc-file)
   (define-key diff-mode-map "\M-P" 'rgr-diff-hunk-prev)
   (define-key diff-mode-map "\M-N" 'rgr-diff-hunk-next))
 
