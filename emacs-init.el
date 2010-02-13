@@ -301,12 +301,6 @@ but it is usually sufficient to take the default.")
 ;; vc-dir-mode only appeared in Emacs 23.1
 (add-hook 'vc-dir-mode-hook 'rgr-new-vc-install-vc-dir-mode-keys)
 
-;; Fix MANPATH to include /usr/local/share/man/, which gets missed by the
-;; $PATH-oriented "man" implementation.  -- rgr, 1-May-03.  [probably moot after
-;; the OS upgrade.  -- rgr, 29-May-03.]
-;; [this does seem to be a noop now.  -- rgr, 19-Dec-08.]
-'(and (file-directory-p "/usr/local/share/man")
-     (rgr-fix-manpath "/usr/local/share/man"))
 ;; Prevent attempts by nroff to inflict novel Unicode characters on us.
 (setq manual-program "LANG=en_US man")
 

@@ -6,6 +6,8 @@
 ;;;
 ;;; $Id$
 
+(require 'etags)
+
 ;;;; Variables.
 
 ;; First, functions used to initialize variables.
@@ -176,20 +178,6 @@ incarnation of the major version)."
       (and (= rgr-emacs-major-version major)
 	   (>= rgr-emacs-minor-version (or minor 0)))))
 
-;;;; Loading required code.
-
-;; find-tag-tag is used by the rgr-show-elisp-arglist function.  [I'd like to
-;; condition (require 'tags) on whether we actually need it, but it uses
-;; find-tag-tag in an interactive form.  -- rgr, 12-Apr-94.]
-(cond ((eq rgr-emacs-flavor 'lucid)
-        ;; In lemacs, the "tags" feature is provided by the "etags"
-        ;; file.  Stupid.
-        (or (memq 'tags features)
-	    (load "etags")))
-      ;; End [arguable] of braindeath.  -- rgr, 26-Oct-94.
-      ((eq rgr-emacs-major-version 18) (require 'tags))
-      (t (require 'etags)))
-
 ;;;; General.
 
 (defun rgr-hacks-getf (plist property-name &optional default)
@@ -201,30 +189,6 @@ incarnation of the major version)."
 		tail nil)
 	  (setq tail (cdr (cdr tail)))))
     result))
-
-(defun rgr-fix-manpath (new)
-  "Fix MANPATH to include new, which may have been missed by a
-$PATH-oriented \"man\" implementation."
-  (let ((path (getenv "MANPATH")))
-    (if (not path)
-	(save-excursion
-	  (condition-case err
-	      (progn
-		(set-buffer (get-buffer-create " *manpath-temp*"))
-		(call-process "manpath" nil t nil)
-		(goto-char (point-min))
-		(end-of-line)
-		(setq path (buffer-substring (point-min) (point))))
-	    (file-error nil))))
-    (if (and path
-	     (file-directory-p new)
-	     (file-readable-p new)
-	     (not (string-match new path)))
-	(setenv "MANPATH" (concat new ":" path)))))
-
-;; Compatibility with earlier emacs versions.  -- rgr, 22-Aug-99.
-(or (fboundp 'buffer-substring-no-properties)
-    (fset 'buffer-substring-no-properties 'buffer-substring))
 
 ;;;; Renaming buffers.
 
@@ -311,12 +275,11 @@ A numeric argument queries (but only if already backed up)."
   "Offers to reset the buffer-backed-up flag in all buffers (for which a
 backup file has already been made)."
   (interactive)
-  (save-excursion
-    (let ((buffer-tail (buffer-list)))
-      (while buffer-tail
-	(set-buffer (car buffer-tail))
-	(rgr-reset-buffer-backed-up 'all)
-	(setq buffer-tail (cdr buffer-tail))))
+  (let ((buffer-tail (buffer-list)))
+    (while buffer-tail
+      (with-current-buffer (car buffer-tail)
+	(rgr-reset-buffer-backed-up 'all))
+      (setq buffer-tail (cdr buffer-tail)))
     (message "Done.")))
 
 ;;; auto-fill
