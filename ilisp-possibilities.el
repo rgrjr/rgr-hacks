@@ -97,8 +97,7 @@ buffer."
 	  (or n (setq n 0))))
   (let* ((buffer (or (ilisp-current-possibility-buffer)
 		     (error "No more possibilities.")))
-	 (command (save-excursion
-		    (set-buffer buffer)
+	 (command (with-current-buffer buffer
 		    ilisp-next-possibility))
 	 (old-point (point)) (old-buffer (current-buffer))
 	 (result (and command (funcall command buffer n))))
