@@ -51,7 +51,6 @@ rgr-hacks-compile-module (see below).")
 	  "rgr-genbank"
 	  ;; "rgr-geometry"
 	  ("rgr-html-hacks" require (html-helper-mode))
-	  ("rgr-html-boilerplate" require (html-helper-mode))
 	  ("rgr-html-head" require (html-helper-mode))
 	  "rgr-html-random"
 	  ;; [need to convert these two from psa-defstruct to the cl-macs.el
@@ -62,9 +61,7 @@ rgr-hacks-compile-module (see below).")
 	  "rgr-lisp-hacks"
 	  ("rgr-mail-hacks" require (vm))
 	  "rgr-makefile-hacks"
-	  ("rgr-mouse-21"
-	   if (member rgr-emacs-major-version '(21 22))
-	   require (ilisp-mouse))
+	  ("rgr-mouse-21" require (ilisp-mouse))
 	  ("rgr-mouse" use (tex-mode) require (ilisp-mouse browse-url))
 	  "rgr-mouse-doc"
 	  "rgr-perl-hacks"

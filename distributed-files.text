@@ -6,7 +6,6 @@ rgr-dired.el
 rgr-elisp-hacks.el
 rgr-fill-comment.el
 rgr-hacks.el
-rgr-html-boilerplate.el
 rgr-html-hacks.el
 rgr-html-head.el
 rgr-html-nest.el
