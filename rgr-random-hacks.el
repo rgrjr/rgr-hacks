@@ -17,8 +17,7 @@
 ;;; $Id$
 
 (eval-when-compile
-  (require 'ffap)
-  (require 'rgr-mouse))
+  (require 'ffap))
 
 (defvar rgr-emacs)
 
