@@ -15,9 +15,10 @@ public-bins = ${public-source:%.el=%.elc}
 # Install source, autoloads, and compiled files.
 install-files = ${public-source} ${public-bins}
 
-all:	elc-files rgr-hacks-autoloads.el
+all:	rgr-hacks-autoloads.el elc-files
 elc-files:
-	emacs --batch --load compile-rgr-hacks.el -f rgr-hacks-compile-self
+	emacs --batch --load rgr-hacks-autoloads.el \
+		--load compile-rgr-hacks.el -f rgr-hacks-compile-self
 
 rgr-hacks-autoloads.el:		.
 	@if [ ! -r $@ ]; then \
