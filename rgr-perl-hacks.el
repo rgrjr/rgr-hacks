@@ -156,8 +156,7 @@ is not inside the curly braces."
 		       'rgr-get-man-buffer man-args))))
       ;; make sure that rgr-perl-manpage-alphabetical-listing is initialized.
       (or rgr-perl-manpage-alphabetical-listing
-	  (save-excursion
-	    (set-buffer buffer)
+	  (with-current-buffer buffer
 	    (goto-char (point-min))
 	    ;; Hack to find the actual function listings.
 	    (search-forward "Alphabetical Listing of Perl Functions")
@@ -244,8 +243,7 @@ printed and nothing is shown."
 			 (regexp-quote name)
 			 " "))
 	 (man-buffer (rgr-get-man-buffer "perlfunc")))
-    (or (save-excursion
-	  (set-buffer man-buffer)
+    (or (with-current-buffer man-buffer
 	  (goto-char rgr-perl-manpage-alphabetical-listing)
 	  (cond ((not (re-search-forward regexp nil t))
 		 (error "Can't find %s documentation." name)))

@@ -183,9 +183,7 @@ the frame after burying the VM buffer."
       (car mp))))
 
 (defun rgr-vm-write-message-body-internal (m file)
-  (save-excursion
-    (setq m (vm-real-message-of m))
-    (set-buffer (vm-buffer-of m))
+  (with-current-buffer (vm-buffer-of (setq m (vm-real-message-of m)))
     (vm-save-restriction
       (widen)
       (write-region (vm-text-of m)
@@ -367,8 +365,7 @@ message lists and the message contents are removed from real folders."
 (defun vm-dired-attach-files-to-message (files message-buffer)
   ;; this duplicates much of the vm-mime-attach-file interactive dialog in order
   ;; to ask about MIME type, etc., for each file.
-  (save-excursion
-    (set-buffer message-buffer)
+  (with-current-buffer message-buffer
     (let ((tail files))
       (while tail
 	(let* ((file (car tail))
@@ -407,9 +404,8 @@ message lists and the message contents are removed from real folders."
 	 (vm-dired-mail-buffers nil)
 	 (chosen-buffer nil))
     ;; find mail buffers.
-    (save-excursion
-      (while vm-dired-buffers
-	(set-buffer (car vm-dired-buffers))
+    (while vm-dired-buffers
+      (with-current-buffer (car vm-dired-buffers)
 	(if (eq major-mode 'mail-mode)
 	    (setq vm-dired-mail-buffers (cons (car vm-dired-buffers)
 					      vm-dired-mail-buffers)))

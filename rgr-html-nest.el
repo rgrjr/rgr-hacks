@@ -21,7 +21,7 @@
 ;;; rgr-html-parse-tags: eql -> eq.  -- rgr, 1-May-00.
 ;;; rgr-html-collect-tag-data: implicit tag closing.  -- rgr, 6-Aug-02.
 ;;;
-;;; $Id:$
+;;; $Id$
 
 (require 'rgr-html-hacks)
 (require 'thingatpt)
@@ -106,8 +106,7 @@
 	    ;; Set up the error buffer in compilation mode.  But don't do this
 	    ;; until we know we're going to use the buffer; it changes the
 	    ;; current compilation buffer.
-	    (save-excursion
-	      (set-buffer buffer)
+	    (with-current-buffer buffer
 	      (require 'compile)
 	      (compilation-mode)
 	      (setq mode-name "Tag-Errs")
@@ -131,8 +130,7 @@
 		      (compilation-goto-locus
 		        (compilation-next-error-locus 1 t)))))
 	    (setq compilation-last-buffer nil)
-	    (save-excursion
-	      (set-buffer buffer)
+	    (with-current-buffer buffer
 	      (let ((start (point)))
 		(end-of-line)
 		(message "%s" (buffer-substring start (point)))))
@@ -380,8 +378,7 @@ first nested case as being in error."
   (let* ((orig-buffer-name (buffer-name))
 	 (buffer (get-buffer-create (concat "*" orig-buffer-name " tags*"))))
     ;; initialize error buffer
-    (save-excursion
-      (set-buffer buffer)
+    (with-current-buffer buffer
       (setq buffer-read-only nil)
       (erase-buffer)
       (insert "HTML tag nesting errors in " orig-buffer-name "\n\n"))
@@ -389,9 +386,8 @@ first nested case as being in error."
 	   (standard-output buffer)
 	   (rgr-html-n-tag-nest-errors 0)
 	   (nesting-tags
-	     (progn;; save-excursion
-	       (goto-char (point-min))
-	       (rgr-html-collect-tag-data))))
+	     (progn (goto-char (point-min))
+		    (rgr-html-collect-tag-data))))
       ;; Do this kludge replacement for save-excursion so that the positions of
       ;; errors (especially the <a> syntax check) are not lost.
       (goto-char start)

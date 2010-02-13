@@ -4,7 +4,7 @@
 ;;;
 ;;; [created.  -- rgr, 5-Feb-06.]
 ;;;
-;;; $Id:$
+;;; $Id$
 
 (defvar tags-grep-command nil)
 
@@ -52,8 +52,7 @@
 	(temp-file "tags-grep-files.tmp")
 	(temp-buffer nil))
     (unwind-protect
-	 (save-excursion
-	   (set-buffer (setq temp-buffer (generate-new-buffer temp-file)))
+	 (with-current-buffer (setq temp-buffer (generate-new-buffer temp-file))
 	   (let ((tail files))
 	     (while tail
 	       ;; the file-readable-p test is necessary because etags seems to

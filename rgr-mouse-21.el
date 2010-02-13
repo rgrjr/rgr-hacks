@@ -81,8 +81,7 @@ and does not change the current buffer."
 	  (if keep-properties-p
 	      (insert-buffer-substring from-buffer start end)
 	      ;; strip properties
-	      (insert (save-excursion
-			(set-buffer from-buffer)
+	      (insert (with-current-buffer from-buffer
 			(buffer-substring-no-properties start end))))
 	  (cond (rgr-mouse-insert-whitespace-between-words-p
 		  (if need-trailing-space-p

@@ -34,9 +34,8 @@
 	(rgr-skip-n (or skip-n 1))
 	;; cdr to omit the current buffer.
 	(rgr-tail (buffer-list)))
-    (save-excursion
-      (while rgr-tail
-	(set-buffer (car rgr-tail))
+    (while rgr-tail
+      (with-current-buffer (car rgr-tail)
 	(cond ((not (memq major-mode rgr-shell-buffer-major-modes))
 		(setq rgr-tail (cdr rgr-tail)))
 	      ((zerop rgr-skip-n)

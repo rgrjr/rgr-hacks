@@ -127,8 +127,7 @@ be committed independently."
       ;; (setq vc-log-version log-version)
       (insert-buffer-substring original-buffer split-point original-end))
     ;; now update the old one.
-    (save-excursion
-      (set-buffer original-buffer)
+    (with-current-buffer original-buffer
       (delete-region split-point original-end)
       (setq vc-log-fileset files-before)
       ;; [would be cleaner for vc-log-edit to do this in the first place.  --

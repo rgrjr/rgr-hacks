@@ -34,20 +34,17 @@
   "Display a summary of hits from the last \\[grep] command."
   (interactive)
   ;; this is based on shell-command-on-region
-  (let ((buffer nil))
-    (save-excursion
-      (set-buffer (compilation-find-buffer))
-      (setq buffer (get-buffer-create (concat (buffer-name) " summary")))
+  (with-current-buffer (compilation-find-buffer)
+    (let ((buffer (get-buffer-create (concat (buffer-name) " summary"))))
       ;; Clear the output buffer, then run the command with output there.
-      (save-excursion
-	(set-buffer buffer)
+      (with-current-buffer buffer
 	(setq buffer-read-only nil)
 	(erase-buffer))
       (call-process-region (point-min) (point-max) shell-file-name
 			   nil buffer nil
 			   shell-command-switch
-			   rgr-grep-summarize-hits-command-string))
-    (set-window-start (display-buffer buffer) 1)))
+			   rgr-grep-summarize-hits-command-string)
+      (set-window-start (display-buffer buffer) 1))))
 
 ;;;; rgr-recompile
 
@@ -65,16 +62,15 @@ Should be consolidated with rgr-recompile code."
   ;; [***bug***: this doesn't work; buffer-list isn't ordered right.  -- rgr,
   ;; 5-Sep-96.]
   (let ((tail (buffer-list)) (compilation-buffer nil))
-    (save-excursion
-      (while tail
-	(let ((buffer (car tail)))
-	  (set-buffer buffer)
+    (while tail
+      (let ((buffer (car tail)))
+	(with-current-buffer buffer
 	  (if (and (eq major-mode 'compilation-mode)
 		   (not (string-match "grep" (buffer-name)))
 		   (equal dir default-directory))
 	      (setq compilation-buffer buffer
-		    tail nil)))
-	(setq tail (cdr tail))))
+		    tail nil))))
+      (setq tail (cdr tail)))
     compilation-buffer))
 
 ;;;###autoload
@@ -86,9 +82,8 @@ without asking any questions."
 	 (compilation-buffer (rgr-find-last-compilation-buffer dir)))
     (if compilation-buffer
 	(let ((command nil))
-	  (save-excursion
+	  (with-current-buffer compilation-buffer
 	    ;; Get the command to redo.
-	    (set-buffer compilation-buffer)
 	    (setq command (or compilation-buffer-compile-command
 			      ;; hack.
 			      compile-command))

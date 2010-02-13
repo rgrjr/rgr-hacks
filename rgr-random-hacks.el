@@ -17,7 +17,10 @@
 ;;; $Id$
 
 (eval-when-compile
-  (require 'ffap))
+  (require 'ffap)
+  (require 'rgr-mouse))
+
+(defvar rgr-emacs)
 
 ;;;; Autoload-generating commands.
 
@@ -137,8 +140,7 @@ if (e.g.) the pathname does not indicate a server."
 	(psa-bin-dir (expand-file-name "~psa/bin/"))
 	(old-path (getenv "PATH")))
     (unwind-protect
-	 (save-excursion
-	   (set-buffer buffer)
+	 (with-current-buffer buffer
 	   (or no-message-p
 	       (message "Checking whether the server is running . . ."))
 	   (setenv "PATH" (concat psa-bin-dir ":" old-path))
@@ -168,9 +170,9 @@ if (e.g.) the pathname does not indicate a server."
     ;; Server running; send it something to chew on.
     (require 'sendmail)
     (unwind-protect
-	 (save-excursion
-	   (setq buffer (get-buffer-create (concat " " server-name " status")))
-	   (set-buffer buffer)
+	 (with-current-buffer
+	     (setq buffer
+		   (get-buffer-create (concat " " server-name " status")))
 	   (insert "To: " server-name "@darwin.bu.edu\n"
 		   "Subject: $$status$$\n"
 		   mail-header-separator "\n"
