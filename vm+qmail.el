@@ -62,8 +62,7 @@ inboxes/maildirs (so be careful of . and ..!).")
   ;; count them; if a maildir use ls/wc.  [the maildir case is not actually used
   ;; any more.  -- rgr, 15-May-00.]
   (let ((maildir-p (file-directory-p mbox-or-maildir)))
-    (save-excursion
-      (set-buffer (get-buffer-create " *v+q temp*"))
+    (with-current-buffer (get-buffer-create " *v+q temp*")
       (buffer-disable-undo)
       (erase-buffer)
       (if maildir-p
@@ -92,8 +91,7 @@ inboxes/maildirs (so be careful of . and ..!).")
       (message "%s" message)
       (let* ((buffer (get-buffer-create "*v+q message*"))
 	     (buffer-lines
-	       (save-excursion
-		 (set-buffer buffer)
+	       (with-current-buffer buffer
 		 (erase-buffer)
 		 (insert message)
 		 (let ((fill-column (1- (frame-width))))
@@ -328,11 +326,8 @@ inbox in the vm-spool-files list.  Doesn't handle POP or IMAP drops."
 		 (replace-match "\\1(\\3)" t)
 		 (goto-char fullname-start))))
 	   (insert ")\n"))
-	  ((null mail-from-style)
-	   (insert "From: " login "\n"))
-	  ((eq mail-from-style 'system-default)
-	   nil)
-	  (t (error "Invalid value for `mail-from-style'")))))
+	  (t
+	   (insert "From: " login "\n")))))
 
 ;;;###autoload
 (defun v+q-set-return-address (new-return-address)
@@ -480,8 +475,7 @@ keys at all."
 	 (new-files (directory-files new-dir t))
 	 (new-mail nil))
     (unwind-protect
-	 (save-excursion
-	   (set-buffer buffer)
+	 (with-current-buffer buffer
 	   (let ((tail new-files))
 	     (while tail
 	       (let ((file (car tail)))
