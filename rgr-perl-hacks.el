@@ -132,6 +132,32 @@ is not inside the curly braces."
 (put 'perl-mode 'mode-definition-name 'rgr-perl-definition-name)
 (put 'cperl-mode 'mode-definition-name 'rgr-perl-definition-name)
 
+(defun rgr-perl-toggle-internal (string from to)
+  "In Perl, this would be '$string =~ s/$from/$to/g;'."
+  (save-match-data
+    (while (string-match from string)
+      (setq string (replace-match to t t string)))
+    string))
+
+;;;###autoload
+(defun rgr-perl-toggle-module-syntax ()
+  "Toggle a module name between the Unix filename and Perl syntax."
+  (interactive)
+  (save-excursion
+    (skip-chars-backward "a-zA-Z0-9:./")
+    (skip-chars-forward ":./")
+    (cond ((looking-at "\\([a-zA-Z0-9]+/[a-zA-Z0-9/]+\\)\\(\\.pm\\)?")
+	    (replace-match
+	      (rgr-perl-toggle-internal (match-string 1) "/" "::")
+	      t t))
+	  ((looking-at "[a-zA-Z0-9]+::[a-zA-Z0-9:]+")
+	    (replace-match
+	      (concat (rgr-perl-toggle-internal (match-string 0) "::" "/")
+		      ".pm")
+	      t t))
+	  (t
+	    (error "Unrecognized module syntax before point.")))))
+
 ;;;; perl documentation support.
 
 (defun rgr-manpage-done () (setq rgr-manpage-done-p t))
