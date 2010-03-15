@@ -333,6 +333,13 @@ but it is usually sufficient to take the default.")
   (setq fill-column 80))
 (add-hook 'erlang-mode-hook 'rgr-erlang-mode-hook)
 
+;; Javascript support.  -- rgr, 11-Mar-10.
+(autoload 'moz-minor-mode "moz" "Mozilla Minor and Inferior Mozilla Modes" t)
+(autoload 'espresso-mode "espresso" "Espresso mode for editing Javascript" t)
+(defun espresso-custom-setup ()
+  (moz-minor-mode 1))
+(add-hook 'espresso-mode-hook 'espresso-custom-setup)
+
 ;; Run this after all load-path directories are set up.
 (rgr-make-tags-table-list-hook)
 
