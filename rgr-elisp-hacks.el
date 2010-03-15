@@ -65,6 +65,54 @@ A Lisp code line is one that is nonblank and not entirely a comment."
 				(* n mean mean))
 			     (1- n)))))))))
 
+(defvar rgr-cpu-time-report-regexp
+  (let ((match-time "\\([0-9]+\\)m\\([0-9.]+\\)s"))
+    (concat "^real\t" match-time
+	    "\nuser\t" match-time
+	    "\nsys\t" match-time "\n")))
+
+(defun rgr-cpu-time-extract-time (minute-idx)
+  ;; Helper for parsing rgr-cpu-time-report-regexp matches.
+  (+ (* 60 (string-to-number (match-string minute-idx)))
+     (string-to-number (match-string (1+ minute-idx)))))
+
+;;;###autoload
+(defun rgr-compute-runtime-stats (start end)
+  "Look for all 'real/user/sys' times in the region, and insert statistics.
+These normally come from sh 'time' output, and have times of the
+format '0m57.932s', separated from the name by a tab.  The 'user'
+and 'sys' CPU times are added together, and the mean and standard
+deviation are inserted into the buffer at the end of the region.
+The elapsed time statistics are treated separately."
+  (interactive "r")
+  (save-excursion
+    (goto-char start)
+    (let ((elapsed-times nil) (cpu-times nil))
+      (while (re-search-forward rgr-cpu-time-report-regexp end t)
+	(let ((elapsed (rgr-cpu-time-extract-time 1))
+	      (cpu (+ (rgr-cpu-time-extract-time 3)
+		      (rgr-cpu-time-extract-time 5))))
+	  (setq elapsed-times (cons elapsed elapsed-times))
+	  (setq cpu-times (cons cpu cpu-times))))
+      (if (not elapsed-times)
+	  (error "No shell time reports in the region."))
+      (goto-char end)
+      (end-of-line)
+      (if (not (bolp))
+	  (insert "\n"))
+      (insert "\nNumber of samples:  " (format "%d" (length elapsed-times))
+	      "\n")
+      (let ((elapsed-mean-and-sd (rgr-mean-and-sd elapsed-times)))
+	(insert "Elapsed: " (format "%.2f +/- %.2f"
+				    (car elapsed-mean-and-sd)
+				    (car (cdr elapsed-mean-and-sd)))
+		" sec\n"))
+      (let ((cpu-mean-and-sd (rgr-mean-and-sd cpu-times)))
+	(insert "CPU: " (format "%.2f +/- %.2f"
+				(car cpu-mean-and-sd)
+				(car (cdr cpu-mean-and-sd)))
+		" sec\n")))))
+
 ;; This is here because I don't have a better place for it.
 ;;;###autoload
 (defun rgr-renumber-sharps (&optional force-one-p)
