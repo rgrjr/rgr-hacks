@@ -136,6 +136,7 @@ output buffer from '*vc-diff*' to '*vc-project-diff*'."
     ("z" . kill-this-buffer)
     ("m" . set-mark-command)
     ("d" . vc-history-diff)
+    ("=" . vc-history-diff)
     ;; ("f" . log-view-find-version)
     ("n" . log-view-msg-next)
     ("p" . log-view-msg-prev))
