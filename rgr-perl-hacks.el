@@ -144,13 +144,17 @@ is not inside the curly braces."
   "Toggle a module name between the Unix filename and Perl syntax."
   (interactive)
   (save-excursion
-    (skip-chars-backward "a-zA-Z0-9:./")
+    (skip-chars-backward "a-zA-Z0-9_:./")
     (skip-chars-forward ":./")
-    (cond ((looking-at "\\([a-zA-Z0-9]+/[a-zA-Z0-9/]+\\)\\(\\.pm\\)?")
+    (cond ((looking-at "\\([a-zA-Z0-9_]+/[a-zA-Z0-9_/]+\\)\\(\\.pm\\)?")
 	    (replace-match
 	      (rgr-perl-toggle-internal (match-string 1) "/" "::")
-	      t t))
-	  ((looking-at "[a-zA-Z0-9]+::[a-zA-Z0-9:]+")
+	      t t)
+	    (skip-chars-backward "a-zA-Z0-9_:/")
+	    (if (looking-at "/trunk::")
+		;; Special hack for cleaning up "svn log" output.
+		(replace-match "")))
+	  ((looking-at "[a-zA-Z0-9_]+::[a-zA-Z0-9_:]+")
 	    (replace-match
 	      (concat (rgr-perl-toggle-internal (match-string 0) "::" "/")
 		      ".pm")
