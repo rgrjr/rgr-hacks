@@ -6,22 +6,17 @@
 
 (defun rgr-install-frame-properties ()
   ;; Get a decent label and a more visible mouse.  The mouse cursor is red if
-  ;; you are running "su", and blue otherwise.  [shouldn't this go on a frame
-  ;; creation hook?  -- rgr, 8-Nov-95.]
-  ;; [this was bmerc-install-frame-properties (in bmerc-hacks.el), but that made
-  ;; it unavailable to xemacs, and the rest of the bmerc-hacks.el file is no
-  ;; longer useful anyway.  -- rgr, 26-Jul-01.]
+  ;; you are running "su", and blue otherwise.
   (let* ((version
-	  (if (and (= rgr-emacs-major-version 23)
-		   (= rgr-emacs-minor-version 1))
+	  (if (and (= emacs-major-version 24)
+		   (= emacs-minor-version 0))
 	      ;; don't show the standard version(s).
 	      ""
 	      ;; In the version (e.g.) "19.34.1", the last component is not
 	      ;; significant (it's the number of times I recompiled it before I
 	      ;; got it right).  -- rgr, 19-Oct-98.  [except for pre-release
 	      ;; versions.  -- rgr, 4-Aug-09.]
-	      (format " %s.%s"
-		      rgr-emacs-major-version rgr-emacs-minor-version)))
+	      (format " %s.%s" emacs-major-version emacs-minor-version)))
 	 (real-login-name (user-real-login-name))
 	 (su-p (not (equal real-login-name
 			   ;; SUDO_USER is also defined by kdesu (e.g.).

@@ -232,21 +232,8 @@ but it is usually sufficient to take the default.")
 ;; This has some per-buffer stuff.  -- rgr, 19-Mar-96.
 (add-hook 'html-helper-mode-hook 'rgr-html-helper-mode-hook)
 
-;; Prefer mozilla, then firefox, then whatever browse-url-default-browser turns
-;; up.  [Which does not always work; on carthage it's browse-url-gnome-moz,
-;; which doesn't work without installing Gnome.  -- rgr, 18-Apr-07.]
-(setq browse-url-browser-function
-      (cond ((executable-find "mozilla")
-	      (if (eq rgr-site 'home)
-		  ;; [for some reason, "netscape" no longer works on my home
-		  ;; system.  -- rgr, 7-Jul-07.]
-		  'browse-url-firefox
-		  'browse-url-netscape))
-	    ((and (executable-find "firefox")
-		  ;; Not available in Emacs 21.*.
-		  (fboundp 'browse-url-firefox))
-	      'browse-url-firefox)
-	    (t browse-url-browser-function)))
+;; Prefer Firefox.
+(setq browse-url-browser-function 'browse-url-firefox)
 
 ;; Emacs/W3
 (add-hook 'w3-load-hook 'rgr-w3-load-hook)
@@ -272,7 +259,7 @@ but it is usually sufficient to take the default.")
 	     "-L" "8085:granada:80"
 	     "-L" "8086:xanadu:80")
 	    ;; This must be in the "home" list because lap on the road currently
-	    ;; thinks its at home.
+	    ;; thinks it's at home.
 	    ("rgrjr\\.dyndns\\.org$"
 	     "-L" "9143:localhost:143"))))
 
@@ -290,12 +277,12 @@ but it is usually sufficient to take the default.")
 		       ;; Normal location.
 		       "/home/rogers/emacs/"))
 	 (subdir (expand-file-name
-		   (if (>= rgr-emacs-major-version 22) "new-vc-22" "new-vc")
+		   (if (>= emacs-major-version 22) "new-vc-22" "new-vc")
 		   base-dir)))
     (expand-file-name "new-vc.el" subdir)))
 (if (and rgr-new-vc-file
 	 ;; Use the native version control stuff in Emacs 23.
-	 (<= rgr-emacs-major-version 22)
+	 (<= emacs-major-version 22)
 	 (file-readable-p rgr-new-vc-file))
     (load-file rgr-new-vc-file))
 ;; vc-dir-mode only appeared in Emacs 23.1

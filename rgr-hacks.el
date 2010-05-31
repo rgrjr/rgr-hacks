@@ -141,42 +141,17 @@ another machine.")
 
 (defvar rgr-emacs-flavor (car rgr-emacs-version-info)
   "Type of emacs (fsf, xemacs, or lucid).")
-(defvar rgr-emacs-major-version (car (cdr rgr-emacs-version-info))
-  "Emacs version (18, 19, 20, ...), for dealing with configuration
-differences.  Much code will fail to work on 18, though, so it's not
-really supported.")
-(defvar rgr-emacs-minor-version (car (cdr (cdr rgr-emacs-version-info)))
-  "Emacs minor version (the second number), for dealing with configuration
-differences.")
 
 ;;;; Support hacks.
-
-;;;###autoload
-(defmacro rgr-emacs-major-version-case (&rest case-clauses)
-  "Evaluate different case-like clauses depending on the emacs version.
-For a list of legal major version values defined at present, see the
-rgr-emacs-major-version variable; use a list of one or more of these to
-run a clause in more than one version.  Use the symbols t or otherwise
-to get a default clause."
-  (cons 'cond
-	(mapcar (function (lambda (clause)
-		  (cons (let ((version (car clause)))
-			  (if (memq version '(t otherwise))
-			      t
-			      (list (if (listp version) 'memq 'eq)
-				    'rgr-emacs-major-version
-				    (list 'quote version))))
-			(cdr clause))))
-		case-clauses)))
 
 ;;;###autoload
 (defun rgr-emacs-version-p (major &optional minor)
   "Return t iff we are running in a version at least as advanced as the
 one specified by MAJOR and MINOR.  MINOR defaults to 0 (i.e. any
 incarnation of the major version)."
-  (or (> rgr-emacs-major-version major)
-      (and (= rgr-emacs-major-version major)
-	   (>= rgr-emacs-minor-version (or minor 0)))))
+  (or (> emacs-major-version major)
+      (and (= emacs-major-version major)
+	   (>= emacs-minor-version (or minor 0)))))
 
 ;;;; General.
 
@@ -637,10 +612,11 @@ M-x buffer-menu)."
 	  (global-set-key [(control meta ?%)] 'query-replace)
 	  ;; [already bound somewhere else?  -- rgr, 26-Jul-01.]
 	  '(global-set-key [(control space)] 'rgr-set-mark-command))
-	((rgr-emacs-version-p 19 30)
-	  ;; [emacs 20 binds these already?  -- rgr, 3-Oct-99.]
-	  (global-set-key [?\C-%] 'replace-string)
-	  (global-set-key [?\C-\M-%] 'query-replace)
+	(t
+	  (or (lookup-key (current-global-map) [?\C-%])
+	      (global-set-key [?\C-%] 'replace-string))
+	  (or (lookup-key (current-global-map) [?\C-\M-%])
+	      (global-set-key [?\C-\M-%] 'query-replace))
 	  (global-set-key [?\C- ] 'rgr-set-mark-command)
 	  ;; Define C-M-Space.  See rgr-define-lisp-mode-commands, which has to
 	  ;; un-shadow this key.

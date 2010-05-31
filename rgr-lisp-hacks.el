@@ -283,9 +283,7 @@ commands work globally (regardless of major mode, dialect, etc.)."
   ;; does the wrong thing.  [but it's called lisp-indent-function in emacs 19.
   ;; -- rgr, 26-Oct-94.]
   ;; (interactive)
-  (let* ((lisp-indent (if (eq rgr-emacs-major-version 18)
-			  'lisp-indent-hook
-			  'lisp-indent-function))
+  (let* ((lisp-indent 'lisp-indent-function)
 	 (common-lisp-indent
 	  (intern (concat "common-" (symbol-name lisp-indent)))))
     (set lisp-indent common-lisp-indent)
@@ -310,10 +308,6 @@ commands work globally (regardless of major mode, dialect, etc.)."
 	      (let	((&whole 4 &rest (&whole 1 2)) &body))
 	      (let* . let)
 	      (prog1 . nil);; this doesn't work.
-	      ;; Garnet
-	      (create-instance (2 (&whole 17 &rest 1) &body))
-	      ;; rgr-hacks
-	      (rgr-emacs-major-version-case . cond)
 	      ;; other
 	      (check-pointer-slot ((&whole 4 &rest 1) &body))
 	      ))))

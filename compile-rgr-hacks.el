@@ -169,12 +169,11 @@ pair of (file-stem . properties), where properties is a disembodied plist.")
 	(load-path (cons "." load-path))
 	(rgr-hacks-compile-self-n-files-compiled 0))
     (message "rgr-hacks compilation: starting.")
-    (or (boundp 'rgr-emacs-major-version)
-	;; Need to load this beforehand to get rgr-emacs-flavor,
-	;; rgr-emacs-*-version, etc.
+    (or (boundp 'rgr-emacs-flavor)
+	;; Need to load this beforehand to get rgr-emacs-flavor, etc.
 	(load "rgr-hacks.el"))
     (message "Emacs flavor %s, version %d.%d"
-	     rgr-emacs-flavor rgr-emacs-major-version rgr-emacs-minor-version)
+	     rgr-emacs-flavor emacs-major-version emacs-minor-version)
     (let ((tail rgr-hacks-source-files))
       (while tail
 	(let* ((f (car tail))
