@@ -324,6 +324,7 @@ but it is usually sufficient to take the default.")
 (autoload 'moz-minor-mode "moz" "Mozilla Minor and Inferior Mozilla Modes" t)
 (autoload 'espresso-mode "espresso" "Espresso mode for editing Javascript" t)
 (defun espresso-custom-setup ()
+  (define-key espresso-mode-map "-" 'rgr-c-electric-dash)
   (moz-minor-mode 1))
 (add-hook 'espresso-mode-hook 'espresso-custom-setup)
 
