@@ -244,13 +244,13 @@ but it is usually sufficient to take the default.")
 (setq ssh-host-history
       (append (if (eq rgr-site 'mgi)
 		  nil
-		  '("rogers@modulargenetics.com"))
+		  '("rogers@woburn.modulargenetics.com"))
 	      '("rogers@rgrjr.dyndns.org" "rogers@huxley.bu.edu")))
 (if (eq rgr-site 'home)
     ;; Enable tunnelling to make the ModGen database and intranet Web servers
     ;; available from home.  -- rgr, 29-Feb-04.
     (setq ssh-per-host-option-alist
-	  '(("modulargenetics\\.com$"
+	  '(("woburn\\.modulargenetics\\.com$"
 	     "-L" "8080:rome:80"
 	     "-L" "8081:alexandria:80"
 	     "-L" "8082:karnak:80"
