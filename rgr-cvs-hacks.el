@@ -99,7 +99,7 @@ when asked to compare a working directory to the original CVS version
 \(e.g. 'C-u \\[vc-diff] \".\" RET RET RET'), but it also renames the
 output buffer from '*vc-diff*' to '*vc-project-diff*'."
   (interactive)
-  (if (>= rgr-emacs-major-version 23)
+  (if (>= emacs-major-version 23)
       ;; The new way uses filesets (and vc-version-diff ignores its first arg).
       (let* ((files (list (expand-file-name ".")))
 	     (backend (vc-responsible-backend default-directory))

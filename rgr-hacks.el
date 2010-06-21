@@ -621,22 +621,18 @@ M-x buffer-menu)."
 	  ;; Define C-M-Space.  See rgr-define-lisp-mode-commands, which has to
 	  ;; un-shadow this key.
 	  (global-set-key [?\M-\C- ] 'rgr-exchange-point-and-mark)))
-  (cond ((eq rgr-emacs-flavor 'xemacs)
-	  ;; [kludge: doesn't work yet.  -- rgr, 26-Jul-01.]
-	  )
-	((eq window-system 'x)
-	  ;; [idiosyncratic naming.  -- rgr, 4-Apr-96.]
-	  (rgr-install-x11-hacks))
-	(t
-	  (let ((setup-function (intern (concat "rgr-install-"
-						(symbol-name window-system)
-						"-hacks"))))
-	    (cond ((fboundp setup-function)
-		    (funcall setup-function))
-		  (t
-		    (message "No %s function defined for window system %s"
-			     setup-function window-system)
-		    (sit-for 2)))))))
+  (let ((setup-function (if (eq window-system 'x)
+			    ;; [idiosyncratic naming.  -- rgr, 4-Apr-96.]
+			    'rgr-install-x11-hacks
+			    (intern (concat "rgr-install-"
+					    (symbol-name window-system)
+					    "-hacks")))))
+    (cond ((fboundp setup-function)
+	    (funcall setup-function))
+	  (t
+	    (message "No %s function defined for window system %s"
+		     setup-function window-system)
+	    (sit-for 2)))))
 
 ;;;###autoload
 (defun rgr-install-hacks ()

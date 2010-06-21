@@ -318,8 +318,7 @@ The source is found by using the \\[find-tag] command."
 	  (define-key map "\C-c\C-a" 'rgr-quick-show-elisp-arglist)))
   ;; [kludge:  this is wrong, but we'll fix it later.  -- rgr, 26-Jul-01.]
   ;; [actually, xemacs doesn't seem to bind this.  -- rgr, 26-Jul-01.]
-  (if (and (not (eq rgr-emacs-flavor 'xemacs))
-	   (rgr-emacs-version-p 19))
+  (if (not (eq rgr-emacs-flavor 'xemacs))
       ;; Override mark-sexp (C-M-Space) so it doesn't shadow the binding made by
       ;; the rgr-install-global-hacks function.
       (define-key map [?\M-\C- ] nil))
