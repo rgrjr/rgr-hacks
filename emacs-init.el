@@ -330,11 +330,3 @@ but it is usually sufficient to take the default.")
 
 ;; Run this after all load-path directories are set up.
 (rgr-make-tags-table-list-hook)
-
-;;; Additional inits.
-(cond ((and (eq rgr-site 'bmerc)
-	    (not (equal (user-real-login-name) "rogers")))
-	;; We are "su psa" (or thread, or somebody else) -- load that init too.
-	;; [but disable the completion save.  -- rgr, 24-Mar-97.]
-	(setq rgr-abbrev-completion-save-file nil)
-	(load (concat "~" (user-real-login-name) "/.emacs") t)))

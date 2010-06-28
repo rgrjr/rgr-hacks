@@ -52,7 +52,6 @@ rgr-hacks-compile-module (see below).")
 	  ;; "rgr-geometry"
 	  ("rgr-html-hacks" require (html-helper-mode))
 	  ("rgr-html-head" require (html-helper-mode))
-	  "rgr-html-random"
 	  ;; [need to convert these two from psa-defstruct to the cl-macs.el
 	  ;; defstruct some day.  -- rgr, 26-Nov-06.]
 	  ("rgr-html-nest" require (html-helper-mode))
