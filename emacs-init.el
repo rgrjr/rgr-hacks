@@ -298,6 +298,11 @@ but it is usually sufficient to take the default.")
 	("Europe/London" "London")
 	("Australia/Sydney" "Sydney")))
 
+;; SQL hacks.
+(setq sql-user "modest")
+(setq sql-database "test_modest")
+(setq sql-server "localhost")
+
 ;; Ruby hacks.
 (add-to-list 'auto-mode-alist '("\\.rb$" . ruby-mode))
 (add-hook 'ruby-mode-hook 'rgr-ruby-mode-hook)
