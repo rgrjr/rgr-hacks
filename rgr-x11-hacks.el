@@ -85,7 +85,8 @@
   (require 'rgr-mouse)
   (rgr-install-mouse-commands)
   (rgr-install-frame-properties)
-  (rgr-x11-install-nondefault-fontset)
+  (and (fboundp 'custom-push-theme)
+       (rgr-x11-install-nondefault-fontset))
   (global-set-key [?\C-\.] 'ilisp-next-possibility)
   ;; [not sure if this autoloads . . .  -- rgr, 27-Nov-95.]  [it didn't, but I
   ;; seem to have taken care of that in the mean time.  -- rgr, 4-Apr-96.]

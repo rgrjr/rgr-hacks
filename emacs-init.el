@@ -114,7 +114,8 @@ but it is usually sufficient to take the default.")
 (global-set-key "\C-c\M-." 'rgr-elisp-find-tag-for-emacs-key)
 
 ;; Display the battery status if we have a battery.
-(if (file-directory-p "/proc/acpi/battery")
+(if (and (file-directory-p "/proc/acpi/battery")
+	 (fboundp 'display-battery-mode))
     (display-battery-mode 1))
 
 ;; The default is after-completion (and used to be nil); setting it to t makes
