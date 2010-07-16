@@ -16,14 +16,11 @@
 	  ("\\.xls$" "gnumeric")
 	  ;; ("\\.csv$" "gnumeric")	;; [doesn't work.  -- rgr, 18-Feb-04.]
 	  ("\\.pp[st]$" "ooimpress")
-	  ("\\.doc$" "oowriter")
+	  ("\\.docx?$" "oowriter")
 	  ("\\.doc$" "abiword")
 	  ("\\.pdf$" "acroread")
 	  ("\\.svg$" "inkscape")
 	  ("\\.dia$" "dia")
-	  ;; ("\\.vsd$" "dia")		;; [doesn't work.  -- rgr, 27-Apr-05.]
-	  ;; [this doesn't work; ffap hacks it.  -- rgr, 24-Dec-04.]
-	  ;; ("^view:///.*\.html" "mozilla")
 	  ;; image extensions.
 	  ("\\.\\(png\\|jpe?g\\|gif\\)$" "gimp")))
 
