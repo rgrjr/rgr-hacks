@@ -47,20 +47,28 @@
 version control back ends.")
  
 ;;;###autoload
-(defun rgr-vc-recent-changes (&optional number-of-days)
-  "Show a reverse-chronological summary of 'cvs log' or 'svn log' with
-changed files added where possible.  By default it covers the last three
-days.  If you give a C-u, it shows the last week's worth; if C-u C-u,
-then the last month (30 days, actually).  Any other numeric argument
-shows the log for that many days."
-  (interactive "P")
+(defun rgr-vc-recent-changes (directory &optional number-of-days)
+  "Show a summary of 'cvs log' or 'svn log' output.
+The summary is in reverse chronological order, with changed files
+shown where possible.  By default it covers the last three days
+for the current directory.  A numeric argument shows the log for
+that many days, and also prompts for a directory.  If you give a
+C-u, it shows the last week's worth; if C-u C-u, then the last
+month (30 days, actually)."
+  (interactive
+   (list (if current-prefix-arg
+	     (file-truename
+	       (read-file-name "VC recent changes for directory: "
+			       default-directory default-directory t
+			       nil #'file-directory-p))
+	     default-directory)
+	 current-prefix-arg))
   (require 'time-date)		;; part of gnus
-  (let* ((original-directory default-directory)
-	 (backend (vc-responsible-backend original-directory))
+  (let* ((backend (vc-responsible-backend directory))
 	 (command-format
 	   (cond ((null backend)
 		   (error "The directory %S is not under version control."
-			  original-directory))
+			  directory))
 		 ((car (cdr (assoc backend rgr-vc-backend-to-log-command))))
 		 (t
 		   (error "Don't know how to deal with backend '%S'."
@@ -84,11 +92,12 @@ shows the log for that many days."
 	   (format-time-string "%Y-%m-%d %H:%M" n-days-ago)))
     ;; (error "Date '%s'." n-days-ago-string)
     (let ((output (get-buffer-create "*vc-recent-changes*")))
-      (shell-command (format command-format n-days-ago-string) output)
+      (let ((default-directory directory))
+	(shell-command (format command-format n-days-ago-string) output))
       (with-current-buffer output
 	;; must preserve the default directory so that vc-history-diff knows
 	;; where to operate.
-	(setq default-directory original-directory)
+	(setq default-directory directory)
 	(vc-history-mode)))))
 
 ;;;###autoload
