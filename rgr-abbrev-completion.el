@@ -578,28 +578,6 @@ Also undoes the effect if it was done by the immediately preceding command."
       (> (cdr entry1) (cdr entry2))))
 
 ;;;; Commands for inserting completions.
-;; [original design.  -- rgr, 1-Feb-98.]
-
-(defun rgr-abbrev-generate-completion-possibilities (word)
-  (let ((possibilities nil))
-    (rgr-abbrev-map-possibilities
-      (function (lambda (entry ignore)
-	(cond ((or (null possibilities)
-		   (> (cdr entry) (cdr (nth 0 possibilities))))
-	        (setq possibilities (cons entry possibilities)))
-	      (t
-	        (let ((tail possibilities))
-		  (while (and (cdr tail) (> (cdr entry) (cdr (nth 0 tail))))
-		    (setq tail (cdr tail)))
-		  (rplacd tail (cons entry (cdr tail))))))))
-      word)
-    possibilities))
-
-(defun rgr-abbrev-enumerate-completion-possibilities (word)
-  (rgr-abbrev-show-possibilities
-    (rgr-abbrev-generate-completion-possibilities word)))
-
-;;;; Commands for inserting completions.
 ;; [revised design.  -- rgr, 1-Feb-98.]
 
 (defun rgr-abbrev-more-message (n total)
