@@ -30,17 +30,7 @@
   (let* ((dir (expand-file-name directory))
 	 (generated-autoload-file
 	   (expand-file-name (or file "loaddefs.el") dir)))
-    (funcall (cond ((fboundp 'update-autoloads-from-directories)
-		     ;; emacs 20 version (takes &rest directories).
-		     'update-autoloads-from-directories)
-		   ((fboundp 'update-autoloads-from-directory)
-		     ;; emacs 19.31+ version (takes a single directory).
-		     'update-autoloads-from-directory)
-		   (t
-		     ;; called update-directory-autoloads prior to 19.31.  --
-		     ;; rgr, 20-Jul-96.]
-		     'update-directory-autoloads))
-	     dir)))
+    (update-directory-autoloads dir)))
 
 ;;;###autoload
 (defun rgr-update-autoloads ()
@@ -124,70 +114,36 @@ A nonzero prefix argument also means ask about each subdirectory."
 	     file-count (if (= file-count 1) "" "s")
 	     (if (> dir-count 1) (format " in %d directories" dir-count) ""))))
 
-;;;; Server status commands.
+;;;; Backup hackery.
 
-;; [this is identical to the ctserv-get-server-pid function in
-;; /usr/local/lib/emacs/site-lisp/ctserv-request.el, and is duplicated in order
-;; to avoid tangled modularity.  -- rgr, 6-Mar-98.]  [that function is now
-;; broken, because it doesn't have the fix i just made to this one to get around
-;; the fact that "." is no longer on $PATH.  -- rgr, 23-Jan-01.]
-(defun psa-get-server-pid (server-pathname &optional no-message-p)
-  "Return the process ID of the server indicated by server-pathname.
-This will be -1 if the server is not operating.  An error is signalled
-if (e.g.) the pathname does not indicate a server."
-  (let ((buffer (get-buffer-create " psa get-server-pid"))
-	(psa-bin-dir (expand-file-name "~psa/bin/"))
-	(old-path (getenv "PATH")))
-    (unwind-protect
-	 (with-current-buffer buffer
-	   (or no-message-p
-	       (message "Checking whether the server is running . . ."))
-	   (setenv "PATH" (concat psa-bin-dir ":" old-path))
-	   (call-process (expand-file-name "get-server-pid" psa-bin-dir)
-			 nil t nil server-pathname)
-	   (goto-char (point-min))
-	   (let ((pid (read buffer)))
-	     (or (numberp pid)
-		 (error "Error in get-server-pid: '%s'"
-			(buffer-substring (point-min)
-					  (progn (end-of-line)
-						 (point)))))
-	     (or no-message-p
-		 (message "Checking whether the server is running . . . done."))
-	     pid))
-      (setenv "PATH" old-path)
-      (kill-buffer buffer))))
+(defvar rgr-backup-star-line
+  (let ((digit "[0-9]"))
+    (concat "^ \\([ *]\\) *" digit "+ \\([^ .]+\\)-l\\(" digit "\\)"))
+  "Match the first part of a line of show-backups.pl output.")
 
-(defun psa-status-internal (server-pathname)
-  ;; helper for the psa-status command.
-  (let ((server-name (file-name-nondirectory server-pathname))
-	(buffer nil))
-    (and (string-match "\\.bu\\.edu$" (system-name))
-	 (let ((pid (psa-get-server-pid server-pathname)))
-	   (if (= pid -1)
-	       (error "The %s server seems to have died." server-name))))
-    ;; Server running; send it something to chew on.
-    (require 'sendmail)
-    (unwind-protect
-	 (with-current-buffer
-	     (setq buffer
-		   (get-buffer-create (concat " " server-name " status")))
-	   (insert "To: " server-name "@darwin.bu.edu\n"
-		   "Subject: $$status$$\n"
-		   mail-header-separator "\n"
-		   "Generated automatically by the psa-status emacs command.\n")
-	   ;; mail it.  based on what mail-send does.
-	   (funcall send-mail-function)
-	   (message "Sent status request to %s; %s"
-		    server-name "check your mail in a few minutes."))
-      (and buffer (kill-buffer buffer)))))
-
-;;;###autoload
-(defun psa-status (&optional test-p)
-  "Request the status of the psa server via email."
-  (interactive "P")
-  (psa-status-internal
-    (expand-file-name (if test-p "~psa/psa-test" "~psa/psa-request"))))
+;;;###AUTOLOAD
+(defun rgr-update-backup-stars ()
+  "Update the '*' prefixes in show-backups.pl output.
+Starts from point and ends when we run out of backup description lines."
+  (interactive)
+  (save-excursion
+    (beginning-of-line)
+    (let ((current-level 10)
+	  (current-backup ""))
+      (while (looking-at rgr-backup-star-line)
+	(let* ((star-p (equal (match-string 1) "*"))
+	       (backup-name (match-string 2))
+	       (level (string-to-number (match-string 3)))
+	       (current-p
+		 (or (equal current-backup backup-name)
+		     (< level current-level))))
+	  (if (not (eq current-p star-p))
+	      (replace-match (if current-p "*" " ") t t nil 1))
+	  (if current-p
+	      (setq current-level level
+		    current-backup backup-name))
+	  ;; (message "current-p %S" current-p) (sit-for 1)
+	  (forward-line))))))
 
 ;;;; FASTA-format sequence hackery.
 
