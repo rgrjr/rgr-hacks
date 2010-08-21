@@ -293,17 +293,15 @@ Starts from point and ends when we run out of backup description lines."
 	     (string-match "^\\(.+\\)@\\(.+\\)$" string))
 	(setq host (match-string 2 string)
 	      string (match-string 1 string)))
-    ;; groES-var-1 and OPH%@alexandria and groES-v% and exp14%@localhost:8082
+    ;; groES_vector and OPH%@alexandria and groES_v% and exp14%@localhost:8081
     (and string
-	 (let ((url 
-		 (concat "http://"
-			 host
-			 (if (string-match "%" string)
-			     "/modest/search/find-sequence.cgi?seq_name="
-			     "/modest/tools/view-sequence.cgi?sequence_id=")
-			 ;; [this should be escaped.  -- rgr, 22-Dec-05.]
-			 string)))
-	   (rgr-browse-url-netscape url)))))
+	 (let ((url (concat "http://" host "/modest/"
+			    (if (string-match "%" string)
+				"search/find-sequence.cgi?sequence_name="
+				"tools/view-sequence.cgi?sequence_id=")
+			    ;; [this should be escaped.  -- rgr, 22-Dec-05.]
+			    string)))
+	   (browse-url url)))))
 
 ;;;###autoload
 (defun rgr-delete-non-sequence-characters ()
