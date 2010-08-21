@@ -2,10 +2,7 @@
 ;;;
 ;;;    GNU emacs mouse hackery.
 ;;;
-;;;    This requires various support functions in the ./rgr-mouse.el file.  See
-;;; also the ./rgr-mouse-18.el file.
-;;;
-;;;    Modification history:
+;;;    [original] Modification history:
 ;;;
 ;;; started recreating from the old ./rgr-mouse-18.el file.  -- rgr, 24-Jan-95.
 ;;; now seems to work under fsf emacs 19.  -- rgr, 25-Jan-95.

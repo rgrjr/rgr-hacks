@@ -2,10 +2,7 @@
 ;;;
 ;;;    GNU emacs mouse hackery.
 ;;;
-;;;    This requires various support functions in the ./rgr-mouse.el file.  See
-;;; also the ./rgr-mouse-18.el file.
-;;;
-;;; $Id:$
+;;; $Id$
 
 (defun rgr-print-table (table)
   "Formatting hack, for documenting mouse commands."
@@ -68,8 +65,7 @@
   (if sort-predicate
       (setq cmds (sort cmds sort-predicate)))
   (with-output-to-temp-buffer "*Help*"
-    (save-excursion
-      (set-buffer "*Help*")
+    (with-current-buffer "*Help*"
       (make-local-variable 'truncate-lines)
       (setq truncate-lines t))
     (princ "Mouse commands:\n\n")
