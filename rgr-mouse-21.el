@@ -145,23 +145,6 @@ is like #\c-mouse-left in a dynamic window."
     (goto-char rgr-mouse-original-point)
     (setq rgr-mouse-original-window nil)))
 
-(defun rgr-mouse-dired-find-file (event)
-  "In dired, visit the file or directory named on this line by clicking on it."
-  ;; Based on the dired-find-file command.  [note also the existence of the
-  ;; dired-mouse-find-file-other-window command, bound to mouse-2 by default.
-  ;; -- rgr, 2-Mar-99.]
-  (interactive "e")
-  (let ((file (save-excursion
-		(save-window-excursion
-		  (mouse-set-point event)
-		  (expand-file-name
-		    (file-name-sans-versions (dired-get-filename) t))))))
-    (find-file file)))
-
-(defun rgr-install-dired-mouse-commands ()
-  ;; Can't call this until the map is built.
-  (define-key dired-mode-map [M-mouse-1] 'rgr-mouse-dired-find-file))
-
 (defun rgr-install-mouse-commands ()
   "Install some Symbolics-like mouse commands."
   ;; Probably doesn't work in Lucid emacs.  Meant to be used from a .emacs file,
@@ -189,8 +172,7 @@ is like #\c-mouse-left in a dynamic window."
   ;; Fix syntax so that names with dots in them work.
   (modify-syntax-entry ?. "_" emacs-lisp-mode-syntax-table)
   (if lisp-mode-syntax-table
-      (modify-syntax-entry ?. "_" lisp-mode-syntax-table))
-  (add-hook 'dired-load-hook 'rgr-install-dired-mouse-commands))
+      (modify-syntax-entry ?. "_" lisp-mode-syntax-table)))
 
 ;; (global-key-binding [M-down-mouse-1])
 
