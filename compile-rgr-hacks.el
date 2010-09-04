@@ -42,6 +42,7 @@ rgr-hacks-compile-module (see below).")
 	  "rgr-compile-hacks"
 	  "rgr-cvs-hacks"
 	  ("rgr-new-vc-hacks" version 23)
+	  "rgr-svn-hacks"
 	  "rgr-diff-hacks"
 	  "rgr-dired"
 	  "rgr-elisp-hacks"
