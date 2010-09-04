@@ -20,7 +20,7 @@
 ;;; Sets the mark to the beginning of the insertion, and leaves point at the
 ;;; end.  This works between windows/buffers, including the minibuffer, and does
 ;;; not change the current buffer.
-o;;;
+;;;
 ;;;    rgr-mouse-mark-text-down and rgr-mouse-mark-text-up -- Set mark or copy
 ;;; text to kill ring.  If clicked in a single spot, sets the mark there.  If
 ;;; clicked in one spot & dragged to and released at another, copies the
