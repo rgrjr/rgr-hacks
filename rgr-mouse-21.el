@@ -16,7 +16,12 @@
 ;;; $Id$
 
 (eval-when-compile
+  (require 'ilisp-mouse)
+  (require 'browse-url)
   (require 'dired))
+
+(require 'ilisp-mouse)
+(require 'browse-url)
 
 (defvar rgr-mouse-insert-whitespace-between-words-p t
   "*Whether to insert a space between words.
