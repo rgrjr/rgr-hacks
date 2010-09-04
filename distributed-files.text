@@ -11,7 +11,6 @@ rgr-html-head.el
 rgr-html-nest.el
 rgr-html-tags.el
 rgr-lisp-hacks.el
-rgr-mouse-21.el
 rgr-mouse.el
 rgr-perl-hacks.el
 rgr-shell-hacks.el
