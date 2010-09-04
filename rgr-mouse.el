@@ -21,13 +21,6 @@
 ;;; end.  This works between windows/buffers, including the minibuffer, and does
 ;;; not change the current buffer.
 ;;;
-;;;    rgr-mouse-mark-text-down and rgr-mouse-mark-text-up -- Set mark or copy
-;;; text to kill ring.  If clicked in a single spot, sets the mark there.  If
-;;; clicked in one spot & dragged to and released at another, copies the
-;;; intervening text to the kill ring.  Does not change the current buffer.  For
-;;; Symbolics hackers, this is like #\C-Mouse-Left.  [unfortunately, it doesn't
-;;; highlight during the drag in emacs 19.  -- rgr, 27-Jan-95.]
-;;;
 ;;;    rgr-install-mouse-commands -- binds these to Symbolics-compatible mouse
 ;;; clicks.  Note that this shadows mouse-set-secondary (on M-left) and moves
 ;;; mouse-buffer-menu from C-left to M-right (which in turn shadows
@@ -138,72 +131,12 @@ and does not change the current buffer."
 			(goto-char start-point)
 			(insert " ")))))))))
 
-(defvar rgr-mouse-original-window nil)
-(defvar rgr-mouse-original-point nil)
-
-(defun rgr-mouse-mark-text-down (event)
-  "Set mark or copy text to kill ring.
-If clicked in a single spot, sets the mark there.
-If clicked in one spot & dragged to and released at another, copies the
-intervening text to the kill ring.  (Note that rgr-mouse-mark-text-up
-must be bound to the corresponding release event for either of these to
-work.)  The click and release points may be in either order, and need
-not even be in the same window, as long as they are in the same buffer
-\(which need not be the same as the current buffer).  Point, current
-buffer, and window state are not changed.  For Symbolics hackers, this
-is like #\c-mouse-left in a dynamic window."
-  ;; [It would be nice to soup this up with mouse-drag-secondary borrowings,
-  ;; specifically the dynamic mouse-dragging highlighting.  But
-  ;; mouse-drag-secondary is long & involved, so some other time.  -- rgr,
-  ;; 25-Jan-95.]
-  ;; Can't use save-excursion because this command happens as two clicks.  At
-  ;; least we don't have to remember the current buffer, because this is implied
-  ;; by the current window (and the window's buffer can't be changed between the
-  ;; clicks).
-  (interactive "e")
-  (setq rgr-mouse-original-window (selected-window))
-  (setq rgr-mouse-original-point (point))
-  (mouse-set-point event))
-
-(defun rgr-mouse-mark-text-up (event)
-  "See rgr-mouse-mark-text-down, without which this will not work."
-  (interactive "e")
-  (if (not rgr-mouse-original-window)
-      (error "You can only invoke %s after %s."
-	     'rgr-mouse-mark-text-up 'rgr-mouse-mark-text-down))
-  (unwind-protect
-       (let ((start-point (point)) (start-buffer (current-buffer)))
-	 (mouse-set-point event)
-	 (cond ((not (eq start-buffer (current-buffer)))
-		 ;; But we don't care about the window, in case the user wants
-		 ;; to mark a long stretch of text by putting the start & end in
-		 ;; different visible windows.
-		 (error "Marked text must lie within a single buffer."))
-	       ((eq start-point (point))
-		 ;; Zero-length text selection; just set mark.
-		 (push-mark))
-	       (t
-		 ;; Normal c-w behavior (code partly stolen from x-cut-text).
-		 (let ((beg (min start-point (point)))
-		       (end (max start-point (point))))
-		   (x-set-selection nil (buffer-substring beg end))
-		   (copy-region-as-kill beg end)
-		   (message "%d characters copied to kill ring." (- end beg))
-		   (sit-for 1)))))
-    ;; Now go back to where we were.
-    (select-window rgr-mouse-original-window)
-    (goto-char rgr-mouse-original-point)
-    (setq rgr-mouse-original-window nil)))
-
 (defun rgr-install-mouse-commands ()
   "Install some Symbolics-like mouse commands."
   ;; Probably doesn't work in Lucid emacs.  Meant to be used from a .emacs file,
   ;; but doesn't hurt to have it available as an interactive command, too.
   (interactive)
   (cond ((eq rgr-emacs-flavor 'fsf)
-	  (global-set-key [C-down-mouse-1] 'rgr-mouse-mark-text-down)
-	  ;; (global-set-key [C-drag-mouse-1] 'mouse-set-secondary)
-	  (global-set-key [C-mouse-1] 'rgr-mouse-mark-text-up)
 	  (global-set-key [C-mouse-2] 'rgr-mouse-insert-thing)
 	  ;; Need to flush C-down-mouse-2, or C-mouse-2 doesn't work in 19.30.
 	  ;; -- rgr, 25-Mar-96.
@@ -213,9 +146,6 @@ is like #\c-mouse-left in a dynamic window."
 	  (global-set-key [M-down-mouse-1] nil)
 	  (global-set-key [M-mouse-1] 'ilisp-mouse-edit-thing))
 	(t
-	  (global-set-key [(control button1)] 'rgr-mouse-mark-text-down)
-	  ;; (global-set-key [(control drag-button1)] 'mouse-set-secondary)
-	  (global-set-key [(control button1up)] 'rgr-mouse-mark-text-up)
 	  (global-set-key [(control button2)] 'rgr-mouse-insert-thing)
 	  (global-set-key [(meta button3)] 'mouse-buffer-menu)
 	  (global-set-key [(meta button1)] 'ilisp-mouse-edit-thing)))
