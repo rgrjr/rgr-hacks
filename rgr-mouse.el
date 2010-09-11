@@ -148,11 +148,7 @@ and does not change the current buffer."
 	(t
 	  (global-set-key [(control button2)] 'rgr-mouse-insert-thing)
 	  (global-set-key [(meta button3)] 'mouse-buffer-menu)
-	  (global-set-key [(meta button1)] 'ilisp-mouse-edit-thing)))
-  ;; Fix syntax so that names with dots in them work.
-  (modify-syntax-entry ?. "_" emacs-lisp-mode-syntax-table)
-  (if lisp-mode-syntax-table
-      (modify-syntax-entry ?. "_" lisp-mode-syntax-table)))
+	  (global-set-key [(meta button1)] 'ilisp-mouse-edit-thing))))
 
 ;; (global-key-binding [M-down-mouse-1])
 
