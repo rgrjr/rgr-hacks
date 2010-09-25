@@ -160,6 +160,8 @@ but it is usually sufficient to take the default.")
 (if (fboundp 'vm-mail)
     (global-set-key "\C-xm" 'vm-mail))
 (setq mail-self-blind t)
+;; Double the default so we don't get queries about large mail files.
+(setq large-file-warning-threshold 20000000)
 ;; Mailcrypt stuff.
 (setq mc-default-scheme 'mc-scheme-gpg)
 (setq mc-pgp-path "gpg")
