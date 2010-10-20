@@ -12,7 +12,7 @@
 (defvar rgr-ffap-file-to-application-map
 	'(("\\.gnumeric$" "gnumeric")
 	  ("\\.sxc$" "oocalc")
-	  ("\\.xl[st]$" "oocalc")
+	  ("\\.xl[st]x?$" "oocalc")
 	  ("\\.xl[st]$" "gnumeric")
 	  ;; ("\\.csv$" "gnumeric")	;; [doesn't work.  -- rgr, 18-Feb-04.]
 	  ("\\.pp[st]$" "ooimpress")
