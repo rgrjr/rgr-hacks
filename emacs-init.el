@@ -72,6 +72,11 @@ but it is usually sufficient to take the default.")
 ;; Also turn off the splash graphic; it's not a problem when working locally,
 ;; but takes a few seconds to shovel over SSH.  -- rgr, 12-Jul-03.
 (defun use-fancy-splash-screens-p () nil)
+;; Get X11 selections on the kill ring.  This restores 23.x behavior in emacs 24
+;; and later.  -- rgr, 15-Oct-10.
+(setq x-select-enable-primary t)
+;; Give this a try, too.  -- rgr, 15-Oct-10.
+(setq mouse-drag-copy-region t)
 
 ;; Turn off paging in subordinate shells.  -- rgr, 17-Feb-00.
 (setenv "PAGER" "cat")
@@ -189,10 +194,7 @@ but it is usually sufficient to take the default.")
 
 (rgr-install-diff-hacks)
 (add-hook 'log-view-mode-hook 'rgr-log-view-mode-hook)
-(add-hook 'ilisp-mode-hook 'rgr-ilisp-mode-hook)
 (add-hook 'lisp-mode-hook 'rgr-lisp-mode-hook)
-;; [doing cmulisp seems to undo this.  -- rgr, 5-Apr-94.]  [actually, i think i
-;; was taking ilisp-load-hook for ilisp-mode-hook.  -- rgr, 28-Jan-00.]
 (add-hook 'cmulisp-hook 'rgr-lisp-mode-hook)
 (add-hook 'emacs-lisp-mode-hook 'rgr-lisp-mode-hook)
 (add-hook 'text-mode-hook 'rgr-text-mode-hook)
