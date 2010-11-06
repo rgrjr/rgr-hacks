@@ -256,18 +256,14 @@ Guesses the function without prompting if it can."
 Interactively, if the binding is execute-extended-command, a command is read.
 The source is found by using the \\[find-tag] command."
   (interactive "kFind tag for key: ")
-  (let ((command (key-binding key))
-	(finder (or ;; [this breaks in ilisp.  -- rgr, 26-Dec-00.]
-		    ;; (key-binding "\M-.")
-		    (function find-tag))))
+  (let ((command (key-binding key)))
     (cond ((null command)
 	    (message "%s is undefined" (key-description key)))
 	  ((and (interactive-p)
 		(eq command 'execute-extended-command))
-	    (funcall finder (symbol-name
-			      (read-command "Find tag for command: "))))
+	    (find-tag (symbol-name (read-command "Find tag for command: "))))
 	  (t
-	    (funcall finder (symbol-name command))))))
+	    (find-tag (symbol-name command))))))
 
 ;;; Other stuff.
 
