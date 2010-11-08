@@ -121,7 +121,10 @@ output buffer from '*vc-diff*' to '*vc-project-diff*'."
     (let ((old-buf (get-buffer "*vc-project-diff*")))
       (and old-buf
 	   (kill-buffer old-buf)))
-    (rename-buffer "*vc-project-diff*")))
+    (rename-buffer "*vc-project-diff*")
+    ;; Unfortunately, this still trashes the "*vc-diff*" buffer.
+    (setq revert-buffer-function
+	  '(lambda (ignore-auto noconfirm) (rgr-vc-project-diff)))))
 
 ;;;; vc-history mode.
 
