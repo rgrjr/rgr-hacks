@@ -160,8 +160,7 @@ should be called from .emacs files."
 	(list
 	  (rgr-make-tags-table-list
 	    (append (list "~/projects/mgi/modest"
-			  "/usr/local/src/rogers/bmerc/pima-profile-0.1/src"
-			  "/usr/local/src/rogers/bmerc/PIMA-0.6_2")
+			  "~/projects/mgi/inventory")
 		    (let ((subdir-tail
 			   (directory-files "/usr/lib/perl5/site_perl/" t))
 			  (bio-dirs nil))
