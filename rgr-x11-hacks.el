@@ -8,15 +8,17 @@
   ;; Get a decent label and a more visible mouse.  The mouse cursor is red if
   ;; you are running "su", and blue otherwise.
   (let* ((version
-	  (if (and (= emacs-major-version 24)
-		   (= emacs-minor-version 0))
-	      ;; don't show the standard version(s).
-	      ""
-	      ;; In the version (e.g.) "19.34.1", the last component is not
-	      ;; significant (it's the number of times I recompiled it before I
-	      ;; got it right).  -- rgr, 19-Oct-98.  [except for pre-release
-	      ;; versions.  -- rgr, 4-Aug-09.]
-	      (format " %s.%s" emacs-major-version emacs-minor-version)))
+	  (cond ((and (= emacs-major-version 24)
+		      (= emacs-minor-version 0))
+		  ;; don't show the standard version(s).
+		  "")
+		;; In the version (e.g.) "19.34.1", the last component is not
+		;; significant (it's the number of times I recompiled it before
+		;; I got it right).  -- rgr, 19-Oct-98.
+		((string-match "^\\([0-9.]+\\)\\.[0-9]+$" emacs-version)
+		  (concat " " (match-string 1 emacs-version)))
+		;; Fallback.
+		(t (concat " " emacs-version))))
 	 (real-login-name (user-real-login-name))
 	 (su-p (not (equal real-login-name
 			   ;; SUDO_USER is also defined by kdesu (e.g.).
