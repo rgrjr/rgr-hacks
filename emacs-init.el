@@ -260,7 +260,7 @@ but it is usually sufficient to take the default.")
 	     "-L" "8081:alexandria:80"
 	     "-L" "8082:karnak:80"
 	     "-L" "8083:thebes:80"
-	     "-L" "8084:carthage:80"
+	     "-L" "8084:yuggoth:80"
 	     "-L" "8085:granada:80"
 	     "-L" "8086:xanadu:80")
 	    ;; This must be in the "home" list because lap on the road currently
