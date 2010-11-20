@@ -84,34 +84,6 @@ inboxes/maildirs (so be careful of . and ..!).")
       (setq files (cdr files)))
     count))
 
-(defun v+q-display-message (message)
-  ;; Display a message with minimum fuss, as long as the user can read it.
-  ;; Steals from the ispell interface.
-  (if (< (length message) (frame-width))
-      (message "%s" message)
-      (let* ((buffer (get-buffer-create "*v+q message*"))
-	     (buffer-lines
-	       (with-current-buffer buffer
-		 (erase-buffer)
-		 (insert message)
-		 (let ((fill-column (1- (frame-width))))
-		   (fill-paragraph nil))
-		 (count-lines (point-min) (point-max)))))
-	(require 'ispell)
-	(unwind-protect
-	     (save-excursion
-	       (save-window-excursion
-		 ;; this overlays the top N lines of the current window.
-		 ;; unfortunately, it doesn't seem to like to do less than 4
-		 ;; lines, but this does have to include the window mode line.
-		 (ispell-overlay-window (max 4 (1+ buffer-lines)))
-		 (switch-to-buffer buffer)
-		 (goto-char (point-max))
-		 (if (fboundp 'read-char-exclusive)
-		     (read-char-exclusive "Type any character to dismiss: ")
-		     (read-char "Type any character to dismiss: "))))
-	  (bury-buffer buffer)))))
-
 (defun v+q-mbox-status-internal (inbox-list)
   (let ((result nil)
 	(directory-tail (if (listp inbox-list)
@@ -166,7 +138,7 @@ inboxes/maildirs (so be careful of . and ..!).")
 	  (setq tail (cdr tail))))
       (setq directory-tail (cdr directory-tail)))
     (if result
-	(v+q-display-message (concat result "."))
+	(message (concat result "."))
 	(message "No messages."))))
 
 ;;;###autoload
@@ -283,7 +255,7 @@ inbox in the vm-spool-files list.  Doesn't handle POP or IMAP drops."
 	(setq fullname (mail-quote-printable fullname t)
 	      quote-fullname t))
     (goto-char (point-min))
-    (cond ((eq mail-from-style 'angles)
+    (cond ((member mail-from-style '(default angles))
 	   (insert "From: " fullname)
 	   (let ((fullname-start (+ (point-min) 6))
 		 (fullname-end (point-marker)))
@@ -365,18 +337,7 @@ Interactively prompts for a new return address."
 	    (set (make-local-variable 'mail-specify-envelope-from) t)
 	    (set (make-local-variable 'mail-envelope-from) new-return-address))
 	  (t
-	    ;; kludgery for version 20 and earlier.
-	    (make-local-variable 'buffer-user-mail-address)
-	    (setq buffer-user-mail-address new-return-address)
-	    ;; This would make the lambda-binding in v+q-sendmail-send-it fail
-	    ;; when sendmail-send-it does set-buffer, except that
-	    ;; v+q-sendmail-send-it now undoes this binding.  And we need this
-	    ;; so that mail-self-blind, and perhaps other features, continue to
-	    ;; work as if this was our real address.  -- rgr, 4-Apr-00.
-	    (make-local-variable 'user-mail-address)
-	    (setq user-mail-address new-return-address)
-	    (make-local-variable 'send-mail-function)
-	    (setq send-mail-function 'v+q-sendmail-send-it)))
+	    (error "Emacs version not supported.")))
     (if (and v+q-verbose-p
 	     (not (equal new-return-address old-user-mail-address)))
 	(message "Changed %S to %S."
