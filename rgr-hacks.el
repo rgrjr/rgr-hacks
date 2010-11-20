@@ -551,9 +551,6 @@ M-x buffer-menu)."
 (defun rgr-install-miscellaneous-global-hacks ()
   (global-set-key "\C-cs" 'rgr-insert-signature)
   (global-set-key "\C-x\C-x" 'rgr-exchange-point-and-mark)
-  ;; Make these the default everywhere, in case I get used to typing them.
-  (global-set-key "\C-c." 'ilisp-next-possibility)
-  (global-set-key "\C-c;" 'rgr-comment-region-lisp)
   ;; The standard version doesn't deal with quoted strings . . .
   (global-set-key "\C-\M-u" 'rgr-backward-up-list)
   ;; Try to give *helpful* unique buffer names.  -- rgr, 17-Dec-97.
