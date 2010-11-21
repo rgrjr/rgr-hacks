@@ -307,13 +307,13 @@ Subversion has well-defined revision numbers, and CVS has fuzzier dates.
       (or (and vc-parent-buffer
 	       ;; Take the parent buffer if it's a log buffer.
 	       (with-current-buffer vc-parent-buffer
-		 (eq major-mode 'log-edit-mode))
+		 (derived-mode-p 'log-edit-mode))
 	       vc-parent-buffer)
-	  (and buffer-file-name
-	       ;; If in a file buffer, look for the corresponding log buffer.
-	       (fboundp 'vc-log-buffer-for-file)
+	  ;; If coming from a file buffer, look for the corresponding log.
+	  (and (fboundp 'vc-log-buffer-for-file)
 	       (with-current-buffer source-buffer
-		 (vc-log-buffer-for-file buffer-file-name)))
+		 (and buffer-file-name
+		      (vc-log-buffer-for-file buffer-file-name))))
 	  (error "No associated *VC-log* buffer.")))
     (let ((current-comment-files (rgr-vc-current-comment-files))
 	  (comment-start nil))
