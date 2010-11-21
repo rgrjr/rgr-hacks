@@ -45,6 +45,9 @@
 		    script))))
   "Alist mapping backend names to log summary commands for handled
 version control back ends.")
+
+(defvar vc-recent-changes-number-of-days 3
+  "Default number of history days to show.")
  
 ;;;###autoload
 (defun rgr-vc-recent-changes (directory &optional number-of-days)
@@ -75,7 +78,7 @@ month (30 days, actually)."
 			  backend))))
 	 (number-of-days
 	   (cond ((integerp number-of-days) number-of-days)
-		 ((not number-of-days) 3)
+		 ((not number-of-days) vc-recent-changes-number-of-days)
 		 ((equal number-of-days '(4))
 		   ;; control-U
 		   7)
@@ -98,7 +101,14 @@ month (30 days, actually)."
 	;; must preserve the default directory so that vc-history-diff knows
 	;; where to operate.
 	(setq default-directory directory)
-	(vc-history-mode)))))
+	(vc-history-mode)
+	;; Make this revert-able.
+	(set (make-local-variable 'vc-recent-changes-number-of-days)
+	     number-of-days)
+	(set (make-local-variable 'revert-buffer-function)
+	     #'(lambda (ignore-auto noconfirm)
+		 (rgr-vc-recent-changes default-directory
+					vc-recent-changes-number-of-days)))))))
 
 ;;;###autoload
 (defun rgr-vc-project-diff ()
