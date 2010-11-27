@@ -391,22 +391,17 @@ Stays in buffer-menu mode."
 ;;;###autoload
 (defun rgr-list-buffers (arg)
   "Display a list of names of existing buffers.
-Inserts it in buffer *Buffer List* and displays that.
+Inserts it in buffer *Buffer List* and makes that the current buffer.
 Note that buffers with names starting with spaces are omitted.
 Non-null optional arg FILES-ONLY means mention only file buffers.
 
 The M column contains a * for buffers that are modified.
 The R column contains a % for buffers that are read-only."
-  ;; this is the same as the "stock" list-buffers, except that it puts the
+  ;; This is the same as the "stock" list-buffers, except that it puts the
   ;; buffer-list buffer in the current window, leaving point on the line with
-  ;; the current buffer, and doesn't frob the window state otherwise.  for
-  ;; reasons obscure to me, list-buffers is a subr.
+  ;; the current buffer, and doesn't frob the window state otherwise.
   (interactive "P")
-  (switch-to-buffer (list-buffers-noselect arg))
-  ;; Current buffer may not be in the list if you gave a numeric arg.
-  (or (re-search-forward "^\\." nil t)
-      (forward-line 2))
-  (beginning-of-line))
+  (switch-to-buffer (list-buffers-noselect arg)))
 
 ;;;; Mark ring (aka "point pdl") hackery.
 
