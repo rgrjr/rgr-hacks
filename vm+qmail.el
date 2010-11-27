@@ -454,11 +454,7 @@ keys at all."
 ;;;###autoload
 (defun vm-maildir-move-mail (source destination)
   ;; based on the vm-spool-move-mail function.  -- rgr, 22-Apr-00.
-  (let ((handler (and (fboundp 'find-file-name-handler)
-		      (condition-case ()
-			  (find-file-name-handler source 'vm-maildir-move-mail)
-			(wrong-number-of-arguments
-			  (find-file-name-handler source))))))
+  (let ((handler (find-file-name-handler source 'vm-maildir-move-mail)))
     (if handler
 	(funcall handler 'vm-maildir-move-mail source destination)
 	(vm-maildir-move-mail-internal source destination))))
