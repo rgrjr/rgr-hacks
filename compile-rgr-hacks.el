@@ -30,6 +30,7 @@ rgr-hacks-compile-module (see below).")
 	  "ilisp-mouse"
 	  ;; [provides the rgr-update-autoloads command.  -- rgr, 26-Apr-03.]
 	  ("rgr-random-hacks" require (autoload ffap chistory))
+	  "rgr-list-processes"
 	  "bagels"
 	  "rgr-date"
 	  "rgr-c-hacks"
@@ -168,20 +169,18 @@ pair of (file-stem . properties), where properties is a disembodied plist.")
 	(load-path (cons "." load-path))
 	(rgr-hacks-compile-self-n-files-compiled 0))
     (message "rgr-hacks compilation: starting.")
-    (or (boundp 'rgr-emacs-flavor)
-	;; Need to load this beforehand to get rgr-emacs-flavor, etc.
+    (or (boundp 'rgr-site)
+	;; Need to load this beforehand, e.g. for rgr-hacks-getf.
 	(load "rgr-hacks.el"))
-    (message "Emacs flavor %s, version %d.%d"
-	     rgr-emacs-flavor emacs-major-version emacs-minor-version)
+    (message "Emacs version %d.%d" emacs-major-version emacs-minor-version)
     (let ((tail rgr-hacks-source-files))
       (while tail
 	(let* ((f (car tail))
 	       (name (if (consp f) (car f) f))
 	       (attributes (if (consp f) (cdr f) nil))
-	       (flavors (rgr-hacks-getf attributes 'flavors))
-	       (result (and (if (null flavors)
-				t
-				(member rgr-emacs-flavor flavors))
+	       (version (rgr-hacks-getf attributes 'major-version))
+	       (result (and (or (null version)
+				(>= emacs-major-version version))
 			    (apply (function rgr-hacks-compile-module)
 				   name 'force-p force-p
 				   attributes))))

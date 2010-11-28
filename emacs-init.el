@@ -188,6 +188,10 @@ but it is usually sufficient to take the default.")
 (add-hook 'telnet-mode-hook 'rgr-telnet-mode-hook)
 (add-hook 'sh-mode-hook 'rgr-sh-mode-hook)
 
+;; Prettier process lists.
+(and (>= emacs-major-version 24)
+     (require 'rgr-list-processes))
+
 (rgr-define-lisp-mode-commands emacs-lisp-mode-map)
 (rgr-define-lisp-mode-commands lisp-interaction-mode-map)
 (rgr-common-lisp-indentation)
