@@ -30,7 +30,7 @@ rgr-hacks-compile-module (see below).")
 	  "ilisp-mouse"
 	  ;; [provides the rgr-update-autoloads command.  -- rgr, 26-Apr-03.]
 	  ("rgr-random-hacks" require (autoload ffap chistory))
-	  "rgr-list-processes"
+	  ("rgr-list-processes" version 24)
 	  "bagels"
 	  "rgr-date"
 	  "rgr-c-hacks"
@@ -87,9 +87,7 @@ pair of (file-stem . properties), where properties is a disembodied plist.")
   ;; an early failure, so that all "must skip" messages are shown.
   (let ((skipped-p nil)
 	(version (rgr-hacks-getf options 'version)))
-    (cond ((and version
-		(string-match "^[0-9]+" emacs-version)
-		(< (string-to-number (match-string 0 emacs-version)) version))
+    (cond ((and version (< emacs-major-version version))
 	    (setq skipped-p 'version)
 	    (message "Module %s skipped because it requires Emacs version %s."
 			 module-name version)))
