@@ -543,11 +543,7 @@ the page."
 	  (executable-set-magic "/usr/bin/perl -w"))
 	((file-executable-p "/usr/local/bin/perl")
 	  (require 'executable)
-	  (executable-set-magic "/usr/local/bin/perl -w")))
-  ;; Shadow global comment-region-lisp binding.  [but this loads ilisp,
-  ;; which is a bother . . .  -- rgr, 26-Jul-96.]  [replaced with my own
-  ;; hack.  -- rgr, 7-Sep-99.]
-  (define-key map [?\C-x ?\C-\;] 'rgr-comment-region-lisp))
+	  (executable-set-magic "/usr/local/bin/perl -w"))))
 
 ;;;###autoload
 (defun rgr-perl-mode-hook ()

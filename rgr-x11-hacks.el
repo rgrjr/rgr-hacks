@@ -24,10 +24,7 @@
 			   ;; SUDO_USER is also defined by kdesu (e.g.).
 			   (or (getenv "SUDO_USER") (user-login-name)))))
 	 (ssh-p (getenv "SSH_CONNECTION"))
-	 (label (concat (if (eq rgr-emacs-flavor 'fsf)
-			    "emacs"
-			    (symbol-name rgr-emacs-flavor))
-			version
+	 (label (concat "emacs" version
 			(if (or su-p ssh-p)
 			    (let ((name (system-name)))
 			      (format " %s@%s"
@@ -36,14 +33,12 @@
 					  (substring name 0 (match-beginning 0))
 					  name)))
 			    ""))))
-    (if (eq rgr-emacs-flavor 'xemacs)
-	(setq frame-title-format label)
-	(modify-frame-parameters (selected-frame)
-				 (list (cons 'name label)
-				       ;; [this doesn't seem to work in 20.3.
-				       ;; -- rgr, 21-Mar-04.]
-				       (cons 'mouse-color
-					     (if su-p "blue" "red")))))))
+    (modify-frame-parameters (selected-frame)
+			     (list (cons 'name label)
+				   ;; [this doesn't seem to work in 20.3.
+				   ;; -- rgr, 21-Mar-04.]
+				   (cons 'mouse-color
+					 (if su-p "blue" "red"))))))
 
 (defun rgr-x11-kill-ring-save (beg end)
   "Force X11 cut buffer save, even if interprogram-cut-function is disabled."
@@ -90,8 +85,8 @@
   (and (fboundp 'custom-push-theme)
        (rgr-x11-install-nondefault-fontset))
   (global-set-key [?\C-\.] 'ilisp-next-possibility)
-  ;; [not sure if this autoloads . . .  -- rgr, 27-Nov-95.]  [it didn't, but I
-  ;; seem to have taken care of that in the mean time.  -- rgr, 4-Apr-96.]
-  (global-set-key [?\C-x ?\C-\;] 'rgr-comment-region-lisp))
+  ;; Bind comment-region globally.  (This is an X11 hack because it is too hard
+  ;; to type otherwise.)
+  (global-set-key [?\C-x ?\C-\;] 'comment-region))
 
 (provide 'rgr-x11-hacks)

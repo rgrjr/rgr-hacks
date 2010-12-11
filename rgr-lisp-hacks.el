@@ -115,53 +115,6 @@ defmethod forms."
   (slime-eval-async `(swank:undefine-function ,symbol-name)
                     (lambda (result) (message "%s" result))))
 
-;; Comment region
-;; [taken from the ilisp comment-region-lisp function, with an added space for
-;; readability.  -- rgr, 7-Sep-99.]
-;;;###autoload
-(defun rgr-comment-region-lisp (start end prefix)
-  "If prefix is positive, insert prefix copies of comment-start at the
-start and comment-end at the end of each line in region.  If prefix is
-negative, remove all comment-start and comment-end strings from the
-region."
-  (interactive "r\np")
-  (save-excursion
-    (goto-char end)
-    (if (and (not (= start end)) (bolp))
-	(setq end (1- end)))
-    (goto-char end)
-    (beginning-of-line)
-    (let ((comment-marker (make-marker)))
-      (set-marker comment-marker (point))
-      (untabify start end)
-      (goto-char start)
-      (beginning-of-line)
-      (let* ((count 1)
-	     (comment comment-start)
-	     (comment-end (if (not (equal comment-end "")) comment-end)))
-	(cond ((> prefix 0)
-		(while (< count prefix)
-		  (setq comment (concat comment-start comment)
-			count (1+ count)))
-	        ;; add a space for readability.
-	        (setq comment (concat comment " "))
-		(while (<= (point) comment-marker)
-		  (beginning-of-line)	;; i think this is redundant.
-		  (insert comment)
-		  (if comment-end (progn (end-of-line) (insert comment-end)))
-		  (forward-line 1)))
-	      (t
-		(setq comment (concat comment "+ "))
-		(while (<= (point) comment-marker)
-		  (back-to-indentation)
-		  (if (looking-at comment) (replace-match ""))
-		  (if comment-end
-		      (progn
-			(re-search-backward comment-end)
-			(replace-match "")))
-		  (forward-line 1)))))
-      (set-marker comment-marker nil))))
-
 ;;; Replacing a binding.
 
 (defun rgr-frob-binding ()
