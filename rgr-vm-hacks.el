@@ -86,7 +86,7 @@ defaults."
 	  ;; [killing seems to leave a dangling pointer, though re-invoking vm
 	  ;; seems to fix it.  but we may have to settle for just burying the
 	  ;; thing.  -- rgr, 12-Jan-00.]
-	  (kill-buffer summary-buffer)))
+	  (bury-buffer summary-buffer)))
     (if pres-buffer
 	(progn
 	  (vm-display pres-buffer nil nil nil)
