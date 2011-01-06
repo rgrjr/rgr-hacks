@@ -166,12 +166,9 @@ top window.  A numeric argument prompts for an RMAIL or vm file to read."
   ;; don't need to autoload this, because it's only used from
   ;; rgr-mail-mode-hook, below.  [the define-key's below have to be done after
   ;; autoloading mail-abbrevs-setup defines the commands.  -- rgr, 12-Feb-99.]
-  (cond ((eq rgr-emacs-flavor 'xemacs)
-	  (require 'mail-abbrevs))
-	(t
-	  (mail-abbrevs-setup)
-	  (define-key mail-mode-map "\C-n" 'mail-abbrev-next-line)
-	  (define-key mail-mode-map "\M->" 'mail-abbrev-end-of-buffer))))
+  (mail-abbrevs-setup)
+  (define-key mail-mode-map "\C-n" 'mail-abbrev-next-line)
+  (define-key mail-mode-map "\M->" 'mail-abbrev-end-of-buffer))
 
 ;;;###autoload
 (defun rgr-setup-mail-commands (map)

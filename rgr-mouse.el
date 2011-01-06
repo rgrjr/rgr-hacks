@@ -136,19 +136,14 @@ and does not change the current buffer."
   ;; Probably doesn't work in Lucid emacs.  Meant to be used from a .emacs file,
   ;; but doesn't hurt to have it available as an interactive command, too.
   (interactive)
-  (cond ((eq rgr-emacs-flavor 'fsf)
-	  (global-set-key [C-mouse-2] 'rgr-mouse-insert-thing)
-	  ;; Need to flush C-down-mouse-2, or C-mouse-2 doesn't work in 19.30.
-	  ;; -- rgr, 25-Mar-96.
-	  (global-set-key [C-down-mouse-2] nil)
-	  (global-set-key [M-down-mouse-3] 'mouse-buffer-menu)
-	  ;; Need to nuke the down event, or the up seems to get swallowed.
-	  (global-set-key [M-down-mouse-1] nil)
-	  (global-set-key [M-mouse-1] 'ilisp-mouse-edit-thing))
-	(t
-	  (global-set-key [(control button2)] 'rgr-mouse-insert-thing)
-	  (global-set-key [(meta button3)] 'mouse-buffer-menu)
-	  (global-set-key [(meta button1)] 'ilisp-mouse-edit-thing))))
+  (global-set-key [C-mouse-2] 'rgr-mouse-insert-thing)
+  ;; Need to flush C-down-mouse-2, or C-mouse-2 doesn't work in 19.30.
+  ;; -- rgr, 25-Mar-96.
+  (global-set-key [C-down-mouse-2] nil)
+  (global-set-key [M-down-mouse-3] 'mouse-buffer-menu)
+  ;; Need to nuke the down event, or the up seems to get swallowed.
+  (global-set-key [M-down-mouse-1] nil)
+  (global-set-key [M-mouse-1] 'ilisp-mouse-edit-thing))
 
 ;; (global-key-binding [M-down-mouse-1])
 
