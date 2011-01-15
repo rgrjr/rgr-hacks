@@ -118,30 +118,6 @@ same user at the same site (i.e. we are not su or logged in remotely via
 ssh).  This typically happens when using M-x rsh to fire up an emacs on
 another machine.")
 
-;;; emacs versions.
-
-(defvar rgr-emacs-version-info
-  	(let ((version (emacs-version)))
-	  (cond ((string-match "^\\(.*\\)Emacs \\([0-9]+\\)\\.\\([0-9]+\\)"
-			       version)
-		  (list (let ((flavor (substring version (match-beginning 1)
-						 (match-end 1))))
-			  (cond ((string-equal flavor "X") 'xemacs)
-				((string-equal flavor "GNU ") 'fsf)
-				(t 'unknown)))
-			(string-to-number (substring version (match-beginning 2)
-						     (match-end 2)))
-			(string-to-number (substring version (match-beginning 3)
-						     (match-end 3)))))
-		((string-match "^Lucid" version)
-		  ;; this is historic, probably broken.
-		  '(lucid 19 0))
-		(t '(unknown 0 0))))
-  "A list of (flavor major minor).")
-
-(defvar rgr-emacs-flavor (car rgr-emacs-version-info)
-  "Type of emacs (fsf, xemacs, or lucid).")
-
 ;;;; Support hacks.
 
 ;;;###autoload
@@ -595,24 +571,14 @@ M-x buffer-menu)."
 (defun rgr-install-window-system-hacks ()
   ;; Window system hacks (only defined for X11 at present).  -- rgr, 29-Mar-96.
   ;; Commands.
-  (cond ((not (eq rgr-emacs-flavor 'fsf))
-	  (global-set-key [(control space)] 'rgr-set-mark-command)
-	  (global-set-key [(control meta space)]
-			  'rgr-exchange-point-and-mark)
-	  ;; [xemacs 21 binds M-% to query-replace already.  -- rgr, 26-Jul-01.]
-	  (global-set-key [(control ?%)] 'replace-string)
-	  (global-set-key [(control meta ?%)] 'query-replace)
-	  ;; [already bound somewhere else?  -- rgr, 26-Jul-01.]
-	  '(global-set-key [(control space)] 'rgr-set-mark-command))
-	(t
-	  (or (lookup-key (current-global-map) [?\C-%])
-	      (global-set-key [?\C-%] 'replace-string))
-	  (or (lookup-key (current-global-map) [?\C-\M-%])
-	      (global-set-key [?\C-\M-%] 'query-replace))
-	  (global-set-key [?\C- ] 'rgr-set-mark-command)
-	  ;; Define C-M-Space.  See rgr-define-lisp-mode-commands, which has to
-	  ;; un-shadow this key.
-	  (global-set-key [?\M-\C- ] 'rgr-exchange-point-and-mark)))
+  (or (lookup-key (current-global-map) [?\C-%])
+      (global-set-key [?\C-%] 'replace-string))
+  (or (lookup-key (current-global-map) [?\C-\M-%])
+      (global-set-key [?\C-\M-%] 'query-replace))
+  (global-set-key [?\C- ] 'rgr-set-mark-command)
+  ;; Define C-M-Space.  See rgr-define-lisp-mode-commands, which has to
+  ;; un-shadow this key.
+  (global-set-key [?\M-\C- ] 'rgr-exchange-point-and-mark)
   (let ((setup-function (if (eq window-system 'x)
 			    ;; [idiosyncratic naming.  -- rgr, 4-Apr-96.]
 			    'rgr-install-x11-hacks

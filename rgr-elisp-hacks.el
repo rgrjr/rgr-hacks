@@ -311,12 +311,9 @@ The source is found by using the \\[find-tag] command."
 	  ;; slime these days anyway.  -- rgr, 4-Sep-06.]
 	  (define-key map "\C-c\C-c" 'compile-defun)
 	  (define-key map "\C-c\C-a" 'rgr-quick-show-elisp-arglist)))
-  ;; [kludge:  this is wrong, but we'll fix it later.  -- rgr, 26-Jul-01.]
-  ;; [actually, xemacs doesn't seem to bind this.  -- rgr, 26-Jul-01.]
-  (if (not (eq rgr-emacs-flavor 'xemacs))
-      ;; Override mark-sexp (C-M-Space) so it doesn't shadow the binding made by
-      ;; the rgr-install-global-hacks function.
-      (define-key map [?\M-\C- ] nil))
+  ;; Override mark-sexp (C-M-Space) so it doesn't shadow the binding made by the
+  ;; rgr-install-global-hacks function.
+  (define-key map [?\M-\C- ] nil)
   ;; Undo stupid ilisp binding of close-all-lisp to "]".  Useless, and it makes
   ;; the [] brackets harder to type.  -- rgr, 25-Jan-95.
   (define-key map "]" 'self-insert-command)

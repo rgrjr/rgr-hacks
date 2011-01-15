@@ -211,11 +211,7 @@ it as input at the command prompt."
 (defvar rgr-secure-shell-program "ssh")
 (defvar ssh-host-history nil
   "*History of recent SSH hosts.")
-(defvar ssh-mode-map (if (eq rgr-emacs-flavor 'xemacs)
-			 ;; keymaps are not lists in xemacs.
-			 (copy-keymap comint-mode-map)
-			 ;; fsf version.
-			 (append (make-sparse-keymap) comint-mode-map))
+(defvar ssh-mode-map (append (make-sparse-keymap) comint-mode-map)
   "Keymap for ssh-mode.  There are no special bindings for ssh-mode
 beyond what comint-mode already provides, but we define the keymap
 anyway for consistency.")

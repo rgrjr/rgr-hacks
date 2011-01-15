@@ -476,12 +476,8 @@ message lists and the message contents are removed from real folders."
   ;; This effectively swaps the notion of "this window" and "other window",
   ;; which seems to be what I need, since I keep scrolling the summary window
   ;; when I mean to scroll the message window.  -- rgr, 27-Nov-00.
-  (define-key vm-summary-mode-map
-      	      (if (eq rgr-emacs-flavor 'fsf) [M-next] [(meta next)])
-              'scroll-up)
-  (define-key vm-summary-mode-map
-      	      (if (eq rgr-emacs-flavor 'fsf) [M-prior] [(meta next)])
-              'scroll-down)
+  (define-key vm-summary-mode-map [M-next] 'scroll-up)
+  (define-key vm-summary-mode-map [M-prior] 'scroll-down)
   (define-key vm-summary-mode-map [next] 'scroll-other-window)
   (define-key vm-summary-mode-map [prior] 'scroll-other-window-down)
   ;; new hack.  -- rgr, 14-Jan-02.
