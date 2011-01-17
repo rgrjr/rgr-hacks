@@ -497,6 +497,8 @@ M-x buffer-menu)."
   ;; split-screen windows are 30 lines tall, and the default amount to move
   ;; seems to be more than half a screen.  -- rgr, 1-Mar-94.
   (setq scroll-step 8)
+  ;; Bind rgr-vc-recent-changes.
+  (global-set-key "\C-xv!" 'rgr-vc-recent-changes)
   ;; Use ".~#~" versions on edited files.  -- rgr, 8-Apr-94.
   (setq version-control t) ;; was nil
   (setq dired-kept-versions 3) ;; was 2
