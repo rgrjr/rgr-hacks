@@ -295,12 +295,14 @@ backup file has already been made)."
 
 ;;;###autoload
 (defun rgr-insert-signature ()
-  "Insert '  -- username, dd-mmm-yy.' at point."
+  "Insert '  -- username, dd-mmm-yy.' at point.
+The leading spaces are skipped if at BOL."
   ;; It looks sorta like this.  -- rgr, 2-Feb-94.  Or like this, if you don't
   ;; use the signature-login-name feature to override the default name.  --
   ;; rogers, 14-Feb-94.
   (interactive)
-  (insert (format "  -- %s, %s."
+  (insert (if (bolp) "" "  ")
+	  (format "-- %s, %s."
 		  (or signature-login-name (user-login-name))
 		  (rgr-date-string))))
 
