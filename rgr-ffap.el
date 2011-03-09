@@ -18,6 +18,7 @@
 	  ("\\.pp[st]$" "ooimpress")
 	  ("\\.docx?$" "oowriter")
 	  ("\\.doc$" "abiword")
+	  ("\\.pdf$" "okular")
 	  ("\\.pdf$" "acroread")
 	  ("\\.svg$" "inkscape")
 	  ("\\.dia$" "dia")
