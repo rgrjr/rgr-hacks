@@ -254,7 +254,7 @@ but it is usually sufficient to take the default.")
       (append (if (eq rgr-site 'mgi)
 		  nil
 		  '("rogers@woburn.modulargenetics.com"))
-	      '("rogers@rgrjr.dyndns.org" "rogers@huxley.bu.edu")))
+	      '("rogers@rgrjr.dyndns.org")))
 (if (eq rgr-site 'home)
     ;; Enable tunnelling to make the ModGen database and intranet Web servers
     ;; available from home.  -- rgr, 29-Feb-04.
