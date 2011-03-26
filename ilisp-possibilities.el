@@ -150,8 +150,8 @@ buffer."
   (beginning-of-line)
   ;; [this is unfortunately dependent on compilation-mode internals.  -- rgr,
   ;; 27-Oct-08.]
-  (if (not (get-text-property (point) 'message))
-      (let ((pos (next-single-property-change (point) 'message)))
+  (if (not (get-text-property (point) 'compilation-message))
+      (let ((pos (next-single-property-change (point) 'compilation-message)))
 	(and pos
 	     (goto-char pos))))
   (compile-goto-error))
