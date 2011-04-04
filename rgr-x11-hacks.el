@@ -8,13 +8,15 @@
   ;; Get a decent label and a more visible mouse.  The mouse cursor is red if
   ;; you are running "su", and blue otherwise.
   (let* ((version
-	  (cond ((and (= emacs-major-version 24)
-		      (= emacs-minor-version 0))
+	  (cond ((or (and (= emacs-major-version 23)
+			  (= emacs-minor-version 3))
+		     (and (= emacs-major-version 24)
+			  (= emacs-minor-version 0)))
 		  ;; don't show the standard version(s).
 		  "")
-		;; In the version (e.g.) "19.34.1", the last component is not
-		;; significant (it's the number of times I recompiled it before
-		;; I got it right).  -- rgr, 19-Oct-98.
+		;; In the versions "19.34.1" and "24.0.50.1", the last component
+		;; is not significant (it's the number of times I recompiled it
+		;; before I got it right).  -- rgr, 19-Oct-98.
 		((string-match "^\\([0-9.]+\\)\\.[0-9]+$" emacs-version)
 		  (concat " " (match-string 1 emacs-version)))
 		;; Fallback.
