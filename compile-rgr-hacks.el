@@ -6,6 +6,8 @@
 ;;;
 ;;; $Id$
 
+(require 'cl)
+
 (defvar rgr-hacks-compiled-modules nil
   "Alist of (name-stem-string . mod-time) of loaded versions.  Modules
 absent from this list may still have been loaded, just not by
@@ -86,12 +88,12 @@ pair of (file-stem . properties), where properties is a disembodied plist.")
   ;; skip this module.  Note that we always let all checks run, even if we get
   ;; an early failure, so that all "must skip" messages are shown.
   (let ((skipped-p nil)
-	(version (rgr-hacks-getf options 'version)))
+	(version (getf options 'version)))
     (cond ((and version (< emacs-major-version version))
 	    (setq skipped-p 'version)
 	    (message "Module %s skipped because it requires Emacs version %s."
 			 module-name version)))
-    (let ((tail (rgr-hacks-getf options 'require)))
+    (let ((tail (getf options 'require)))
       (while tail
 	(cond ((condition-case error (not (require (car tail)))
 		 (error
@@ -106,8 +108,8 @@ pair of (file-stem . properties), where properties is a disembodied plist.")
 (defun rgr-hacks-compile-module (name &rest options)
   ;; Compile and load the file if it needs it, returning t iff we decided to
   ;; compile.  -- rgr, 21-Sep-02.
-  (let* ((force-p (rgr-hacks-getf options 'force-p))
-	 (must-load-p (rgr-hacks-getf options 'load-p t))
+  (let* ((force-p (getf options 'force-p))
+	 (must-load-p (getf options 'load-p t))
 	 (name-stem (if (symbolp name) (symbol-name name) name))
 	 (source-name (concat name-stem ".el"))
 	 (binary-name (concat source-name "c"))
@@ -123,7 +125,7 @@ pair of (file-stem . properties), where properties is a disembodied plist.")
 	  ((not (or force-p
 		    (not (file-exists-p binary-name))
 		    (file-newer-than-file-p source-name binary-name))))
-	  ((not (eval (rgr-hacks-getf options 'if t)))
+	  ((not (eval (getf options 'if t)))
 	    (setq skipped-p 'if)
 	    (message "File %S skipped because of 'if' test." source-name))
 	  (t
@@ -167,23 +169,20 @@ pair of (file-stem . properties), where properties is a disembodied plist.")
 	(load-path (cons "." load-path))
 	(rgr-hacks-compile-self-n-files-compiled 0))
     (message "rgr-hacks compilation: starting.")
-    (or (boundp 'rgr-site)
-	;; Need to load this beforehand, e.g. for rgr-hacks-getf.
-	(load "rgr-hacks.el"))
     (message "Emacs version %d.%d" emacs-major-version emacs-minor-version)
     (let ((tail rgr-hacks-source-files))
       (while tail
 	(let* ((f (car tail))
 	       (name (if (consp f) (car f) f))
 	       (attributes (if (consp f) (cdr f) nil))
-	       (version (rgr-hacks-getf attributes 'major-version))
+	       (version (getf attributes 'major-version))
 	       (result (and (or (null version)
 				(>= emacs-major-version version))
 			    (apply (function rgr-hacks-compile-module)
 				   name 'force-p force-p
 				   attributes))))
 	  (if (and result
-		   (rgr-hacks-getf attributes 'has-macros))
+		   (getf attributes 'has-macros))
 	      (setq force-p t)))
 	(setq tail (cdr tail))))
     (message "rgr-hacks compilation: Done, %d file%s compiled."

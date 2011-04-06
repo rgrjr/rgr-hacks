@@ -129,18 +129,6 @@ incarnation of the major version)."
       (and (= emacs-major-version major)
 	   (>= emacs-minor-version (or minor 0)))))
 
-;;;; General.
-
-(defun rgr-hacks-getf (plist property-name &optional default)
-  ;; [cheap getf, so we don't need the cl package.  -- rgr, 23-Apr-03.]
-  (let ((tail plist) (result default))
-    (while tail
-      (if (eq (car tail) property-name)
-	  (setq result (car (cdr tail))
-		tail nil)
-	  (setq tail (cdr (cdr tail)))))
-    result))
-
 ;;;; Renaming buffers.
 
 (defun rgr-parent-dir-and-file-name (file-name)
