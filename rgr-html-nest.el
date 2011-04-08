@@ -310,6 +310,11 @@
 	      ((eq tag-name 'li)
 		(rgr-html-tag-must-be-directly-in tag-name tag-stack
 						  '(ol ul dir menu)))
+	      ((eq tag-name 'form)
+		(if (memq 'form tag-stack)
+		    (rgr-html-report-tag-error-internal
+		      "Nesting <form> constructs does not work."
+		      (point))))
 	      ((memq tag-name '(h1 h2 h3 h4 h5 h6 address))
 	        ;; These must be directly in the body.  [actually, <body> is an
 	        ;; interesting special case, because it may be implicit, in
