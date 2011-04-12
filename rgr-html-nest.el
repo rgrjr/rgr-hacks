@@ -44,18 +44,7 @@
 (defstruct (rgr-html-tag-data (:conc-name rgr-htd-) (:predicate nil))
   (tag-name nil)                ;; symbolic name
   (unmatched-opens nil)		;; list of points
-  ;; [these are now unused.  -- rgr, 24-Mar-98.]
-  ;; (opens 0)			;; current number of opens seen
-  ;; (closes 0)			;; current number of closes seen
-  ;; (suspicious-location nil)	;; point of first rat we smelled.
-  ;; (went-negative-p nil)	;; t if </em> before <em>
-  ;; (last-location nil)	;; point of last tag
   )
-
-;; [no longer used.  -- rgr, 24-Mar-98.]
-'(defun rgr-htd-nest (rgr-html-tag-data)
-  (- (rgr-htd-opens rgr-html-tag-data)
-     (rgr-htd-closes rgr-html-tag-data)))
 
 (defun rgr-html-report-tag-error-internal (message &optional location)
   ;; Generate a detail line that looks like "grep -n" on the standard-output,
@@ -81,8 +70,6 @@
 (defun rgr-html-tag-entry-make-report (tag-entry)
   ;; If tag-entry describes some bogusness, then use
   ;; rgr-html-report-tag-error-internal to generate a message to that effect.
-  ;; [this used to be a lot hairier before we did things on the fly; see above.
-  ;; -- rgr, 24-Mar-98.]
   (let ((tag-name (rgr-htd-tag-name tag-entry))
 	(tail (reverse (rgr-htd-unmatched-opens tag-entry))))
     (while tail
