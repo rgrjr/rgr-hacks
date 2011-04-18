@@ -32,18 +32,10 @@
 (defvar rgr-html-n-tag-nest-errors 0
   "Internal counter for rgr-html-check-tag-nesting command.")
 
-(defun rgr-remq-once (element list)
-  ;; because remq and delq will trash every occurrence.
-  (cond ((null list) nil)
-	((eq element (car list))
-	  (cdr list))
-	(t
-	  (cons (car list) (rgr-remq-once element (cdr list))))))
-
 ;; Data structure describing tag nesting status within this buffer.
 (defstruct (rgr-html-tag-data (:conc-name rgr-htd-) (:predicate nil))
-  (tag-name nil)                ;; symbolic name
-  (unmatched-opens nil)		;; list of points
+  (tag-name nil)	;; symbolic name
+  (open nil)		;; point of open tag
   )
 
 (defun rgr-html-report-tag-error-internal (message &optional location)
@@ -67,25 +59,10 @@
 		   message))
     (setq rgr-html-n-tag-nest-errors (1+ rgr-html-n-tag-nest-errors))))
 
-(defun rgr-html-tag-entry-make-report (tag-entry)
-  ;; If tag-entry describes some bogusness, then use
-  ;; rgr-html-report-tag-error-internal to generate a message to that effect.
-  (let ((tag-name (rgr-htd-tag-name tag-entry))
-	(tail (reverse (rgr-htd-unmatched-opens tag-entry))))
-    (while tail
-      (rgr-html-report-tag-error-internal
-        (format "Probably no match for this <%s> tag" tag-name)
-	(car tail))
-      (setq tail (cdr tail)))))
-
-(defun rgr-html-report-tag-errors (buffer nesting-tags)
+(defun rgr-html-report-tag-errors (buffer)
   ;; Now generate messages for all tags that have had some problem, doing the
   ;; simple thing if there's only a single problem.
-  (let ((tail nesting-tags)
-	(emacs-22-p (fboundp 'compilation-next-error-function)))
-    (while tail
-      (rgr-html-tag-entry-make-report (car tail))
-      (setq tail (cdr tail)))
+  (let ((emacs-22-p (fboundp 'compilation-next-error-function)))
     (cond ((zerop rgr-html-n-tag-nest-errors)
 	    (kill-buffer buffer)
 	    (message "All tags appear properly nested."))
@@ -157,7 +134,7 @@
   ;; mentioning the exceptions if it is not.
   (let ((illegal-intermediates nil) (tag nil))
     (while (and tag-stack
-		(setq tag (car tag-stack))
+		(setq tag (rgr-htd-tag-name (car tag-stack)))
 		(not (if (atom required-container)
 			 (eq tag required-container)
 			 (memq tag required-container))))
@@ -242,14 +219,32 @@
 	(princ (format "%d\t%s\t%s\t%d\n"
 		       (point) tag-end tag-name delta-nest))))))
 
+(defun rgr-html-same-line-p (point1 point2)
+  ;; Two points are on the same line if there is no intervening newline.
+  (cond ((< point1 point2)
+	  (save-excursion
+	    (goto-char point1)
+	    (skip-chars-forward "^\n" point2)
+	    (= (point) point2)))
+	(t
+	  (rgr-html-same-line-p point2 point1))))
+
+(defun rgr-html-tag-must-not-nest (tag-name tag-stack)
+  ;; Check that tag-name is not being nested.
+  (let ((other-form (rgr-html-find-tag-data tag-name tag-stack)))
+    (if other-form
+	(let ((other-start (rgr-htd-open other-form)))
+	  (rgr-html-report-tag-error-internal
+	    (format "Nesting <%s> constructs does not work." tag-name))
+	  (if (not (rgr-html-same-line-p other-start (point)))
+	      (rgr-html-report-tag-error-internal
+	        (format "Location of enclosing <%s>" tag-name)
+		other-start))))))
+
 (defun rgr-html-collect-tag-data ()
-  ;; returns nesting-tags, a list of rgr-html-tag-data structures.  The
-  ;; nesting-depth is always a small integer, suspicious-location a point or
-  ;; nil, and last-location is always a point.  [None of these are used anymore;
-  ;; the main thing is the dynamic rgr-htd-unmatched-opens and tag-stack values,
-  ;; from which possible problems are identified on the fly.  -- rgr,
-  ;; 24-Mar-98.]  Collect these from point to the bottom of the buffer.
-  (let ((nesting-tags nil) (last-a-tag nil) (tag-stack nil))
+  ;; Look for tags from point to the bottom of the buffer, using
+  ;; rgr-html-report-tag-error-internal to report problems.
+  (let ((last-a-tag nil) (tag-stack nil))
     ;; [do we need to check for other tag identification?  -- rgr, 6-Mar-96.]
     (while (re-search-forward rgr-html-tag-regexp nil t)
       (let* ((tag-start (match-beginning 0))
@@ -258,73 +253,78 @@
 			(forward-sexp)
 			(point)))
 	     (tag-name (rgr-html-matched-tag-name))
-	     (delta-nest (if (match-beginning 1) -1 +1))
-	     (tag-entry
-	       (cond ((and last-a-tag (eq tag-name 'a) (= delta-nest -1))
-		       ;; This matches an </a> form with the right <a name=...>
-		       ;; or <a href=...>, if it exists.  [***bug***: no, we
-		       ;; would have to maintain a stack.  -- rgr, 4-Dec-97.]
-		       ;; [actually works well enough.  -- rgr, 24-Mar-98.]
-		       (setq tag-name (rgr-htd-tag-name last-a-tag))
-		       last-a-tag)
-		     ((rgr-html-find-tag-data tag-name nesting-tags))
-		     (t
-		       (setq nesting-tags
-			     (cons (make-rgr-html-tag-data :tag-name tag-name)
-				   nesting-tags))
-		       (car nesting-tags)))))
-	'(message "Tag <%s%S> at %d, entry %s"
-		 (if (< delta-nest 0) "/" "") tag-name tag-start tag-entry)
-	(if (and (memq tag-name '(a a-name)) (= delta-nest 1))
-	    (setq last-a-tag tag-entry))
-	;; Process implicit closes.  [still in development.  -- rgr, 6-Aug-02.]
+	     (delta-nest (if (match-beginning 1) -1 +1)))
+	'(message "Tag <%s%S> at %d, entry"
+		 (if (< delta-nest 0) "/" "") tag-name tag-start)
+	;; Process implicit closes.
 	(let ((implicitly-closed
 	       (nth (if (= delta-nest 1) 1 2)
 		    (assoc tag-name rgr-html-tags-implicitly-closed))))
-	  (while (member (car tag-stack) implicitly-closed)
-	    (let ((closed-entry (rgr-html-find-tag-data (car tag-stack)
-							nesting-tags)))
-	      ;; [it's probably a bug if this doesn't exist.  -- rgr, 6-Aug-02.]
-	      (if closed-entry
-		  (setf (rgr-htd-unmatched-opens closed-entry)
-			(cdr (rgr-htd-unmatched-opens closed-entry)))))
+	  (while (and tag-stack
+		      (member (rgr-htd-tag-name (car tag-stack))
+			      implicitly-closed))
 	    (setq tag-stack (cdr tag-stack))))
-	;; Look for placement problems.  [new; just a testing hack now.  -- rgr,
-	;; 20-Mar-98.]
+	;; Look for placement problems.
 	(cond ((< delta-nest 0))
 	      ((memq tag-name '(dd dt))
 		(rgr-html-tag-must-be-directly-in tag-name tag-stack 'dl))
 	      ((eq tag-name 'li)
 		(rgr-html-tag-must-be-directly-in tag-name tag-stack
 						  '(ol ul dir menu)))
-	      ((eq tag-name 'form)
-		(if (memq 'form tag-stack)
-		    (rgr-html-report-tag-error-internal
-		      "Nesting <form> constructs does not work."
-		      (point))))
+	      ((memq tag-name '(form div pre))
+		;; [There are certainly others.  -- rgr, 17-Apr-11.]
+		(rgr-html-tag-must-not-nest tag-name tag-stack))
 	      ((memq tag-name '(h1 h2 h3 h4 h5 h6 address))
 	        ;; These must be directly in the body.  [actually, <body> is an
 	        ;; interesting special case, because it may be implicit, in
 	        ;; which case the tag stack must be empty.  -- rgr, 26-Mar-98.]
 		(rgr-html-tag-must-be-directly-in tag-name tag-stack
-						  'body '(center div))))
+						  'body '(center div form))))
 	;; Update stack.
 	(cond ((rgr-html-tag-does-not-nest-p tag-name))
 	      ((> delta-nest 0)
-		(setf (rgr-htd-unmatched-opens tag-entry)
-		      (cons tag-start (rgr-htd-unmatched-opens tag-entry)))
-		(setq tag-stack (cons tag-name tag-stack)))
-	      ((memq tag-name tag-stack)
-		(setf (rgr-htd-unmatched-opens tag-entry)
-		      (cdr (rgr-htd-unmatched-opens tag-entry)))
-		;; [should check for inappropriate nesting here, i.e. having to
-		;; skip an ol to pop a ul.  -- rgr, 24-Mar-98.]
-		(setq tag-stack (rgr-remq-once tag-name tag-stack)))
+		(let ((tag-entry
+			(cond ((and last-a-tag (eq tag-name 'a))
+				;; This matches an </a> form with the right <a
+				;; name=...> or <a href=...>, if it exists.
+				;; [strictly, we should maintain a stack, but
+				;; this works well enough.  -- rgr, 24-Mar-98.]
+				(setq tag-name (rgr-htd-tag-name last-a-tag))
+				last-a-tag)
+			      (t
+				(make-rgr-html-tag-data :tag-name tag-name
+							:open (point))))))
+		  (if (memq tag-name '(a a-name))
+		      (setq last-a-tag tag-entry))
+		  (setq tag-stack (cons tag-entry tag-stack))))
+	      ((rgr-html-find-tag-data tag-name tag-stack)
+		;; Check for inappropriate nesting here, e.g. having to skip an
+		;; <ol> to pop a <ul>.
+	        (while (not (eq (rgr-htd-tag-name (car tag-stack)) tag-name))
+		  (let* ((open-entry (car tag-stack))
+			 (unmatched-open (rgr-htd-open open-entry))
+			 (other-name (rgr-htd-tag-name open-entry)))
+		    (rgr-html-report-tag-error-internal
+		      (format "<%s> implicitly closed by <%s>"
+			      other-name tag-name))
+		    (if (not (rgr-html-same-line-p unmatched-open (point)))
+			(rgr-html-report-tag-error-internal
+			  (format "Location of <%s>" other-name)
+			  unmatched-open))
+		    (setq tag-stack (cdr tag-stack))))
+	        ;; Pop the tag.
+		(setq tag-stack (cdr tag-stack)))
 	      (t
 	        (rgr-html-report-tag-error-internal
-		      (format "</%s> without <%s>?" tag-name tag-name)
-		      (point))))))
-    nesting-tags))
+		  (format "</%s> without <%s>?" tag-name tag-name))))))
+    ;; Report missing closes at top level.
+    (while tag-stack
+      (let* ((open-entry (car tag-stack))
+	     (tag-name (rgr-htd-tag-name open-entry)))
+	(rgr-html-report-tag-error-internal
+	  (format "Missing close for <%s>" tag-name)
+	  (rgr-htd-open open-entry))
+	(setq tag-stack (cdr tag-stack))))))
 
 ;;;###autoload
 (defun rgr-html-check-tag-nesting ()
@@ -351,21 +351,10 @@ list; remove it if you wish to enforce HTML 3.0 containerization of
 paragraph tags.  Also present is `a-name', which is short for
 `<a name=...>'.
 
-   3.  For the most part, tags nest independently of each other.  That
-is, `<b>this<i>is</b>wierd</i>' is legal, if eccentric.  (And the `is'
-should come out in italic-bold -- most browsers these days are smart
-enough.)  The exceptions (e.g. `<ol><ul></ol></ul>') are *not* detected.
-
-   4.  Nesting depths of more than one, as in `<em>foo<em>bar</em>baz</em>',
+   3.  Nesting depths of more than one, as in `<em>foo<em>bar</em>baz</em>',
 are perfectly fine, though `bar' is not likely to be doubly emphasized
-on that account.
-
-   Since it is a common error to put `<em>' where `</em>' is meant, the
-first place the nesting depth goes over 1 is used as the error point if
-there is an unequal number of open and close tags.  Unfortunately, this
-heuristic loses for badly nested `<ol>' and `<ul>' constructs; since
-these are frequently nested, this command will erroneously report the
-first nested case as being in error."
+on that account.  The only exception is for nested `<form>' tags, which
+do not work."
   (interactive)
   (let* ((orig-buffer-name (buffer-name))
 	 (buffer (get-buffer-create (concat "*" orig-buffer-name " tags*"))))
@@ -374,16 +363,11 @@ first nested case as being in error."
       (setq buffer-read-only nil)
       (erase-buffer)
       (insert "HTML tag nesting errors in " orig-buffer-name "\n\n"))
-    (let* ((start (point))
-	   (standard-output buffer)
-	   (rgr-html-n-tag-nest-errors 0)
-	   (nesting-tags
-	     (progn (goto-char (point-min))
-		    (rgr-html-collect-tag-data))))
-      ;; Do this kludge replacement for save-excursion so that the positions of
-      ;; errors (especially the <a> syntax check) are not lost.
-      (goto-char start)
-      ;; (insert (format "Nesting tags:\n  %S\n" nesting-tags))
-      (rgr-html-report-tag-errors buffer nesting-tags))))
+    (let ((standard-output buffer)
+	  (rgr-html-n-tag-nest-errors 0))
+      (save-excursion
+	(goto-char (point-min))
+	(rgr-html-collect-tag-data))
+      (rgr-html-report-tag-errors buffer))))
 
 (provide 'rgr-html-nest)
