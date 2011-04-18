@@ -254,7 +254,12 @@
 			(point)))
 	     (tag-name (rgr-html-matched-tag-name))
 	     (delta-nest (if (match-beginning 1) -1 +1)))
-	'(message "Tag <%s%S> at %d, entry"
+	(cond ((and last-a-tag (eq tag-name 'a) (< delta-nest 0))
+		;; This matches an </a> form with the right <a name=...> or <a
+		;; href=...>, if it exists.  [strictly, we should maintain a
+		;; stack, but this works well enough.  -- rgr, 24-Mar-98.]
+		(setq tag-name (rgr-htd-tag-name last-a-tag))))
+	'(message "Tag <%s%S> at %d"
 		 (if (< delta-nest 0) "/" "") tag-name tag-start)
 	;; Process implicit closes.
 	(let ((implicitly-closed
@@ -283,17 +288,8 @@
 	;; Update stack.
 	(cond ((rgr-html-tag-does-not-nest-p tag-name))
 	      ((> delta-nest 0)
-		(let ((tag-entry
-			(cond ((and last-a-tag (eq tag-name 'a))
-				;; This matches an </a> form with the right <a
-				;; name=...> or <a href=...>, if it exists.
-				;; [strictly, we should maintain a stack, but
-				;; this works well enough.  -- rgr, 24-Mar-98.]
-				(setq tag-name (rgr-htd-tag-name last-a-tag))
-				last-a-tag)
-			      (t
-				(make-rgr-html-tag-data :tag-name tag-name
-							:open (point))))))
+		(let ((tag-entry (make-rgr-html-tag-data :tag-name tag-name
+							 :open (point))))
 		  (if (memq tag-name '(a a-name))
 		      (setq last-a-tag tag-entry))
 		  (setq tag-stack (cons tag-entry tag-stack))))
