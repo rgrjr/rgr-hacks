@@ -160,7 +160,8 @@
 		     (if allowed-intermediates
 			 (format " (with the possible exception of %s)"
 				 (rgr-html-tag-name-list-string
-				   allowed-intermediates "or")))
+				   allowed-intermediates "or"))
+			 "")
 		     (rgr-html-tag-name-list-string
 		       (mapcar #'rgr-htd-tag-name illegal-intermediates))
 		     (if (cdr illegal-intermediates) "are" "is")))
