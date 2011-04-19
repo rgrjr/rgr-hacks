@@ -1,6 +1,6 @@
 ;;;; Tag nesting.
 ;;;
-;;;    The tag nesting variables and the rgr-html-tag-does-not-nest-p function
+;;;    The tag nesting variables
 ;;; are in ./rgr-html-hacks, where they are also used by the
 ;;; rgr-html-forward-markup command.
 ;;;
@@ -139,7 +139,8 @@
 			 (eq tag required-container)
 			 (memq tag required-container))))
       (or (memq tag allowed-intermediates)
-	  (setq illegal-intermediates (cons tag illegal-intermediates)))
+	  (setq illegal-intermediates
+		(cons (car tag-stack) illegal-intermediates)))
       (setq tag-stack (cdr tag-stack)))
     (cond ((null illegal-intermediates)
 	    ;; we're OK.
@@ -160,8 +161,14 @@
 			 (format " (with the possible exception of %s)"
 				 (rgr-html-tag-name-list-string
 				   allowed-intermediates "or")))
-		     (rgr-html-tag-name-list-string illegal-intermediates)
-		     (if (cdr illegal-intermediates) "are" "is")))))
+		     (rgr-html-tag-name-list-string
+		       (mapcar #'rgr-htd-tag-name illegal-intermediates))
+		     (if (cdr illegal-intermediates) "are" "is")))
+	    (dolist (intermediate illegal-intermediates)
+	      (rgr-html-report-tag-error-internal
+	        (format "Location of intervening <%s>"
+			(rgr-htd-tag-name intermediate))
+		(rgr-htd-open intermediate)))))
     illegal-intermediates))
 
 (defun rgr-html-find-tag-data (tag-name nesting-tags)
@@ -241,6 +248,39 @@
 	        (format "Location of enclosing <%s>" tag-name)
 		other-start))))))
 
+(defun rgr-html-process-implicit-closes (tag-name close-p tag-stack)
+  ;; Process implicit closes by winnowing the stack.  Typically, the start of a
+  ;; block-level element closes other block-level elements, and elements that
+  ;; belong to certain containers are closed by closing the container.  This
+  ;; allows for weird floating constructs such as <form> to cross block-level
+  ;; boundaries.  See rgr-html-tag-rules for the full set.
+  (let* ((rules (assoc tag-name rgr-html-tag-rules))
+	 (implicitly-closed (nth (if close-p 2 1) rules))
+	 (containers (nth 3 rules)))
+    (when tag-stack
+      (let* ((head (car tag-stack))
+	     (name (rgr-htd-tag-name head))
+	     (tail (cdr tag-stack))
+	     (new-tail nil))
+	(cond ((member name implicitly-closed)
+		'(message "implicitly closing %s because of <%s%s>"
+			 name (if close-p "/" "") tag-name)
+	        (rgr-html-process-implicit-closes tag-name close-p tail))
+	      ((if close-p
+		   ;; A close tag can only close tags that started within it.
+		   (eq name tag-name)
+		   ;; Open tags can only close tags within containers.
+		   (memq name containers))
+		;; End of scope; return the stack unmodified.
+		tag-stack)
+	      ((eq (setq new-tail (rgr-html-process-implicit-closes
+				    tag-name close-p tail))
+		   tail)
+		;; Stack unchanged.
+		tag-stack)
+	      (t
+		(cons head new-tail)))))))
+
 (defun rgr-html-collect-tag-data ()
   ;; Look for tags from point to the bottom of the buffer, using
   ;; rgr-html-report-tag-error-internal to report problems.
@@ -253,41 +293,34 @@
 			(forward-sexp)
 			(point)))
 	     (tag-name (rgr-html-matched-tag-name))
-	     (delta-nest (if (match-beginning 1) -1 +1)))
-	(cond ((and last-a-tag (eq tag-name 'a) (< delta-nest 0))
+	     (close-p (match-beginning 1))
+	     (rules nil))
+	(cond ((and last-a-tag (eq tag-name 'a) close-p)
 		;; This matches an </a> form with the right <a name=...> or <a
 		;; href=...>, if it exists.  [strictly, we should maintain a
 		;; stack, but this works well enough.  -- rgr, 24-Mar-98.]
 		(setq tag-name (rgr-htd-tag-name last-a-tag))))
 	'(message "Tag <%s%S> at %d"
-		 (if (< delta-nest 0) "/" "") tag-name tag-start)
+		 (if close-p "/" "") tag-name tag-start)
+	(setq rules (assoc tag-name rgr-html-tag-rules))
 	;; Process implicit closes.
-	(let ((implicitly-closed
-	       (nth (if (= delta-nest 1) 1 2)
-		    (assoc tag-name rgr-html-tags-implicitly-closed))))
-	  (while (and tag-stack
-		      (member (rgr-htd-tag-name (car tag-stack))
-			      implicitly-closed))
-	    (setq tag-stack (cdr tag-stack))))
-	;; Look for placement problems.
-	(cond ((< delta-nest 0))
-	      ((memq tag-name '(dd dt))
-		(rgr-html-tag-must-be-directly-in tag-name tag-stack 'dl))
-	      ((eq tag-name 'li)
-		(rgr-html-tag-must-be-directly-in tag-name tag-stack
-						  '(ol ul dir menu)))
-	      ((memq tag-name '(form div pre))
-		;; [There are certainly others.  -- rgr, 17-Apr-11.]
-		(rgr-html-tag-must-not-nest tag-name tag-stack))
-	      ((memq tag-name '(h1 h2 h3 h4 h5 h6 address))
-	        ;; These must be directly in the body.  [actually, <body> is an
-	        ;; interesting special case, because it may be implicit, in
-	        ;; which case the tag stack must be empty.  -- rgr, 26-Mar-98.]
-		(rgr-html-tag-must-be-directly-in tag-name tag-stack
-						  'body '(center div form))))
+	(setq tag-stack (rgr-html-process-implicit-closes
+			  tag-name close-p tag-stack))
+	;; Look for placement problems for open tags.
+	(unless close-p
+	  (let ((must-be-in (nth 3 rules))
+		(must-not-be-in (nth 5 rules)))
+	    (when must-be-in
+	      (rgr-html-tag-must-be-directly-in tag-name tag-stack
+						must-be-in (nth 4 rules)))
+	    (when must-not-be-in
+	      (rgr-html-tag-must-not-nest tag-name tag-stack))))
 	;; Update stack.
-	(cond ((rgr-html-tag-does-not-nest-p tag-name))
-	      ((> delta-nest 0)
+	(cond ((memq tag-name rgr-html-empty-tags)
+		(if close-p
+		    (rgr-html-report-tag-error-internal
+		      (format "</%s> for non-content tag" tag-name))))
+	      ((not close-p)
 		(let ((tag-entry (make-rgr-html-tag-data :tag-name tag-name
 							 :open (point))))
 		  (if (memq tag-name '(a a-name))
@@ -317,9 +350,10 @@
     (while tag-stack
       (let* ((open-entry (car tag-stack))
 	     (tag-name (rgr-htd-tag-name open-entry)))
-	(rgr-html-report-tag-error-internal
-	  (format "Missing close for <%s>" tag-name)
-	  (rgr-htd-open open-entry))
+	(unless (memq tag-name '(html body))	;; closed by EOF.
+	  (rgr-html-report-tag-error-internal
+	    (format "Missing close for <%s>" tag-name)
+	    (rgr-htd-open open-entry)))
 	(setq tag-stack (cdr tag-stack))))))
 
 ;;;###autoload
@@ -337,20 +371,20 @@ one at a time.
 an HTML ref somewhere?), but I do know the following:
 
    1.  Every <b> needs a </b> to match.  This applies to all tags except
-a few such as <hr>, <li>, etc.  Those tags appear as symbols on the
-rgr-html-tags-that-do-not-nest list.
+a few such as <hr>, <option>, etc.  Those tags appear as symbols on the
+rgr-html-empty-tags list.
 
-   2.  Some tags, most notably `<p>', may or may not nest.  These are
-listed on rgr-html-tags-that-may-nest, which means that all of them must
-nest, or none of them.  Following current practice, `<p>' is on this
-list; remove it if you wish to enforce HTML 3.0 containerization of
-paragraph tags.  Also present is `a-name', which is short for
-`<a name=...>'.
+   2.  Tags such as <li> and <td> that appear inside containers
+can usually be closed implicitly by closing the container.  Some
+tags, most notably `<p>', may or may not be closed explicitly.
+This is also true of `a-name', which is short for `<a name=...>'.
 
-   3.  Nesting depths of more than one, as in `<em>foo<em>bar</em>baz</em>',
-are perfectly fine, though `bar' is not likely to be doubly emphasized
-on that account.  The only exception is for nested `<form>' tags, which
-do not work."
+   3.  A few tags such as <form> are not allowed to appear within
+themselves.  Otherwise, nesting depths of more than one, as in
+`<em>foo<em>bar</em>baz</em>', are perfectly fine, though `bar'
+is not likely to be doubly emphasized on that account.
+
+The rules used are defined by the rgr-html-tag-rules alist (q.v.)."
   (interactive)
   (let* ((orig-buffer-name (buffer-name))
 	 (buffer (get-buffer-create (concat "*" orig-buffer-name " tags*"))))

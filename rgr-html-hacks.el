@@ -122,41 +122,83 @@ mean a paragraph start; rgr-html-move-one-paragraph examines the tag to
 see.")
 
 (defconst rgr-html-empty-tags
-          '(area base basefont br col frame
-	    hr img input isindex link meta param)
-  "Tags that can never have content.  In XML, they would usually appear
+          '(! area base basefont br col frame
+	    hr img input isindex link meta param wbr)
+  "Tags that can never have content.  These are all the elements in
+http://www.w3.org/TR/html40/index/elements.html with \"E\" in the \"Empty\"
+column, with the addition of ! and wbr.  In XML, they would usually appear
 as 'empty tags', e.g. '<br/>', but HTML has no such notion, so they are
 always just '<br>' and we shouldn't look for a close.")
 
-(defconst rgr-html-tags-that-do-not-nest
-          (append '(! option style script li dd dt
-		    wbr		;; N1.0
-		    embed	;; N2.0
-		    spacer	;; N3.0b
-		    )
-		  rgr-html-empty-tags)
-  "Tag names as symbols (not strings or regular expressions) in lower
-case that never expect a </tag> to follow.")
+(defconst rgr-html-tags-with-optional-close
+          '(body colgroup dd dt head html li option p
+	    tbody td tfoot th thead tr)
+  "Tags for which </tag> is not required.  These are all the
+elements in http://www.w3.org/TR/html40/index/elements.html with
+\"O\" in the \"End Tag\" column.  [This is not actually used by
+the code.]")
 
-(defconst rgr-html-tags-that-may-nest '(p a-name)
-  "Tags where </tag> is optional.  But if any close is omitted, they
-must all be.  Get rid of 'a-name' to require closes on '<a name=foo>'
-tags.  Get rid of `p' to enforce HTML 3.0 containerization of paragraph
-tags.")
+(defvar rgr-html-tag-rules
+  '((address (a-name p))
+    (body (head) (a-name p))
+    (dd (dd dt a-name p) nil (dl))
+    (dt (dd dt a-name p) nil (dl))
+    (dl (a-name p) (dd dt a-name p))
+    (div nil nil nil nil (div))
+    (form nil nil nil nil (form))
+    (h1 (a-name p) nil (body) (center div form))
+    (h2 (a-name p) nil (body) (center div form))
+    (h3 (a-name p) nil (body) (center div form))
+    (h4 (a-name p) nil (body) (center div form))
+    (h5 (a-name p) nil (body) (center div form))
+    (h6 (a-name p) nil (body) (center div form))
+    (hr (a-name p) nil (body) (center div form))
+    (li (li a-name p) (a-name p) (ul ol dir menu))
+    (ul (a-name p) (li a-name p))
+    (ol (a-name p) (li a-name p))
+    (option (option) nil (select optgroup))
+    (optgroup (option) (option) (select))
+    (p (a-name p))
+    (pre nil nil nil nil (pre))
+    (colgroup (colgroup) nil (table))
+    (tbody (colgroup) (tr) (table))
+    (thead (colgroup) (tr) (table))
+    (tfoot (colgroup) (tr) (table))
+    (td (td th) nil (tr))
+    (th (th td) nil (tr))
+    (tr (colgroup tr th td) (th td) (table tbody thead tfoot tgroup) nil)
+    (table (a-name p) (tbody thead tfoot tgroup tr th td)))
+  "Alist of lists that specify how to treat certain tags.
+List elements are
 
-(defvar rgr-html-tags-that-may-nest-never-do-p t
-  "*Whether to consider rgr-html-tags-that-may-nest as never nesting.")
+    tag name (a symbol)
+    list of other tags implicitly closed by an open tag
+    list of other tags implicitly closed by a close tag
+    container tag that ends the scope of implicit closes
+    list of container tags inside which this tag must appear
+    list of allowed intervening tags
+    list of forbidden container tags
 
-(defvar rgr-html-tags-implicitly-closed
-  '((td (td th))
-    (th (th td))
-    (tr (tr th td) (th td))
-    (table nil (tr th td)))
-  ;; [used by rgr-html-collect-tag-data; feature still in development.  -- rgr,
-  ;; 6-Aug-02.]
-  "This specifies that, for example, a <tr> tag implicitly closes any
-open <tr>, <th>, or <td> markup, and a </tr> closes any open <th> or
-<td> markup.")
+For example,
+
+    (tr (colgroup tr th td) (th td) (table tbody thead tfoot tgroup) nil)
+
+means that:
+
+   1.  a <tr> tag implicitly closes any open <colgroup>, <tr>,
+<th>, or <td>;
+
+   2.  a </tr> closes any open <th> or <td>; and
+
+   3.  for <tr> and </tr>, a containing <table> 
+
+   4.  every <tr> must appear directly within one of <table>,
+<tbody>, <thead>, <tfoot>, or <tgroup>, which bounds the search
+for any implicit closes.
+
+If the list of allowed intervening tags is t, then any tags may
+come between it and a required container.
+")
 
 ;;; General tag hackery.
 
@@ -286,17 +328,6 @@ return it as a symbol (after converting to lower case)."
 	(goto-char (match-end 0)))
     (nreverse result)))
 
-;;; tag nesting support.
-
-(defun rgr-html-tag-does-not-nest-p (tag-name)
-  ;; Given a tag symbol, return non-nil if we do not expect it to nest.  Assumes
-  ;; that <a> tags have been separated into a-name and a-href.  Note that this
-  ;; is not as smart as rgr-html-tag-entry-make-report because we can't know if
-  ;; (e.g.) </p> is ever used in this buffer.
-  (or (memq tag-name rgr-html-tags-that-do-not-nest)
-      (and rgr-html-tags-that-may-nest-never-do-p
-	   (memq tag-name rgr-html-tags-that-may-nest))))
-
 ;;; rgr-html-forward-markup and support.
 
 (defun rgr-html-forward-markup (&optional n markup-regexp mismatch-is-error-p)
@@ -344,8 +375,8 @@ buffer is encountered, that is always an error."
 	      (open-p (setq last-a-tag tag))
 	      (last-a-tag (setq tag last-a-tag)))
 	;; (message "tag %s last-a-tag %s" tag last-a-tag) (sit-for 1)
-	(cond ((rgr-html-tag-does-not-nest-p tag)
-		;; Treat a non-nesting tag at top level as an "atom", and count
+	(cond ((memq tag rgr-html-empty-tags)
+		;; Treat an empty tag at top level as an "atom", and count
 		;; it against the number of forms we have to move.
 		(if (zerop nest)
 		    (setq n (1- n))))
