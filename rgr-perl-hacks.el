@@ -407,6 +407,7 @@ sequentially, beginning with the number of the first.  Numbers must have a
 trailing dot, and may consist of two or more dot-separated subcomponents,
 which are incremented lexicographically."
   (interactive "r")
+  (require 'rgr-enumerate)	;; for rgr-renumber-explode-dots
   (let ((last nil))
     (save-excursion
       (goto-char start)
