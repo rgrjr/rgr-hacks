@@ -34,13 +34,24 @@
 				      (if (string-match "\\." name)
 					  (substring name 0 (match-beginning 0))
 					  name)))
-			    ""))))
+			    "")))
+	 (background
+	   ;; fix lame color scheme under KDE on SuSE 9.0.  -- rgr, 13-Mar-04.
+	   ;; [actually, let's make this the default.  -- rgr, 20-Mar-04.]
+	   (cond ((zerop (user-real-uid))
+		   ;; use something distinctive for root.  -- rgr, 13-Mar-04.
+		   "light cyan")
+		 ;; use something more bland for normal users.
+		 ((eq rgr-site 'mgi)
+		   ;; this is a tad lighter than "DarkSeaGreen1".
+		   "#e8ffe8")
+		 (t
+		   ;; home site.
+		   "linen"))))
     (modify-frame-parameters (selected-frame)
 			     (list (cons 'name label)
-				   ;; [this doesn't seem to work in 20.3.
-				   ;; -- rgr, 21-Mar-04.]
-				   (cons 'mouse-color
-					 (if su-p "blue" "red"))))))
+				   (cons 'background-color background)
+				   (cons 'foreground-color "black")))))
 
 (defun rgr-x11-kill-ring-save (beg end)
   "Force X11 cut buffer save, even if interprogram-cut-function is disabled."

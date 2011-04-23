@@ -30,16 +30,6 @@ but it is usually sufficient to take the default.")
 (setq signature-login-name "rgr")
 (rgr-install-hacks)
 
-;; fix lame color scheme under KDE on SuSE 9.0.  -- rgr, 13-Mar-04.
-;; [actually, let's make this the default.  -- rgr, 20-Mar-04.]
-(set-background-color (if (zerop (user-real-uid))
-			  ;; use something distinctive for root.  --
-			  ;; rgr, 13-Mar-04.
-			  "azure"
-			  ;; use something more bland for normal users.
-			  "linen"))
-(set-foreground-color "black")
-
 ;; Disable transient-mark-mode (seems to be on by default in the SuSE 20.7
 ;; version).  -- rgr, 27-Jun-01.  [not to mention openSUSE 11.0.  -- rgr,
 ;; 9-Dec-08.]
