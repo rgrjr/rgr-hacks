@@ -104,19 +104,9 @@ Prefix arg means justify as well.  This version knows not to fill headers."
 ;;; when appropriate.  Eventually it will favor vm (at which time I'll move it
 ;;; to the rgr-vm-hacks.el file).  -- rgr, 16-Dec-98.
 
-(defun rgr-count-windows (&optional frame)
-  ;; [doesn't this already exist?  -- rgr, 16-Dec-98.]
-  (let* ((selected (frame-selected-window frame))
-	 (next (next-window selected))
-	 (n 1))
-    (while (not (eq selected next))
-      (setq n (1+ n)
-	    next (next-window next)))
-    n))
-
 ;;;###autoload
 (defun rgr-invoke-rmail (&optional file-name-arg)
-  "Invoke rmail (or vm), arranging it so that the headers are always in the
+  "Invoke vm (or rmail), arranging it so that the headers are always in the
 top window.  A numeric argument prompts for an RMAIL or vm file to read."
   (interactive
     (if (or current-prefix-arg
@@ -205,8 +195,4 @@ top window.  A numeric argument prompts for an RMAIL or vm file to read."
     (setq rgr-mail-buffer-index suffix)
     (rename-buffer name)))
 
-;; (setq debug-on-error nil)
-;; (frame-root-window) (frame-first-window) (frame-selected-window)
-
 (provide 'rgr-mail-hacks)
-
