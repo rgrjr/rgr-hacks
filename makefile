@@ -9,8 +9,7 @@ install-dir = /usr/local/share/emacs/site-lisp
 # this needs to track the contents of the rgr-hacks-public-files emacs-lisp
 # variable.  -- rgr, 13-Feb-99.
 public-source = matlab-hacks.el bmerc-hacks.el \
-		rgr-html-hacks.el rgr-html-head.el rgr-html-nest.el \
-		rgr-html-tags.el
+		rgr-html-hacks.el rgr-html-head.el rgr-html-nest.el
 public-bins = ${public-source:%.el=%.elc}
 # Install source, autoloads, and compiled files.
 install-files = ${public-source} ${public-bins}

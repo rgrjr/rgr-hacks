@@ -56,10 +56,7 @@ rgr-hacks-compile-module (see below).")
 	  ;; "rgr-geometry"
 	  ("rgr-html-hacks" require (html-helper-mode))
 	  ("rgr-html-head" require (html-helper-mode))
-	  ;; [need to convert these two from psa-defstruct to the cl-macs.el
-	  ;; defstruct some day.  -- rgr, 26-Nov-06.]
 	  ("rgr-html-nest" require (html-helper-mode))
-	  ("rgr-html-tags" require (psa-defstruct html-helper-mode))
 	  "rgr-intervals"
 	  "rgr-lisp-hacks"
 	  ("rgr-mail-hacks" require (vm))

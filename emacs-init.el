@@ -227,7 +227,6 @@ but it is usually sufficient to take the default.")
       (add-to-list 'auto-mode-alist '("\\.html?$" . html-helper-mode))))
 (add-hook 'html-helper-load-hook 'rgr-html-define-commands)
 (add-hook 'html-helper-load-hook 'rgr-html-fix-regexps)
-(add-hook 'rgr-html-tags-load-hook '(lambda () (load "rgr-html-servers")))
 ;; This has some per-buffer stuff.  -- rgr, 19-Mar-96.
 (add-hook 'html-helper-mode-hook 'rgr-html-helper-mode-hook)
 
