@@ -468,8 +468,6 @@ properly."
   ;; [not in version 2.0.  -- rgr, 11-Aug-99.]
   (setq html-helper-any-list-item-start
 	(rgr-html-tag-alternative-regexp '("li" "dt" "dd" "option" "th" "td")))
-  ;; [only in 2.0.  -- rgr, 11-Aug-99.]
-  (setq html-helper-any-list-item html-helper-any-list-item-start)
   ;; was "<dl>\\|<ul>\\|<ol>\\|<menu>\\|<dir>\\|<select\\|<table\\|<tr>"
   (setq html-helper-any-list-start
 	(rgr-html-tag-alternative-regexp '("dl" "ul" "ol" "menu" "dir"
