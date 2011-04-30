@@ -60,8 +60,7 @@ always just '<br>' and we shouldn't look for a close.")
 	    tbody td tfoot th thead tr)
   "Tags for which </tag> is not required.  These are all the
 elements in http://www.w3.org/TR/html40/index/elements.html with
-\"O\" in the \"End Tag\" column.  [This is not actually used by
-the code.]")
+\"O\" in the \"End Tag\" column.")
 
 (defvar rgr-html-tag-rules
   '((address (a-name p))
@@ -71,6 +70,8 @@ the code.]")
     (dl (a-name p) (dd dt a-name p))
     (div nil nil nil nil (div))
     (form nil nil nil nil (form))
+    ;; Headings must be directly in <body>, possibly with <center>, <div>, or
+    ;; <form> intervening.
     (h1 (a-name p) nil (body) (center div form))
     (h2 (a-name p) nil (body) (center div form))
     (h3 (a-name p) nil (body) (center div form))
@@ -89,6 +90,7 @@ the code.]")
     (tbody (colgroup) (tr) (table))
     (thead (colgroup) (tr) (table))
     (tfoot (colgroup) (tr) (table))
+    (tgroup (colgroup) (tr) (table))
     (td (td th) nil (tr))
     (th (th td) nil (tr))
     (tr (colgroup tr th td) (th td) (table tbody thead tfoot tgroup) nil)
@@ -113,13 +115,11 @@ means that:
    1.  a <tr> tag implicitly closes any open <colgroup>, <tr>,
 <th>, or <td>;
 
-   2.  a </tr> closes any open <th> or <td>; and
+   2.  a </tr> closes any open <th> or <td>;
 
-   3.  for <tr> and </tr>, a containing <table> 
-
-   4.  every <tr> must appear directly within one of <table>,
-<tbody>, <thead>, <tfoot>, or <tgroup>, which bounds the search
-for any implicit closes.
+   3.  every <tr> must appear directly within one of <table>,
+<tbody>, <thead>, <tfoot>, or <tgroup>, with no intervening tags,
+which bounds the search for any implicit closes.
 
 If the list of allowed intervening tags is t, then any tags may
 come between it and a required container.
@@ -255,20 +255,18 @@ return it as a symbol (after converting to lower case)."
 
 ;;; rgr-html-forward-markup and support.
 
-(defun rgr-html-forward-markup (&optional n markup-regexp mismatch-is-error-p)
+(defun rgr-html-forward-markup (&optional n mismatch-is-error-p)
   "Markup-oriented version of forward-sexp (q.v.).
 Interactively, a numeric arg supplies the number of markup expressions N
-past which to move; the sign indicates the direction.  The MARKUP-REGEXP
-arg can be used to customize which markup is to be scanned; by default
-the value of rgr-html-tag-regexp is used.  Handles errors Zmacs-style
-\(i.e. like a Lisp Machine) in that if an unmatched close is encountered,
+past which to move; the sign indicates the direction.  Handles errors
+Zmacs-style \(i.e. like a Lisp Machine) in that if an unmatched close
+is encountered,
 we move past it and stop immediately, no matter how many markup forms
 were requested.  This can be treated as an error by supplying the
 optional third MISMATCH-IS-ERROR-P arg.  But if the start or end of the
 buffer is encountered, that is always an error."
   (interactive "p")
   (or n (setq n 1))
-  (or markup-regexp (setq markup-regexp rgr-html-tag-regexp))
   (let* ((forward-p (>= n 0))
 	 (re-searcher (if forward-p 're-search-forward 're-search-backward))
 	 ;; Search state.
@@ -278,8 +276,7 @@ buffer is encountered, that is always an error."
     (while (and (> n 0)
 		;; need this to detect popping up a nest level
 		(>= nest 0))
-      (or (funcall re-searcher markup-regexp nil 'move)
-	  ;; [this may need to be more detailed.  -- rgr, 4-Dec-97.]
+      (or (funcall re-searcher rgr-html-tag-regexp nil 'move)
 	  (error "No more markup."))
       (let ((open-p (not (match-beginning 1)))
 	    (tag (rgr-html-matched-tag-name)))
@@ -293,9 +290,7 @@ buffer is encountered, that is always an error."
 	;; decrement on opens.
 	(if (not forward-p)
 	    (setq open-p (not open-p)))
-	;; [this loses when going backwards.  -- rgr, 4-Dec-97.]  [see the
-	;; ~/hacks/random/ice.html page for containerized a-name examples.  --
-	;; rgr, 29-Jan-98.]
+	;; [this loses when going backwards.  -- rgr, 4-Dec-97.]
 	(cond ((or (not forward-p) (not (memq tag '(a a-name)))))
 	      (open-p (setq last-a-tag tag))
 	      (last-a-tag (setq tag last-a-tag)))
@@ -326,7 +321,7 @@ buffer is encountered, that is always an error."
 	;; [useful return value?  -- rgr, 4-Dec-97.]
 	n)))
 
-(defun rgr-html-backward-markup (&optional n markup-regexp mismatch-is-error-p)
+(defun rgr-html-backward-markup (&optional n mismatch-is-error-p)
   "Markup-oriented version of backward-sexp (q.v.).
 This is the same as rgr-html-forward-markup (invoked as
 \\[rgr-html-forward-markup], q.v.), only a positive numeric arg (which
@@ -336,9 +331,9 @@ defaults to 1) indicates backward motion.  The other args are the same.
 href=...> when moving backward.  This won't bite you as long as your use
 of </a> for <a name=...> is consistent -- rgr, 4-Dec-97.]"
   (interactive "p")
-  (rgr-html-forward-markup (- (or n 1)) markup-regexp mismatch-is-error-p))
+  (rgr-html-forward-markup (- (or n 1)) mismatch-is-error-p))
 
-(defun rgr-html-backward-up-markup (&optional n markup-regexp)
+(defun rgr-html-backward-up-markup (&optional n)
   "Markup-oriented version of \\[backward-up-list] (q.v.).  This uses
 rgr-html-forward-markup (\\[rgr-html-forward-markup], q.v.)  N times to
 skip backward an arbitrary amount of markup, going up each time."
@@ -349,7 +344,7 @@ skip backward an arbitrary amount of markup, going up each time."
       (error "Sorry, this version doesn't allow a negative arg."))
   (while (> n 0)
     (let* ((last-point (point))
-	   (nest (rgr-html-forward-markup -99999 markup-regexp 'never)))
+	   (nest (rgr-html-forward-markup -99999 'never)))
       (cond ((>= nest 0)
 	      ;; [this doesn't quite seem to work . . .  -- rgr, 4-Dec-97.]
 	      (goto-char last-point)
