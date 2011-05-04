@@ -791,18 +791,18 @@ Also undoes the effect if it was done by the immediately preceding command."
 the original state if the file isn't already in a buffer."
   (let ((buffer (car buffer-and-filename))
 	(filename (car (cdr buffer-and-filename))))
-    (` (let (((, buffer) (get-file-buffer (, filename)))
-	     (<delete-p> nil))
-	 ;; I'm hoping at least some of this is correct.
-	 (unwind-protect
-	      (save-excursion
-		(cond ((not (, buffer))
-			(setq (, buffer) (find-file-noselect (, filename)))
-			(setq <delete-p> t)))
-		(set-buffer (, buffer))
-		(,@ body))
-	   (and (, buffer) <delete-p>
-		(kill-buffer (, buffer))))))))
+    `(let ((,buffer (get-file-buffer ,filename))
+	   (<delete-p> nil))
+       ;; I'm hoping at least some of this is correct.
+       (unwind-protect
+	    (save-excursion
+	      (cond ((not ,buffer)
+		     (setq ,buffer (find-file-noselect ,filename))
+		     (setq <delete-p> t)))
+	      (set-buffer ,buffer)
+	      ,@body)
+	 (and ,buffer <delete-p>
+	      (kill-buffer ,buffer))))))
 
 (defun rgr-write-completions-internal (stream threshold atrophy-percent)
   ;; just outputs the current completion state to the stream.
