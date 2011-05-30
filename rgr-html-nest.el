@@ -172,11 +172,14 @@
 		(rgr-htd-open intermediate)))))
     illegal-intermediates))
 
-(defun rgr-html-find-tag-data (tag-name nesting-tags)
+(defun rgr-html-find-tag-data (tag-name-or-set nesting-tags)
   ;; helper for rgr-html-collect-tag-data
   (let ((tail nesting-tags) (result nil))
     (while tail
-      (if (eq (rgr-htd-tag-name (car tail)) tag-name)
+      (if (let ((stack-tag (rgr-htd-tag-name (car tail))))
+	    (if (listp tag-name-or-set)
+		(member stack-tag tag-name-or-set)
+		(eq stack-tag tag-name-or-set)))
 	  (setq result (car tail) tail nil)
 	  (setq tail (cdr tail))))
     result))
@@ -237,16 +240,20 @@
 	(t
 	  (rgr-html-same-line-p point2 point1))))
 
-(defun rgr-html-tag-must-not-nest (tag-name tag-stack)
+(defun rgr-html-tag-must-not-nest (tag-name tag-stack must-not-be-in)
   ;; Check that tag-name is not being nested.
-  (let ((other-form (rgr-html-find-tag-data tag-name tag-stack)))
+  (let ((other-form (rgr-html-find-tag-data must-not-be-in tag-stack)))
     (if other-form
-	(let ((other-start (rgr-htd-open other-form)))
+	(let ((other-tag (rgr-htd-tag-name other-form))
+	      (other-start (rgr-htd-open other-form)))
 	  (rgr-html-report-tag-error-internal
-	    (format "Nesting <%s> constructs does not work." tag-name))
+	    (if (eq other-tag tag-name)
+		(format "Nesting <%s> within itself does not work." tag-name)
+		(format "Nesting <%s> within <%s> does not work."
+			tag-name other-tag)))
 	  (if (not (rgr-html-same-line-p other-start (point)))
 	      (rgr-html-report-tag-error-internal
-	        (format "Location of enclosing <%s>" tag-name)
+	        (format "Location of enclosing <%s>" other-tag)
 		other-start))))))
 
 (defun rgr-html-process-implicit-closes (tag-name close-p tag-stack)
@@ -315,7 +322,7 @@
 	      (rgr-html-tag-must-be-directly-in tag-name tag-stack
 						must-be-in (nth 4 rules)))
 	    (when must-not-be-in
-	      (rgr-html-tag-must-not-nest tag-name tag-stack))))
+	      (rgr-html-tag-must-not-nest tag-name tag-stack must-not-be-in))))
 	;; Update stack.
 	(cond ((memq tag-name rgr-html-empty-tags)
 		(if close-p
