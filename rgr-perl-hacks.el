@@ -2,7 +2,7 @@
 ;;;
 ;;;; Hacking perl mode.
 ;;;
-;;; Copyright (C) 1996-2006  Robert G. Rogers Jr
+;;; Copyright (C) 1996-2011  Robert G. Rogers Jr
 ;;;
 ;;; This file is not part of GNU Emacs, but it customizes perl-mode, which is.
 ;;; Accordingly, it is distributed under the same terms as GNU Emacs:
@@ -54,27 +54,15 @@
 (defvar rgr-perldoc-program "perldoc")
 (defvar rgr-perldoc-args "")
 
-(defvar rgr-perl-function-documentation-prefix
-        (cond ((string-match "osf" system-configuration)
-		;; only two spaces in front of function names in the man page.
-		;; [I hope that this really depends on OSF1 . . .  -- rgr,
-		;; 29-Apr-98.]
-		"^  ")
-	      ((string-match "linux" system-configuration)
-	        ;; "*-linux-gnu" and "*-suse-linux" tested.
-		"^       ")
-	      (t
-		;; Default (works on SunOS 4.1.4 at least).
-		"^     "))
+(defvar rgr-perl-function-documentation-prefix "^       "
   "Regular expression that matches the precise indentation in front of
 the function name in the perl documentation.  This appears to be
-somewhat system-dependent.")
+somewhat system-dependent; the default is only known to work with
+GNU/Linux (openSUSE).")
 
 (defvar rgr-manpage-done-p nil)
 (defvar rgr-perl-manpage-alphabetical-listing nil
   "Start of alphabetical function listing.")
-
-(defvar rgr-perl-function-indent 0)
 
 ;;;; general stuff.
 
@@ -470,20 +458,6 @@ the page."
 
 ;;; Indentation.
 
-(defun rgr-perl-indent-command ()
-  "Indent current line as Perl code."
-  ;; [simplified version.  -- rgr, 4-Aug-97.]  [may no longer be necessary, as
-  ;; the perl-tab-to-comment default is now nil.  see the comments there,
-  ;; especially the one by rms.  -- rgr, 30-Apr-03.]
-  (interactive)
-  (let ((fn-start 0) (rgr-perl-function-indent 0))
-    (save-excursion
-      (setq fn-start (perl-beginning-of-function))
-      (beginning-of-line)
-      (skip-chars-forward " \t\f")
-      (setq rgr-perl-function-indent (current-column)))
-    (perl-indent-line nil fn-start)))
-
 (defun rgr-perl-newline-and-maybe-indent (arg)
   "Insert a newline and indent if not within POD."
   (interactive "p")
@@ -491,7 +465,7 @@ the page."
   (if (save-excursion
 	(or (not (re-search-backward "^=" nil t))
 	    (looking-at "^=cut")))
-      (rgr-perl-indent-command)))
+      (perl-indent-command)))
 
 ;;; Installing these commands.
 
@@ -505,19 +479,14 @@ the page."
 
 ;;;###autoload
 (defun rgr-perl-mode-fix-indentation ()
-  ;; perl-mode-hook function that installs a simplified version of the
-  ;; indentation code.  This is necessary because the indenter often gets it
-  ;; wrong.  -- rgr, 4-Aug-97.
-  ;; Start by swapping newline and return character bindings (to get indentation
-  ;; by default).
+  ;; Swap newline and return to get indentation by default, with a hack that
+  ;; won't indent within pod.
   (define-key perl-mode-map "\r" 'rgr-perl-newline-and-maybe-indent)
   (define-key perl-mode-map "\n" 'newline)
-  (define-key perl-mode-map "\t" 'rgr-perl-indent-command)
   ;; Don't do indenting on ";" -- ${$foo} loses.  -- rgr, 16-May-97.
   (define-key perl-mode-map ";" 'self-insert-command)
   ;; Indent comments, even at BOL (by dropping ";?#\\|" from the start of this
-  ;; regular expression).  It is also necessary to use rgr-perl-indent-command,
-  ;; since perl-indent-command overrides the regexp.  -- rgr, 4-Aug-97.
+  ;; regular expression).  -- rgr, 4-Aug-97.
   (setq perl-nochange "\f\\|\\s(\\|\\(\\w\\|\\s_\\)+:"))
 
 ;;;###autoload
