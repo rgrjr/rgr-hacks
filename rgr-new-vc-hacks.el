@@ -11,8 +11,9 @@
   (require 'vc-dir)
   (require 'log-edit))
 
-(if (not (rgr-emacs-version-p 23))
-    (error "Loading %S, which only works in Emacs 23.x." load-file-name))
+(if (< emacs-major-version 23)
+    (error "Loading %S, which only works in Emacs 23 and later."
+	   load-file-name))
 
 (defvar vc-log-extra)
 (defvar vc-log-fileset)
@@ -246,6 +247,14 @@ If a prefix argument is given, move by that many lines."
 If a prefix argument is given, move by that many lines."
   (interactive "p")
   (vc-dir-next-interesting-line (- (or arg 1))))
+
+(defun vc-root-dir ()
+  "Enter vc-dir for the VC root."
+  (interactive)
+  (let* ((backend (or (vc-deduce-backend)
+		      (error "Buffer is not version controlled")))
+	 (rootdir (vc-call-backend backend 'root default-directory)))
+    (vc-dir rootdir backend)))
 
 ;;;; Installation.
 
