@@ -248,6 +248,7 @@ If a prefix argument is given, move by that many lines."
   (interactive "p")
   (vc-dir-next-interesting-line (- (or arg 1))))
 
+;;;###autoload
 (defun vc-root-dir ()
   "Enter vc-dir for the VC root."
   (interactive)
