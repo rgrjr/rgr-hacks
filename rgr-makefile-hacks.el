@@ -10,6 +10,9 @@
 ;;;
 ;;; $Id$
 
+(eval-when-compile
+  (require 'make-mode))
+
 (defun rgr-fill-makefile-comment (arg)
   "Fill the makefile comment around point."
   (interactive "P")
