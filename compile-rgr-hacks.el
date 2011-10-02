@@ -39,10 +39,6 @@ rgr-hacks-compile-module (see below).")
 	  "rgr-c-hacks"
 	  "rgr-abbrev-completion"
 	  "tags-grep"
-	  ;; this requires that ACL be installed, and we don't want to test for
-	  ;; its presence by loading it, because that's what the rgr-allegro.el
-	  ;; file is supposed to do.  -- rgr, 23-Apr-03.
-	  ("rgr-allegro" load-p nil)
 	  "rgr-compile-hacks"
 	  "rgr-cvs-hacks"
 	  ("rgr-new-vc-hacks" version 23)
