@@ -73,7 +73,6 @@ rgr-hacks-compile-module (see below).")
 	  "rgr-log-view"
 	  "rgr-shell-hacks"
 	  "rgr-squid-log"
-	  "rgr-tcl"
 	  ("rgr-vm-hacks" require (vm))
 	  ("rgr-w3-hacks" require (w3))
 	  "rgr-x11-hacks"

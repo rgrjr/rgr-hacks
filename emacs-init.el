@@ -207,8 +207,6 @@ but it is usually sufficient to take the default.")
 (add-hook 'matlab-mode-hook 'rgr-matlab-mode-hook)
 (add-hook 'matlab-shell-mode-hook 'rgr-matlab-shell-mode-hook)
 (add-hook 'command-history-hook 'rgr-command-history-hook)
-;; New language.  -- rgr, 11-Aug-99.
-(add-hook 'tcl-mode-hook 'rgr-tcl-mode-hook)
 
 ;; Oops; vm doesn't do this.  -- rgr, 27-Nov-00.
 (let ((entry '("[^/.]\\.vm$" . vm-mode)))
