@@ -335,14 +335,16 @@ protein sequence."
       (let* ((entry (car tail))
 	     (key (car entry))
 	     (add (cdr (assoc ?+ (cdr entry))))
-	     (del (cdr (assoc ?- (cdr entry))))
-	     (printed-p nil))
+	     (del (cdr (assoc ?- (cdr entry)))))
+	;; [this assumes that (a) the locus always sorts first, and (b) if we
+	;; get here at all, there must be some significant different, so we need
+	;; to print the locus anyway for identification.
 	(while (or add del)
-	  (cond ((not (equal (car del) (car add)))
-		 (cond ((not printed-p)
+	  (cond ((or (not (equal (car del) (car add)))
+		     (equal key "(locus)"))
+		 (cond ((not need-final-delimiter-p)
 			(princ "@@\n")
-			(setq printed-p t
-			      need-final-delimiter-p t)))
+			(setq need-final-delimiter-p t)))
 		 (if (car del)
 		     (princ (format "-%s=%s\n" key (car del))))
 		 (if (car add)
@@ -380,6 +382,13 @@ protein sequence."
 		  (rgr-annotation-display-diffs alist)
 		  (setq alist nil)
 		  (forward-line))
+		((looking-at "^\\(\\+\\+\\+\\|---\\)")
+		  ;; Start of a new file; end the old hunk, and echo the line.
+		  (rgr-annotation-display-diffs alist)
+		  (setq alist nil)
+		  (let ((start (point)))
+		    (forward-line)
+		    (princ (buffer-substring start (point)))))
 		(t
 		  (forward-line))))
 	;; Catch leftovers.
