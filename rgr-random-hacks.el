@@ -345,10 +345,14 @@ protein sequence."
 		 (cond ((not need-final-delimiter-p)
 			(princ "@@\n")
 			(setq need-final-delimiter-p t)))
-		 (if (car del)
-		     (princ (format "-%s=%s\n" key (car del))))
-		 (if (car add)
-		     (princ (format "+%s=%s\n" key (car add))))))
+		 (cond ((equal (car del) (car add))
+			 ;; Display the locus for user orientation.
+			 (princ (format " %s=%s\n" key (car del))))
+		       (t
+			 (if (car del)
+			     (princ (format "-%s=%s\n" key (car del))))
+			 (if (car add)
+			     (princ (format "+%s=%s\n" key (car add))))))))
 	  (setq add (cdr add))
 	  (setq del (cdr del))))
       (setq tail (cdr tail)))
