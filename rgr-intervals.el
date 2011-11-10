@@ -172,7 +172,7 @@ long as hours < 60."
 		  (setq accumulate-p (and (= sign -1) (> sigma-signs 0))))
 		((and last
 		      (equal (cdr this) (cdr last))
-		      (< (time-to-seconds
+		      (< (float-time
 			   (subtract-time (car this) (car last)))
 			 10))
 		  ;; Ignore redundant entries; KDE generates these on login.
@@ -213,12 +213,11 @@ long as hours < 60."
 		     'sigma-signs sigma-signs)
 	    (sit-for 2)))
     ;; (message "total %S" total)
-    (let ((interval (rgr-print-interval (round (time-to-seconds total)))))
+    (let ((interval (rgr-print-interval (round (float-time total)))))
       (message "%s%s" interval
-	       (if (or (zerop sigma-signs)
-		       effectively-out)
-		   ""
-		   " (assuming the last interval ends now)."))
+	       (cond ((zerop sigma-signs) "")
+		     (effectively-out " (effectively)")
+		     (t " (assuming the last interval ends now).")))
       (and insert-p (insert interval))
       interval)))
 
