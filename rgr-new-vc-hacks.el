@@ -23,7 +23,12 @@
   (interactive)
   ;; [should check to see if some of these aren't already in the list, and
   ;; insert only new ones.  -- rgr, 20-Jul-08.]
-  (let* ((tail (log-edit-files))
+  (vc-log--insert-file-names (log-edit-files))
+  (goto-char (point-min))
+  (forward-line))
+
+(defun vc-log--insert-file-names (file-names)
+  (let* ((tail file-names)
 	 (prefix (expand-file-name default-directory))
 	 (prefix-len (length prefix)))
     (while tail
@@ -36,9 +41,39 @@
 		    ;; Oops; it's not so common after all.
 		    file)
 		":\n"))
-      (setq tail (cdr tail)))
-    (goto-char (point-min))
-    (forward-line)))
+      (setq tail (cdr tail)))))
+
+;;;###autoload
+(defun vc-log-refresh-fileset-skeleton ()
+  (interactive)
+  (let ((files (log-edit-files)))
+    (save-excursion
+      (goto-char (point-min))
+      (while (re-search-forward "^\\* +" nil t)
+	(while (looking-at "\\([^ (),\n:]+\\)[, \t\n]*")
+	  (let ((file (match-string 1)))
+	    (cond ((member file files)
+		    (setq files (delete file files)))
+		  (t
+		    (replace-match "" t t))))
+	  (goto-char (match-end 0))
+	  ;; Skip stuff in parens.
+	  (while (looking-at " \t\n,(")
+	    (skip-chars-forward " \t\n")
+	    (if (looking-at "(")
+		(forward-sexp 1)))
+	  ;; We should now be poised at either the start of the next file name,
+	  ;; or the terminating ":".
+	  ))
+
+      ;; Clean up empty "* :" lines.
+      (goto-char (point-min))
+      (while (re-search-forward "^\\* +:\n*" nil t)
+	(replace-match "")))
+    (when files
+      ;; What's left over must be new.
+      (goto-char (point-max))
+      (vc-log--insert-file-names files))))
 
 (defun vc-log-update-fileset-from-skeleton ()
   "Set the log buffer's fileset files to those named in the skeleton."
