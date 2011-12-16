@@ -433,6 +433,32 @@ The default argument is equivalent to 2 (just exchange point and mark)."
   (interactive "r")
   (string-rectangle start end (string last-command-event)))
 
+;;;; Other.
+
+(defun rgr-summarize-tasks ()
+  (interactive)
+  (save-excursion
+    (goto-char (point-min))
+    (let ((counts (vector 0 0 0 0)))
+      ;; Collect them.
+      (while (re-search-forward "^   \\(\\**\\)" nil t)
+	(let ((n-stars (- (match-end 1) (match-beginning 1))))
+	  (when (<= n-stars 3)
+	    (aset counts n-stars (1+ (aref counts n-stars))))))
+      ;; Report them.
+      (let ((strings nil))
+	(dotimes (i (length counts))
+	  (let ((count (aref counts i)))
+	    (unless (zerop count)
+	      (let ((desc (if (zerop i)
+			      (format "%d completed" count)
+			      (format "%d %s" count (make-string i ?*)))))
+		(setq strings (cons desc strings))))))
+	(message "Found %s items."
+		 (if strings
+		     (mapconcat #'identity strings ", ")
+		     "no"))))))
+
 ;;;; Installing these goodies.
 
 ;;;###autoload
@@ -474,6 +500,8 @@ M-x buffer-menu)."
   ;; Some rectangle hackery.
   (global-set-key "\C-xr " 'rgr-fill-rectangle)
   (global-set-key "\C-xr*" 'rgr-fill-rectangle)
+  ;; Task counting.  [Could be in text-mode-map.  -- rgr, 16-Dec-11.]
+  (global-set-key "\C-ct" 'rgr-summarize-tasks)
   ;; I keep typing "insert" by accident, and then overwrite stuff by accident.
   ;; Unbinding this key means that I have to type "M-x overwrite-mode RET" if I
   ;; really want to clobber myself.  -- rgr, 6-Feb-06.
