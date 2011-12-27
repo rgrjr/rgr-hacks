@@ -121,59 +121,10 @@ problems.  -- rgr, 29-May-06.]"
 	  (setq buffer-tail (cdr buffer-tail))))
     result))
 
-;;;###autoload
-(defun vc-split-entry ()
-  "Split a log edit buffer into two at point.
-Lines before point stay in the current buffer, lines after point (including
-the current line if not at BOL) go into a new buffer, and each of these can
-be committed independently."
-  (interactive)
-  (widen)
-  (beginning-of-line)
-  (let* ((original-buffer (current-buffer))
-	 (split-point (point))
-	 (original-end (point-max))
-	 (files-before (or (rgr-vc-all-comment-files nil split-point)
-			   (error "No files before point.")))
-	 (files-after (or (rgr-vc-all-comment-files split-point nil)
-			  (error "No files after point."))))
-    ;; take care of the new buffer first.
-    (let ((new-buffer (vc-create-new-log-buffer))
-	  (log-operation vc-log-operation)
-	  ;; (log-file vc-log-file)
-	  ;; (log-version vc-log-version)
-	  (after-hook vc-log-after-operation-hook)
-	  (tmp-vc-parent-buffer vc-parent-buffer)
-	  (tmp-vc-log-extra vc-log-extra)
-	  (tmp-vc-parent-buffer-name vc-parent-buffer-name))
-      (pop-to-buffer new-buffer)
-      ;; [based on vc-start-logentry; should consolidate.  -- rgr, 27-May-06.]
-      (set (make-local-variable 'vc-parent-buffer) tmp-vc-parent-buffer)
-      (set (make-local-variable 'vc-parent-buffer-name)
-	   tmp-vc-parent-buffer-name)
-      (set (make-local-variable 'vc-log-extra) tmp-vc-log-extra)
-      (message "[new buffer extra is %S]" vc-log-extra)
-      ;; (if log-file (vc-mode-line log-file))
-      (vc-log-edit files-after)
-      (message "[new buffer fileset is %S]" vc-log-fileset)
-      (make-local-variable 'vc-log-after-operation-hook)
-      (if after-hook
-	  (setq vc-log-after-operation-hook after-hook))
-      (setq vc-log-operation log-operation)
-      ;; (setq vc-log-version log-version)
-      (insert-buffer-substring original-buffer split-point original-end))
-    ;; now update the old one.
-    (with-current-buffer original-buffer
-      (delete-region split-point original-end)
-      (setq vc-log-fileset files-before)
-      ;; [would be cleaner for vc-log-edit to do this in the first place.  --
-      ;; rgr, 20-Jul-08.]
-      (setq log-edit-listfun '(lambda () vc-log-fileset))
-      (message "[old buffer fileset is %S]" vc-log-fileset))))
-
 ;;;; Hacked code.
 
 ;; This hacks definitions from lisp/vc.el rev 1.697.
+;; [updated to git be7ed8...dd92c4.  -- rgr, 27-Dec-11.]
 
 (defun vc-deduce-fileset (&optional observer allow-unregistered
 				    state-model-only-files)
@@ -181,6 +132,9 @@ be committed independently."
 
 Return (BACKEND FILESET FILESET-ONLY-FILES STATE CHECKOUT-MODEL).
 If we're in VC-dir mode, the fileset is the list of marked files.
+Otherwise, if we're in dired-mode, return a fileset with the marked files
+for a read-only operation (the optional OBSERVER flag is non-nil), else
+signal an error.
 Otherwise, if we're looking at a buffer visiting a version-controlled file,
 the fileset is a singleton containing this file.
 If none of these conditions is met, but ALLOW_UNREGISTERED is on and the
@@ -198,6 +152,10 @@ current buffer."
     (cond
      ((derived-mode-p 'vc-dir-mode)
       (vc-dir-deduce-fileset state-model-only-files))
+     ((derived-mode-p 'dired-mode)
+      (if observer
+	  (vc-dired-deduce-fileset)
+	(error "State changing VC operations not supported in `dired-mode'")))
      ((setq backend (vc-backend buffer-file-name))
       (if state-model-only-files
 	(list backend (list buffer-file-name)
@@ -218,7 +176,7 @@ current buffer."
            ;; FIXME: Why this test?  --Stef
            (or (buffer-file-name vc-parent-buffer)
 				(with-current-buffer vc-parent-buffer
-				  (eq major-mode 'vc-dir-mode))))
+				  (derived-mode-p 'vc-dir-mode))))
       (progn                  ;FIXME: Why not `with-current-buffer'? --Stef.
 	(set-buffer vc-parent-buffer)
 	(vc-deduce-fileset observer allow-unregistered state-model-only-files)))
@@ -226,16 +184,14 @@ current buffer."
        (error "Buffer %s is not associated with a file" (buffer-name)))
      ((and allow-unregistered (not (vc-registered buffer-file-name)))
       (if state-model-only-files
-	  (list (vc-responsible-backend
-		 (file-name-directory (buffer-file-name)))
+	  (list (vc-backend-for-registration (buffer-file-name))
 		(list buffer-file-name)
 		(list buffer-file-name)
 		(when state-model-only-files 'unregistered)
 		nil)
-	(list (vc-responsible-backend
-	       (file-name-directory (buffer-file-name)))
+	(list (vc-backend-for-registration (buffer-file-name))
 	      (list buffer-file-name))))
-     (t (error "No fileset is available here.")))))
+     (t (error "No fileset is available here")))))
 
 ;;;; vc-dir hacks.
 
