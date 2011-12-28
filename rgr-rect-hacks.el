@@ -33,7 +33,7 @@ the start/end and middle of all other lines.")
 (defun rgr-open-box-rectangle-line (startcol endcol delete-p)
   ;; this is much like the string-rectangle-line fn.
   (let ((last-p (= (point) box-rectangle-last)))
-    (move-to-column-force startcol)
+    (move-to-column startcol t)
     (if delete-p
 	(delete-rectangle-line startcol endcol nil))
     (if (not (= startcol endcol))
@@ -73,7 +73,7 @@ When called from a program the rectangle's corners are START and END."
 	 (first-or-last-p (or (eq box-rectangle-state 'first) last-p)))
     (cond ((= startcol endcol))
 	  ((or first-or-last-p
-	       (< (move-to-column-force startcol 'coerce) startcol))
+	       (< (move-to-column startcol t) startcol))
 	    (rgr-open-box-rectangle-line startcol endcol t))
 	  (t
 	    (let* ((pt (point))
@@ -87,7 +87,7 @@ When called from a program the rectangle's corners are START and END."
 	      ;; [this may not do the right thing for multicolumn characters?
 	      ;; -- rgr, 15-Jan-03.]
 	      (cond ((>= interior-width 0)
-		      (move-to-column-force (1- endcol))
+		      (move-to-column (1- endcol) t)
 		      ;; [this is also wrong.  -- rgr, 15-Jan-03.]
 		      (or (member (char-after) '(?\n ?\t))
 			  (delete-char 1))
