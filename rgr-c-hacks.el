@@ -231,17 +231,25 @@ mostly for compatibility with the rgr-lisp-def-name fn.)"
 ;;;###autoload
 (defun rgr-c-mode-hook ()
   (setq fill-column 80)
+  (define-key lisp-mode-map "\C-cl" 'rgr-c-ify-identifier)
+  (rgr-c-mode-hook-internal c-mode-map))
+
+(defun rgr-c-mode-hook-internal (mode-map)
   ;; Reinstall the global M-a and M-e bindings, since moving by statements seems
   ;; to be broken (and is not enough different from moving by lines to be useful
   ;; in any case).  -- rgr, 19-Nov-96.
-  (define-key c-mode-map "\M-e" 'forward-sentence)
-  (define-key c-mode-map "\M-a" 'backward-sentence)
-  (define-key c-mode-map "\r" 'newline-and-indent)
+  (define-key mode-map "\M-e" 'forward-sentence)
+  (define-key mode-map "\M-a" 'backward-sentence)
+  (define-key mode-map "\r" 'newline-and-indent)
   ;; . . . let's try this.  -- rgr, 1-Dec-96.
-  (define-key c-mode-map "-" 'rgr-c-electric-dash)
-  (define-key c-mode-map "\M-#" 'rgr-c-frob-comment)
-  (define-key c-mode-map "\M-s" 'rgr-center-line)
-  (define-key c-mode-map "\C-cl" 'rgr-c-ify-identifier)
-  (define-key lisp-mode-map "\C-cl" 'rgr-c-ify-identifier))
+  (define-key mode-map "-" 'rgr-c-electric-dash)
+  (define-key mode-map "\M-#" 'rgr-c-frob-comment)
+  (define-key mode-map "\M-s" 'rgr-center-line)
+  (define-key mode-map "\C-cl" 'rgr-c-ify-identifier))
+
+;;;###autoload
+(defun rgr-java-mode-hook ()
+  (setq fill-column 80)
+  (rgr-c-mode-hook-internal java-mode-map))
 
 (provide 'rgr-c-hacks)
