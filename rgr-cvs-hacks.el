@@ -48,7 +48,7 @@ version control back ends.")
 
 (defvar vc-recent-changes-number-of-days 3
   "Default number of history days to show.")
- 
+
 ;;;###autoload
 (defun rgr-vc-recent-changes (directory &optional number-of-days)
   "Show a summary of 'cvs log' or 'svn log' output.
@@ -67,7 +67,8 @@ month (30 days, actually)."
 	     default-directory)
 	 current-prefix-arg))
   (require 'time-date)		;; part of gnus
-  (let* ((backend (vc-responsible-backend directory))
+  (let* ((default-directory directory)
+	 (backend (vc-responsible-backend directory))
 	 (command-format
 	   (cond ((null backend)
 		   (error "The directory %S is not under version control."
@@ -95,8 +96,7 @@ month (30 days, actually)."
 	   (format-time-string "%Y-%m-%d %H:%M" n-days-ago)))
     ;; (error "Date '%s'." n-days-ago-string)
     (let ((output (get-buffer-create "*vc-recent-changes*")))
-      (let ((default-directory directory))
-	(shell-command (format command-format n-days-ago-string) output))
+      (shell-command (format command-format n-days-ago-string) output)
       (with-current-buffer output
 	;; must preserve the default directory so that vc-history-diff knows
 	;; where to operate.
@@ -278,9 +278,9 @@ Subversion has well-defined revision numbers, and CVS has fuzzier dates.
   (save-excursion
     (goto-char (or start (point-min)))
     (let ((result nil))
-    (while (re-search-forward "^\\* +" end t)
-      (setq result (nconc result (rgr-vc-comment-file-names))))
-    result)))
+      (while (re-search-forward "^\\* +" end t)
+	(setq result (nconc result (rgr-vc-comment-file-names))))
+      result)))
 
 (defun rgr-vc-find-file-comment (file-name)
   ;; Get the name of the current file comment, or nil if before it
