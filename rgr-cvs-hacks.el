@@ -365,17 +365,18 @@ This is useful, for instance, when a definition has been deleted."
   (cond ((and (eolp) (bolp))
 	  ;; empty line, no adjustment needed.
 	  )
-	((looking-at paragraph-start)
-	  ;; beginning of non-empty line with stuff already on it; move it to
-	  ;; the next line.
+	(t
+	  ;; somewhere on a non-empty line
+	  (or (looking-at paragraph-start)
+	      (forward-paragraph 1))
 	  (insert "\n")
-	  (forward-char -1))
-	((not (bolp))
-	  ;; in the middle or end of a non-empty line
-	  (forward-paragraph 1)
+	  (or (eobp)
+	      (forward-char -1))))
+  (insert "   + ")
+  (cond ((eobp)
+	  ;; end of buffer; make this a complete line.
 	  (insert "\n")
-	  (forward-char -1)))
-  (insert "   + "))
+	  (forward-char -1))))
 
 (defvar rgr-vc-log-join-respect-fill-column t
   "Whether to skip joining if it would cross over the fill-column.")
