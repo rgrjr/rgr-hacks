@@ -327,10 +327,10 @@ protein sequence."
 
 (defun rgr-annotation-display-diffs (alist)
   ;; Find and display differences.
-  '(message "%S" alist)
   (let ((tail (sort alist #'(lambda (cell1 cell2)
 			      (string-lessp (car cell1) (car cell2)))))
 	(need-final-delimiter-p nil))
+    '(message "%S" tail)
     (while tail
       (let* ((entry (car tail))
 	     (key (car entry))
@@ -370,7 +370,7 @@ protein sequence."
 	(goto-char start)
 	(beginning-of-line)
 	(while (< (point) end)
-	  (cond ((looking-at "^\\([-+]\\)> *\\([^ ]+\\) *")
+	  (cond ((looking-at "^\\([-+]\\)> *\\([^ \t\r\n]+\\) *")
 		  (let ((dir (aref (match-string-no-properties 1) 0))
 			(locus (match-string-no-properties 2)))
 		    (setq alist (rgr-add-entry alist dir "(locus)" locus))
