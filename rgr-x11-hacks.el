@@ -11,7 +11,7 @@
 	  (cond ((or (and (= emacs-major-version 23)
 			  (= emacs-minor-version 3))
 		     (and (= emacs-major-version 24)
-			  (= emacs-minor-version 0)))
+			  (<= emacs-minor-version 1)))
 		  ;; don't show the standard version(s).
 		  "")
 		;; In the versions "19.34.1" and "24.0.50.1", the last component
