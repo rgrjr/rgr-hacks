@@ -423,6 +423,118 @@ which are incremented lexicographically."
 					      last ".")
 				   t t nil 1)))))))))
 
+;;; Building documentation templates for Perl classes.
+
+(defun rgr-perl-find-quoted-names ()
+  ;; Returns a list of strings, and moves point.
+  (skip-chars-forward " \t\n")
+  (cond ((looking-at "qw(")
+	  (goto-char (match-end 0))
+	  (let ((end (save-excursion
+		       (forward-char -1)
+		       (forward-sexp 1)
+		       (point)))
+		(words nil))
+	    (skip-chars-forward " \t\n")
+	    (while (not (looking-at ")"))
+	      (let ((word-start (point)))
+		(skip-chars-forward "^ \t\n(){}")
+		(setq words
+		      (cons (buffer-substring-no-properties word-start (point))
+			    words)))
+	      (skip-chars-forward " \t\n"))
+	    words))))
+
+(defun rgr-perl-forward-doc-paragraphs ()
+  ;; Do just that.
+  (while (not (or (eobp) (looking-at "\n=\\(head\\|cut\\)")))
+    (forward-paragraph)))
+
+(defun rgr-perl-update-method-documentation ()
+  "In a Perl class, add '=head3' items for undocumented methods."
+  (interactive)
+  (save-excursion
+    (let ((defined-names nil))
+      (goto-char (point-min))
+      ;; First get accessor method names.
+      (while (re-search-forward
+	       "->build_\\(field\\|fetch\\|set\\)_\\|->define_class_\\(slots\\)"
+	       nil t)
+	(let ((what (or (match-string-no-properties 2)
+			(match-string-no-properties 3))))
+	  (if (not (string= what "slots"))
+	      (forward-sexp))
+	  ;; (message "found %S at %d" what (point))
+	  (cond ((string= what "field")
+		  ;; build_field_accessors
+		  (skip-chars-forward " \t\n([")
+		  (setq defined-names
+			(append (rgr-perl-find-quoted-names)
+				defined-names)))
+		((string= what "fetch")
+		  ;; build_fetch_accessor
+		  (skip-chars-forward " \t\n")
+		  (if (looking-at "(qw(\\([a-zA-Z0-9_]+\\)")
+		      (setq defined-names (cons (match-string-no-properties 1)
+						defined-names))))
+		((string= what "set")
+		  ;; build_set_fetch_accessor
+		  (skip-chars-forward " \t\n(")
+		  (if (looking-at "'\\([a-zA-Z0-9_]+\\)'")
+		      (setq defined-names (cons (match-string-no-properties 1)
+						defined-names))))
+		((string= what "slots")
+		  ;; define_class_slots
+		  (skip-chars-forward " \t\n(")
+		  (setq defined-names
+			(append (rgr-perl-find-quoted-names) defined-names))))))
+      ;; Now get non-internal sub names.
+      (goto-char (point-min))
+      (while (re-search-forward "^sub +\\([a-zA-Z][a-zA-Z0-9_]*\\)" nil t)
+	(setq defined-names
+	      (cons (match-string-no-properties 1) defined-names)))
+      ;; (message "got %S" defined-names)
+      (setq defined-names (sort defined-names #'string-lessp))
+      ;; Look for undefined ones.
+      (let* ((method-doc-start
+	      (if (re-search-forward
+		   "^=head2 \\(Method\\|Accessor\\)" nil t)
+		  (match-beginning 0)
+		  (error "No 'Accessors and methods' section.")))
+	     (tail defined-names)
+	     (n-updated 0))
+	(forward-line)
+	(rgr-perl-forward-doc-paragraphs)
+	(while tail
+	  (let ((name (car tail)))
+	    (cond ((re-search-forward (format "^=head[0-9] %s\n" name) nil t)
+		    (rgr-perl-forward-doc-paragraphs))
+		  (t
+		    (insert "\n=head3 " name "\n")
+		    (setq n-updated (1+ n-updated)))))
+	  (setq tail (cdr tail)))
+	(message "%d updated." n-updated)))))
+
+(defun rgr-perl-update-documentation ()
+  (interactive)
+  (goto-char (point-min))
+  (cond ((re-search-forward "^__END__" nil t)
+	  (forward-paragraph 2))
+	(t
+	  (goto-char (point-max))
+	  (insert "\n__END__\n\n")
+	  (let ((module-name (save-excursion
+			       (goto-char (point-min))
+			       (and (re-search-forward
+				      "^package \\([A-Aa-z_:]+\\);" nil t)
+				    (match-string-no-properties 1)))))
+	    (insert "=head1 " (or module-name "Module") "\n\n"))
+	  (insert "=head2 Accessors and methods\n\n")
+	  (if (save-excursion (re-search-backward "^ +sub [^{}]+;" nil t))
+	      (insert "=head2 Autoloaded methods\n\n"))
+	  (insert "=cut\n")))
+  (rgr-perl-update-method-documentation))
+
 ;;; Adding CGI::Carp to Web scripts.
 
 (defun rgr-perl-carpify ()
