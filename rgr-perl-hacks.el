@@ -454,8 +454,12 @@ which are incremented lexicographically."
   "In a Perl class, add '=head3' items for undocumented methods."
   (interactive)
   (save-excursion
-    (let ((defined-names nil))
-      (goto-char (point-min))
+    (goto-char (point-min))
+    (let ((defined-names nil)
+	  (doc-start (save-excursion
+		       (or (re-search-forward "^1;$" nil t)
+			   (re-search-forward "^__END__$" nil t)
+			   (point-min)))))
       ;; First get accessor method names.
       (while (re-search-forward
 	       "->build_\\(field\\|fetch\\|set\\)_\\|->define_class_\\(slots\\)"
@@ -496,13 +500,11 @@ which are incremented lexicographically."
       ;; (message "got %S" defined-names)
       (setq defined-names (sort defined-names #'string-lessp))
       ;; Look for undefined ones.
-      (let* ((method-doc-start
-	      (if (re-search-forward
-		   "^=head2 \\(Method\\|Accessor\\)" nil t)
-		  (match-beginning 0)
-		  (error "No 'Accessors and methods' section.")))
-	     (tail defined-names)
-	     (n-updated 0))
+      (let ((tail defined-names)
+	    (n-updated 0))
+	(goto-char doc-start)
+	(or (re-search-forward "^=head2 \\(Method\\|Accessor\\)" nil t)
+	    (error "No 'Accessors and methods' section below %S." doc-start))
 	(forward-line)
 	(rgr-perl-forward-doc-paragraphs)
 	(while tail
