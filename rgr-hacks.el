@@ -488,6 +488,7 @@ M-x buffer-menu)."
   (global-set-key "\C-cgl" 'goto-line)
   (global-set-key "\C-cgc" 'goto-char)
   (global-set-key "\C-cgs" 'rgr-view-sequence-at-point)
+  (global-set-key "\C-cf" 'rgr-goto-file-in-vc-dir)
   ;; Bindings compatible with Emacs 22, which already has goto-line on "M-g M-g"
   ;; and "M-g g".
   (cond ((not (rgr-emacs-version-p 22))
