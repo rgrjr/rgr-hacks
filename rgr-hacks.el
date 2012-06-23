@@ -129,6 +129,12 @@ incarnation of the major version)."
       (and (= emacs-major-version major)
 	   (>= emacs-minor-version (or minor 0)))))
 
+(defun rgr-mapcar2 (fn x y)
+  "Like mapcar, but takes two lists."
+  (and x y
+       (cons (funcall fn (car x) (car y))
+	     (rgr-mapcar2 fn (cdr x) (cdr y)))))
+
 ;;;; Renaming buffers.
 
 (defun rgr-parent-dir-and-file-name (file-name)
