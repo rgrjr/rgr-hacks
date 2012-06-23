@@ -201,7 +201,7 @@ output buffer from '*vc-diff*' to '*vc-project-diff*'."
   "Go to the current file in a vc-dir buffer."
   (interactive)
   (apply #'rgr-vc-dir-goto-node-or-buffer
-	 (rgr-find-file-vc-dir-buffer
+	 (rgr-find-file-vc-dir-node
 	   (or buffer-file-name
 	       (error "Buffer has no file name.")))))
 

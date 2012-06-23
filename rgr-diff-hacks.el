@@ -69,7 +69,7 @@
   "Go to the current file in a vc-dir buffer."
   (interactive)
   (apply #'rgr-vc-dir-goto-node-or-buffer
-	 (rgr-find-file-vc-dir-buffer
+	 (rgr-find-file-vc-dir-node
 	   (or (expand-file-name (diff-find-file-name))
 	       (error "No current file.")))))
 
