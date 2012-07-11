@@ -581,6 +581,68 @@ the page."
 	    (looking-at "^=cut")))
       (perl-indent-command)))
 
+;;; Scope hax.
+
+(defun perl-id-char-p (char)
+  (or (and (<= ?a char) (<= char ?z))
+      (and (<= ?A char) (<= char ?Z))
+      (and (<= ?0 char) (<= char ?9))
+      (= char ?_)))
+
+(defun rgr-perl-show-scope-free-references ()
+  (interactive)
+  (let ((nest 0) (ids nil))
+    (save-excursion
+      (while (and (not (eobp)) (>= nest 0))
+	(skip-chars-forward " \t\n")
+	(let ((char (char-after)))
+	  (cond ((null char))
+		((= char ?#)
+		  (forward-line))
+		((member char '(?\( ?\{))
+		  (setq nest (1+ nest))
+		  (forward-char))
+		((member char '(?\) ?\}))
+		  (setq nest (1- nest))
+		  (forward-char))
+		((member char '(?\' ?\"))
+		  (forward-char)
+		  (skip-chars-forward (string ?^ char))
+		  (forward-char))
+		((member char '(?$ ?% ?& ?@))
+		  (let* ((name (buffer-substring
+				 (progn (forward-char) (point))
+				 (progn (skip-chars-forward "a-zA-Z0-9_")
+					(point))))
+			 (sigil (cond ((not (= char ?$)) char)
+				      ((= (char-after) ?\{) ?%)
+				      ((= (char-after) ?\[) ?@)
+				      (t char)))
+			 (id (concat (string sigil) name)))
+		    ; name is "" after "&" or "&&" operators.
+		    (if (and (length name) (not (member id ids)))
+			(setq ids (cons id ids)))))
+		((member char '(?= ?> ?- ?, ?\; ?: ?!))
+		  ; These are non-problematic.
+		  (forward-char))
+		((perl-id-char-p char)
+		  ; Bareword (but need to look for q, qq, m, s, ...).
+		  (skip-chars-forward "a-zA-Z0-9_"))
+		(t
+		  (message "have char %c" char)
+		  (forward-char)))))
+      (message "End of scope, found %d ids." (length ids))
+      (with-output-to-temp-buffer "*Perl IDs*"
+	(let ((tail (sort ids (function string-lessp))))
+	  (while tail
+	    (princ (car tail))
+	    (princ "\n")
+	    (setq tail (cdr tail)))))
+      (sit-for 1))
+    ))
+
+;; (setq debug-on-error t)
+
 ;;; Installing these commands.
 
 ;;;###autoload
