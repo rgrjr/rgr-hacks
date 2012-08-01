@@ -455,15 +455,15 @@ which are incremented lexicographically."
   (interactive)
   (save-excursion
     (goto-char (point-min))
-    (let ((defined-names nil)
-	  (doc-start (save-excursion
+    (let* ((defined-names nil)
+	   (code-end (save-excursion
 		       (or (re-search-forward "^1;$" nil t)
-			   (re-search-forward "^__END__$" nil t)
-			   (point-min)))))
+			   (re-search-forward "^__END__$" nil t))))
+	   (doc-start (or code-end (point-min))))
       ;; First get accessor method names.
       (while (re-search-forward
 	       "->build_\\(field\\|fetch\\|set\\)_\\|->define_class_\\(slots\\)"
-	       nil t)
+	       code-end t)
 	(let ((what (or (match-string-no-properties 2)
 			(match-string-no-properties 3))))
 	  (if (not (string= what "slots"))
@@ -494,7 +494,8 @@ which are incremented lexicographically."
 			(append (rgr-perl-find-quoted-names) defined-names))))))
       ;; Now get non-internal sub names.
       (goto-char (point-min))
-      (while (re-search-forward "^sub +\\([a-zA-Z][a-zA-Z0-9_]*\\)" nil t)
+      (while (re-search-forward "^sub +\\([a-zA-Z][a-zA-Z0-9_]*\\)"
+				code-end t)
 	(setq defined-names
 	      (cons (match-string-no-properties 1) defined-names)))
       ;; (message "got %S" defined-names)
