@@ -455,7 +455,7 @@ which are incremented lexicographically."
   (interactive)
   (save-excursion
     (goto-char (point-min))
-    (let* ((defined-names nil)
+    (let* ((defined-names nil) (autoloaded-names nil)
 	   (code-end (save-excursion
 		       (or (re-search-forward "^1;$" nil t)
 			   (re-search-forward "^__END__$" nil t))))
@@ -498,6 +498,13 @@ which are incremented lexicographically."
 				code-end t)
 	(setq defined-names
 	      (cons (match-string-no-properties 1) defined-names)))
+      ;; And autoloaded sub names.
+      (goto-char (point-min))
+      (while (re-search-forward "^ *sub +\\([a-zA-Z][a-zA-Z0-9_]*\\);"
+				code-end t)
+	(let ((name (match-string-no-properties 1)))
+	  (setq autoloaded-names (cons name autoloaded-names))
+	  (setq defined-names (cons name defined-names))))
       ;; (message "got %S" defined-names)
       (setq defined-names (sort defined-names #'string-lessp))
       ;; Look for undefined ones.
@@ -514,6 +521,8 @@ which are incremented lexicographically."
 		    (rgr-perl-forward-doc-paragraphs))
 		  (t
 		    (insert "\n=head3 " name "\n")
+		    (if (member name autoloaded-names)
+			(insert "\nAutoloaded.\n"))
 		    (setq n-updated (1+ n-updated)))))
 	  (setq tail (cdr tail)))
 	(message "%d updated." n-updated)))))
