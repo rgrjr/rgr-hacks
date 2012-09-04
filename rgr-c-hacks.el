@@ -58,8 +58,7 @@ doesn't advertise itself in the mode line."
 	  (self-insert-command 1))
 	(t
 	  ;; Insert underscore
-	  (let ((last-command-char ?_))
-	    (self-insert-command 1)))))
+	  (insert ?_))))
 
 (defun rgr-c-ify-identifier ()
   "Convert an identifier after point from Lisp to C syntax."
