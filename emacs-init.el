@@ -30,6 +30,13 @@ but it is usually sufficient to take the default.")
 (setq signature-login-name "rgr")
 (rgr-install-hacks)
 
+;; Turn the menu bar off.
+(menu-bar-mode 0)
+
+;; [kludge for vm in certain ModGen configs.  -- rgr, 31-Jul-12.]
+(or (fboundp 'make-local-hook)
+    (defun make-local-hook (&rest ignore) nil))
+
 ;; Disable transient-mark-mode (seems to be on by default in the SuSE 20.7
 ;; version).  -- rgr, 27-Jun-01.  [not to mention openSUSE 11.0.  -- rgr,
 ;; 9-Dec-08.]
