@@ -53,8 +53,12 @@ version control back ends.")
 (defun rgr-vc-recent-changes (directory &optional number-of-days)
   "Show a summary of 'cvs log' or 'svn log' output.
 The summary is in reverse chronological order, with changed files
-shown where possible.  By default it covers the last three days
-for the current directory.  A numeric argument shows the log for
+shown where possible, and is put in a buffer named '*dir-recent-changes*',
+where 'dir' is the directory name.  By default, it covers the last
+three days for the current directory; the default number of days
+comes from the vc-recent-changes-number-of-days variable.
+
+A numeric argument shows the log for
 that many days, and also prompts for a directory.  If you give a
 C-u, it shows the last week's worth; if C-u C-u, then the last
 month (30 days, actually)."
@@ -93,9 +97,16 @@ month (30 days, actually)."
 	 (n-days-ago-string
 	   ;; this is an easy-to-parse format that is understood by all the VC
 	   ;; backends I use.  -- rgr, 26-Nov-05.
-	   (format-time-string "%Y-%m-%d %H:%M" n-days-ago)))
+	   (format-time-string "%Y-%m-%d %H:%M" n-days-ago))
+	 (buf-name
+	   (concat "*" (cond (default-directory
+			       (file-name-nondirectory
+				 (directory-file-name default-directory)))
+			     (t
+			      (buffer-name)))
+		   "-recent-changes*")))
     ;; (error "Date '%s'." n-days-ago-string)
-    (let ((output (get-buffer-create "*vc-recent-changes*")))
+    (let ((output (get-buffer-create buf-name)))
       (shell-command (format command-format n-days-ago-string) output)
       (with-current-buffer output
 	;; must preserve the default directory so that vc-history-diff knows
