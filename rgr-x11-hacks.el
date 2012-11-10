@@ -44,8 +44,9 @@
 		   ;; this is a tad lighter than "DarkSeaGreen1".
 		   "#e8ffe8")
 		 (t
-		   ;; home site.
-		   "linen"))))
+		   ;; home site.  [this was "linen", but it needed to be a bit
+		   ;; darker.  -- rgr, 10-Nov-12.]
+		   "#dad0c6"))))
     (modify-frame-parameters (selected-frame)
 			     (list (cons 'name label)
 				   (cons 'background-color background)
