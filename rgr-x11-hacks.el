@@ -1,3 +1,4 @@
+
 ;;;; Playing with frames under X11.
 ;;;
 ;;; [created.  -- rgr, 20-Aug-01.]
@@ -9,7 +10,8 @@
   ;; you are running "su", and blue otherwise.
   (let* ((version
 	  (cond ((or (and (= emacs-major-version 24)
-			  (<= emacs-minor-version 2)))
+			  (or (= emacs-minor-version 2)
+			      (= emacs-minor-version 3))))
 		  ;; don't show the standard version(s).
 		  "")
 		;; In the versions "19.34.1" and "24.0.50.1", the last component
