@@ -65,7 +65,7 @@ Don't change this unless you know which ones are special to the code.")
 	  " to give up.  `fermi' means right symbol, right place;\n"
 	  "`pico' means right symbol, wrong place; "
 	  "`bagels' means nothing right."
-	  "\n\n1: ")
+	  "\n\n 1: ")
   (setq bagels-game-in-progress-p t
 	bagels-guess-number 1))
 
@@ -125,7 +125,7 @@ Don't change this unless you know which ones are special to the code.")
   (if (not (eobp))
       (error "Make your guess on the last line."))
   (beginning-of-line)
-  (if (not (looking-at "^[0-9]+:[ \t]*"))
+  (if (not (looking-at "^ *[0-9]+:[ \t]*"))
       (error "Last line screwed up?  Try undoing & re-guessing . . ."))
   (goto-char (match-end 0))
   (let ((guess-chars nil) (guess-start (point))
@@ -161,7 +161,7 @@ Don't change this unless you know which ones are special to the code.")
 		  (t
 		    (bagels-score-guess guess)
 		    (setq bagels-guess-number (1+ bagels-guess-number))
-		    (insert "\n" (prin1-to-string bagels-guess-number) ": ")))))
+		    (insert (format "\n%2d: " bagels-guess-number))))))
 	((y-or-n-p "No game in progress; start a new one? ")
 	  (bagels-start-new-game))))
 
