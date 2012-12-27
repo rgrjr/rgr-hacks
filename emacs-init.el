@@ -210,6 +210,9 @@ but it is usually sufficient to take the default.")
 (add-hook 'compilation-mode-hook 'rgr-compilation-mode-hook)
 (add-hook 'makefile-mode-hook 'rgr-makefile-mode-hook)
 (add-hook 'perl-mode-hook 'rgr-perl-mode-hook)
+;; Don't replace ASCII with symbols I can't read.  [Emacs 24.3.50.]
+;; [this has to be done before loading perl-mode.  -- rgr, 4-Dec-12.]
+(setq perl-prettify-symbols nil)
 (add-hook 'cperl-mode-hook 'rgr-cperl-mode-hook)
 (add-hook 'matlab-mode-hook 'rgr-matlab-mode-hook)
 (add-hook 'matlab-shell-mode-hook 'rgr-matlab-shell-mode-hook)
