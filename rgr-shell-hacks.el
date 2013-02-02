@@ -285,49 +285,16 @@ Communication with HOST is recorded in a buffer `*ssh-HOST*'."
   ;; as if there aren't enough useless funky special characters to have to
   ;; remember to escape.  [This is not necessary in emacs 18.  -- rgr,
   ;; 21-Dec-94.]
-  (setq comint-input-autoexpand nil)
-  ;; Make comint-based modes smarter about continued command lines.  -- rgr,
-  ;; 20-Aug-97.  [now supported in emacs 22.  -- rgr, 29-Jun-08.]
-  ;(setq comint-get-old-input 'rgr-comint-get-old-input-with-continuation-lines)
-  )
+  (setq comint-input-autoexpand nil))
 
 ;;;###autoload
 (defun rgr-shell-mode-hook ()
   "shell-mode is for running a shell under emacs via M-x shell."
-  (let ((replacement "Enter \\|Kerberos"))
-    (and (not (string-match (regexp-quote replacement)
-			    comint-password-prompt-regexp))
-	 (string-match "Kerberos" comint-password-prompt-regexp)
-	 ;; this is needed to encompass the standard prompt for the mysql
-	 ;; client.  -- rgr, 13-Jun-03.
-	 (setq comint-password-prompt-regexp
-	       (replace-match replacement t t comint-password-prompt-regexp))))
   ;; [introduced in Emacs 22.  -- rgr, 7-Jun-06.]
   (setq comint-scroll-show-maximum-output nil)
   ;; New hack.  -- rgr, 11-Jul-07.
   (define-key shell-mode-map "\C-c*d" 'rgr-frob-diff)
-  (define-key shell-mode-map "\C-c*u" 'rgr-diff-to-update)
-  ;; [oops; this is redundant.  -- rgr, 20-Jan-00.]
-  ;; (define-key shell-mode-map "\M-\r" 'rgr-shell-insert-previous-input)
-
-  ;; Set this to the same thing ange-ftp-gateway-prompt-pattern will use (after
-  ;; default.el gets loaded).  [And allow csh "? " prompts (e.g. "foreach? ").
-  ;; -- rgr, 20-Aug-97.]  [the telnet-mode runs comint-mode-hook before
-  ;; text-mode-hook, but bashes this in the interval, so we can't share this
-  ;; with rgr-telnet-mode-hook by moving it to rgr-comint-mode-hook, alas.  --
-  ;; rgr, 24-Mar-99.]  [this causes problems with the default csh prompt under
-  ;; linux, so fix it back (modulo adding "?" as above) so we don't have to
-  ;; change the root prompt.  -- rgr, 9-Dec-99.]
-  ;; (setq comint-prompt-regexp "^[a-z]*[#$%>?] +")
-  (setq comint-prompt-regexp "^[^#$%>?\n]*[#$%>?] *"))
-
-;;;###autoload
-(defun rgr-telnet-mode-hook ()
-  "telnet-mode is for running a shell under emacs via M-x rsh or M-x telnet."
-  ;; [oops; this is redundant.  -- rgr, 20-Jan-00.]
-  ;; (define-key telnet-mode-map "\M-\r" 'rgr-shell-insert-previous-input)
-  ;; See the comment in rgr-shell-mode-hook, above.  -- rgr, 24-Mar-99.
-  (setq comint-prompt-regexp "^[a-z]*[#$%>?] +"))
+  (define-key shell-mode-map "\C-c*u" 'rgr-diff-to-update))
 
 ;;;###autoload
 (defun rgr-fill-script-comment (arg)
