@@ -160,6 +160,7 @@ should be called from .emacs files."
 	(list
 	  (rgr-make-tags-table-list
 	    (append (list "~/projects/mgi/modest"
+			  "~/projects/mgi/literature"
 			  "/usr/local/src/rogers/system/jekyll"
 			  "/usr/local/src/rogers/system/scripts")
 		    (let ((subdir-tail
