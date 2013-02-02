@@ -24,7 +24,7 @@
 ;;;
 ;;; $Id$
 
-(defvar bagels-available-symbols "!@$%&*+=;~"
+(defvar bagels-available-symbols "123456789"
   "Set of symbols from which to construct a code word to guess.
 Don't change this unless you know which ones are special to the code.")
 (defvar bagels-number-of-symbols 6
@@ -32,7 +32,7 @@ Don't change this unless you know which ones are special to the code.")
 (defvar bagels-symbols nil
   "Subset of bagels-available-symbols of length bagels-number-of-symbols
 -- the symbols that the user can use in a guess.")
-(defvar bagels-code-word-length 4
+(defvar bagels-code-word-length 5
   "*Length of the code word to make up.")
 (defvar bagels-code-word nil
   "The code word itself.")
@@ -142,20 +142,26 @@ Don't change this unless you know which ones are special to the code.")
     (if (looking-at "[ \t\n]+")
 	(replace-match ""))
     (setq guess-chars (concat (nreverse guess-chars)))
-    (cond ((< (length guess-chars) bagels-code-word-length)
-	    (error "Guess is too short -- it should be %d long."
-		   bagels-code-word-length))
+    (cond ((= (length guess-chars) 0)
+	    ;; Just ignore empty guesses.
+	    nil)
+	  ((< (length guess-chars) bagels-code-word-length)
+	    (message "Guess is too short -- it should have %d symbols."
+		     bagels-code-word-length)
+	    nil)
 	  ((> (length guess-chars) bagels-code-word-length)
-	    (error "Guess is too long -- it should be %d long."
-		   bagels-code-word-length)))
-    guess-chars))
+	    (message "Guess is too long -- it should have %d symbols."
+		     bagels-code-word-length)
+	    nil)
+	  (t guess-chars))))
 
 (defun bagels-make-guess ()
   (interactive)
   (cond (bagels-game-in-progress-p
 	  (let ((guess (bagels-find-guess)))
 	    ;; (message "Guess is `%s'." guess)
-	    (cond ((equal guess bagels-code-word)
+	    (cond ((null guess))
+		  ((equal guess bagels-code-word)
 		    (insert "  YESSS!!!")
 		    (bagels-start-new-game))
 		  (t
