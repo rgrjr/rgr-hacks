@@ -294,13 +294,14 @@ Starts from point and ends when we run out of backup description lines."
 	(setq host (match-string 2 string)
 	      string (match-string 1 string)))
     ;; groES_vector and OPH%@alexandria and groES_v% and exp14%@localhost:8081
-    (and string
-	 (let ((url (concat "http://" host "/modest/"
-			    (if (string-match "%" string)
-				"search/find-sequence.cgi?sequence_name="
-				"tools/view-sequence.cgi?sequence_id=")
-			    ;; [this should be escaped.  -- rgr, 22-Dec-05.]
-			    string)))
+    (and string (> (length string) 0)
+	 (let* ((page-base
+		 (if (string-match "^[0-9]+$" string)
+		     "tools/view-sequence.cgi?sequence_id="
+		     "search/find-sequence.cgi?reload=Reload&substance_name="))
+		(url (concat "http://" host "/modest/" page-base
+			     ;; [this should be escaped.  -- rgr, 22-Dec-05.]
+			     string)))
 	   (browse-url url)))))
 
 ;;;###autoload
