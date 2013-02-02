@@ -249,7 +249,7 @@ but it is usually sufficient to take the default.")
 ;; M-x ssh.  -- rgr, 1-Aug-03.
 (setq ssh-host-history
       (append (if (eq rgr-site 'mgi)
-		  '("granada")
+		  '("yuggoth" "granada")
 		  '("rogers@woburn.modulargenetics.com"))
 	      '("rogers@rgrjr.dyndns.org")))
 (if (eq rgr-site 'home)
