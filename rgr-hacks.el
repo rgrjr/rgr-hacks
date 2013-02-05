@@ -449,8 +449,13 @@ The default argument is equivalent to 2 (just exchange point and mark)."
       ;; Collect them.
       (while (re-search-forward "^   \\(\\**\\)" nil t)
 	(let ((n-stars (- (match-end 1) (match-beginning 1))))
-	  (when (<= n-stars 3)
-	    (aset counts n-stars (1+ (aref counts n-stars))))))
+	  (when (>= n-stars (length counts))
+	    (let* ((old-len (length counts))
+		   (new (make-vector (+ old-len n-stars) 0)))
+	      (dotimes (i old-len)
+		(aset new i (aref counts i)))
+	      (setq counts new)))
+	  (aset counts n-stars (1+ (aref counts n-stars)))))
       ;; Report them.
       (let ((strings nil))
 	(dotimes (i (length counts))
