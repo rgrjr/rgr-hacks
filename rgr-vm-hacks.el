@@ -68,7 +68,7 @@ defaults."
 	(pres-buffer vm-presentation-buffer-handle)
 	(mail-buffer (current-buffer)))
     ;; Do this first so that killing the summary/presentation buffers doesn't
-    ;; replace them with the mail buffer, which would defeat bury-buffer below.
+    ;; replace them with the mail buffer, which would defeat quit-window below.
     (delete-other-windows)
     ;; Just like vm-quit, get rid of the summary and presentation buffers, but
     ;; simply bury the mail buffer.
@@ -79,7 +79,7 @@ defaults."
 	  ;; [killing seems to leave a dangling pointer, though re-invoking vm
 	  ;; seems to fix it.  but we may have to settle for just burying the
 	  ;; thing.  -- rgr, 12-Jan-00.]
-	  (bury-buffer summary-buffer)))
+	  (quit-window)))
     (if pres-buffer
 	(progn
 	  (vm-display pres-buffer nil nil nil)
@@ -90,7 +90,7 @@ defaults."
     (vm-check-for-killed-presentation)
     (set-buffer mail-buffer)
     (vm-display mail-buffer nil nil nil)
-    (bury-buffer mail-buffer))
+    (quit-window))
   ;; [not a noop if there are other vm buffers around?  -- rgr, 12-Jan-00.]
   (vm-update-summary-and-mode-line))
 
