@@ -349,8 +349,7 @@ ask for confirmation before killing buffers."
   (interactive)
   (let ((buffer (current-buffer)))
     (Buffer-menu-execute)
-    (Buffer-menu-this-window)
-    (quit-window)))
+    (Buffer-menu-this-window)))
 
 (defun rgr-buffer-menu-view-other ()
   "View the buffer on the current line in the other window.
