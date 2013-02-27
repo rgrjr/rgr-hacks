@@ -282,8 +282,7 @@ but it is usually sufficient to take the default.")
 
 ;; See the M-x display-time-world command.
 (setq display-time-world-list
-      '(("America/Los_Angeles" "San Francisco")
-	("America/New_York" "Boston")
+      '(("America/New_York" "Boston")
 	("Europe/London" "London")
 	("Australia/Sydney" "Sydney")))
 
@@ -324,3 +323,7 @@ but it is usually sufficient to take the default.")
 
 ;; Run this after all load-path directories are set up.
 (rgr-make-tags-table-list-hook)
+
+;; Workaround for an apparent sshd bug in openSUSE 12.2.
+(if (equal (getenv "COLUMNS") "0")
+    (setenv "COLUMNS" ""))
