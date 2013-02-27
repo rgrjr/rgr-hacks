@@ -75,7 +75,7 @@ GNU/Linux (openSUSE).")
       (cond ((looking-at (concat "^[ \t]*sub[ \t]+" perl-name))
 	      (match-string-no-properties 1))
 	    ((looking-at (concat "^[ \t]*\\(my[ \t]*\\)?" perl-name
-				 "[ \t]*=[ \t]*sub[ \t]*{"))
+				 "[ \t]*|*=[ \t]*sub[ \t]*{"))
 	      ;; [note that the "my" will not be present if put in a separate
 	      ;; statement so that the sub can recur.  -- rgr, 28-Nov-08.]
 	      (match-string-no-properties 2))))))
