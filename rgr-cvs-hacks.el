@@ -119,7 +119,8 @@ month (30 days, actually)."
 	(set (make-local-variable 'revert-buffer-function)
 	     #'(lambda (ignore-auto noconfirm)
 		 (rgr-vc-recent-changes default-directory
-					vc-recent-changes-number-of-days)))))))
+					vc-recent-changes-number-of-days)))
+	(set-buffer-modified-p nil)))))
 
 ;;;###autoload
 (defun rgr-vc-project-diff ()
