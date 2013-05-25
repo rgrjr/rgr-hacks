@@ -49,10 +49,6 @@ but it is usually sufficient to take the default.")
 ;; use unified diffs.  -- rgr, 6-Jul-03.
 (setq diff-switches "-u")
 
-;; Some xemacs stuff . . .
-(setq tags-build-completion-table nil)
-(setq zmacs-regions nil)
-
 ;; Initialize these to the coordinates of Boston.
 (setq calendar-latitude   42.358)
 (setq calendar-longitude -71.060)
@@ -323,6 +319,7 @@ but it is usually sufficient to take the default.")
 
 ;; Run this after all load-path directories are set up.
 (rgr-make-tags-table-list-hook)
+(setq tags-revert-without-query t)
 
 ;; Workaround for an apparent sshd bug in openSUSE 12.2.
 (if (equal (getenv "COLUMNS") "0")
