@@ -14,9 +14,9 @@
 	  ("\\.sxc$" "oocalc")
 	  ("\\.xl[st]x?$" "oocalc")
 	  ("\\.ods$" "oocalc")
-	  ("\\.xl[st]$" "gnumeric")
+	  ("\\.xl[st]x?$" "gnumeric")
 	  ;; ("\\.csv$" "gnumeric")	;; [doesn't work.  -- rgr, 18-Feb-04.]
-	  ("\\.pp[st]$" "ooimpress")
+	  ("\\.pp[st]x?$" "ooimpress")
 	  ("\\.docx?$" "oowriter")
 	  ("\\.doc$" "abiword")
 	  ("\\.pdf$" "okular")
