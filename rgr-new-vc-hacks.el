@@ -7,6 +7,7 @@
 (require 'vc)
 
 (eval-when-compile
+  (require 'cl)
   (require 'vc)
   (require 'vc-dir)
   (require 'log-edit))
@@ -239,6 +240,70 @@ If a prefix argument is given, move by that many lines."
   (interactive "p")
   (vc-dir-next-interesting-line (- (or arg 1))))
 
+(defun vc-dir-fileinfo->extension (data)
+  (let ((name (vc-dir-fileinfo->name data)))
+    (if (string-match "\\.[^./]*$" name)
+	(match-string 0 name)
+	"")))
+
+(defun vc-dir-current-extension ()
+  (let* ((current (or (ewoc-locate vc-ewoc)
+		      (error "No current file/directory.")))
+	 (data (ewoc-data current)))
+    (vc-dir-fileinfo->extension data)))
+
+(defun vc-dir-map-matching-files (extension state function)
+  ;; First check that no directory is marked, we can't mark files in that case.
+  (ewoc-map #'(lambda (filearg)
+		(when (and (vc-dir-fileinfo->directory filearg)
+			   (vc-dir-fileinfo->marked filearg))
+		  (error "Cannot mark all files, directory `%s' marked"
+			 (vc-dir-fileinfo->name filearg))))
+	    vc-ewoc)
+  (ewoc-map #'(lambda (filearg)
+		(if (and (or (null extension)
+			     (equal extension
+				    (vc-dir-fileinfo->extension filearg)))
+			 (or (null state)
+			     (eq state (vc-dir-fileinfo->state filearg))))
+		    (funcall function filearg)))
+	    vc-ewoc))
+
+(defun vc-dir-mark-unmark-matching-files (mark-p &optional state-p)
+  "Mark all files with the same extension as the current one."
+  (let* ((current (or (ewoc-locate vc-ewoc)
+		      (error "No current file/directory.")))
+	 (data (ewoc-data current))
+	 (state (vc-dir-fileinfo->state data))
+	 (registered-p (not (eq state 'unregistered))))
+    (vc-dir-map-matching-files
+      (vc-dir-fileinfo->extension data)
+      (and state-p state)
+      (if mark-p
+	  #'(lambda (filearg)
+	      (unless (or (vc-dir-fileinfo->marked filearg)
+			  ;; Don't mark unregistered files unless we start on
+			  ;; one.
+			  (and registered-p
+			       (eq (vc-dir-fileinfo->state filearg)
+				   'unregistered)))
+		(setf (vc-dir-fileinfo->marked filearg) t)
+		t))
+	  #'(lambda (filearg)
+	      (when (vc-dir-fileinfo->marked filearg)
+		(setf (vc-dir-fileinfo->marked filearg) nil)
+		t))))))
+
+(defun vc-dir-mark-matching-files (state-p)
+  "Mark all files with the same extension as the current one."
+  (interactive "P")
+  (vc-dir-mark-unmark-matching-files t state-p))
+
+(defun vc-dir-unmark-matching-files (state-p)
+  "Unmark all files with the same extension as the current one."
+  (interactive "P")
+  (vc-dir-mark-unmark-matching-files nil state-p))
+
 ;;;###autoload
 (defun vc-root-dir ()
   "Enter vc-dir for the VC root."
@@ -257,6 +322,8 @@ If a prefix argument is given, move by that many lines."
 
 ;;;###autoload
 (defun rgr-new-vc-install-vc-dir-mode-keys ()
+  (define-key vc-dir-mode-map "\C-cm" 'vc-dir-mark-matching-files)
+  (define-key vc-dir-mode-map "\C-cu" 'vc-dir-unmark-matching-files)
   (define-key vc-dir-mode-map "n" 'vc-dir-next-interesting-line)
   (define-key vc-dir-mode-map "p" 'vc-dir-previous-interesting-line))
 
