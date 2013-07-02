@@ -450,6 +450,16 @@ which are incremented lexicographically."
   (while (not (or (eobp) (looking-at "\n=\\(head\\|cut\\)")))
     (forward-paragraph)))
 
+(defvar rgr-perl-sub-names-to-ignore
+  '(home_page_url insert local_display_fields post_web_update
+    pretty_name primary_key search_page_name table_audited_p
+    table_name type_pretty_name web_search web_update)
+  "List of symbols naming subs that do not need to be documented.
+Presumably this is because they implement a well-known API
+defined by a superclass.  (I'd really prefer a more elegant
+solution that used inheritance, but I'm too lazy to write it now,
+and too impatient to wait.  -- rgr, 1-Jul-13.]")
+
 (defun rgr-perl-update-method-documentation ()
   "In a Perl class, add '=head3' items for undocumented methods."
   (interactive)
@@ -465,7 +475,7 @@ which are incremented lexicographically."
 	       "->build_\\(field\\|fetch\\|set\\)_\\|->define_class_\\(slots\\)"
 	       code-end t)
 	(let ((what (or (match-string-no-properties 2)
-			(match-string-no-properties 3))))
+			(match-string-no-properties 1))))
 	  (if (not (string= what "slots"))
 	      (forward-sexp))
 	  ;; (message "found %S at %d" what (point))
@@ -496,8 +506,10 @@ which are incremented lexicographically."
       (goto-char (point-min))
       (while (re-search-forward "^sub +\\([a-zA-Z][a-zA-Z0-9_]*\\)"
 				code-end t)
-	(setq defined-names
-	      (cons (match-string-no-properties 1) defined-names)))
+	(let* ((name (match-string-no-properties 1))
+	       (symbol (intern name)))
+	  (if (not (member symbol rgr-perl-sub-names-to-ignore))
+	      (setq defined-names (cons name defined-names)))))
       ;; And autoloaded sub names.
       (goto-char (point-min))
       (while (re-search-forward "^ *sub +\\([a-zA-Z][a-zA-Z0-9_]*\\);"
