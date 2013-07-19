@@ -45,6 +45,7 @@
 ;;; $Id$
 
 (eval-when-compile
+  (require 'cl)
   (require 'man)
   (require 'perl-mode)
   (require 'cperl-mode))
@@ -427,23 +428,25 @@ which are incremented lexicographically."
 
 (defun rgr-perl-find-quoted-names ()
   ;; Returns a list of strings, and moves point.
-  (skip-chars-forward " \t\n")
-  (cond ((looking-at "qw(")
-	  (goto-char (match-end 0))
-	  (let ((end (save-excursion
-		       (forward-char -1)
-		       (forward-sexp 1)
-		       (point)))
-		(words nil))
-	    (skip-chars-forward " \t\n")
-	    (while (not (looking-at ")"))
-	      (let ((word-start (point)))
-		(skip-chars-forward "^ \t\n(){}")
-		(setq words
-		      (cons (buffer-substring-no-properties word-start (point))
-			    words)))
-	      (skip-chars-forward " \t\n"))
-	    words))))
+  (let ((words nil))
+    (skip-chars-forward " \t\n")
+    (while (looking-at "qw(")
+      (goto-char (match-end 0))
+      (skip-chars-forward " \t\n")
+      (while (not (or (eobp) (looking-at ")")))
+	(let ((word-start (point)))
+	  (skip-chars-forward "^ \t\n(){}")
+	  (setq words
+		(cons (buffer-substring-no-properties word-start (point))
+		      words)))
+	(skip-chars-forward " \t\n"))
+      (when (looking-at ")")
+	(forward-char)
+	(skip-chars-forward " \t\n")
+	(when (looking-at ",")
+	  (forward-char)
+	  (skip-chars-forward " \t\n"))))
+    words))
 
 (defun rgr-perl-forward-doc-paragraphs ()
   ;; Do just that.
