@@ -51,18 +51,17 @@
     (save-excursion
       (goto-char (point-min))
       (while (re-search-forward "^\\* +" nil t)
-	(while (looking-at "\\([^ (),\n:]+\\)[, \t\n]*")
-	  (let ((file (match-string 1)))
+	(while (looking-at "\\([^ (),\t\n:]+\\)")
+	  (let ((file (match-string-no-properties 1)))
 	    (cond ((member file files)
 		    (setq files (delete file files)))
 		  (t
 		    (replace-match "" t t))))
 	  (goto-char (match-end 0))
 	  ;; Skip stuff in parens.
-	  (while (looking-at " \t\n,(")
-	    (skip-chars-forward " \t\n")
-	    (if (looking-at "(")
-		(forward-sexp 1)))
+	  (while (looking-at "[ \t\n]*(")
+	    (forward-sexp 1))
+	  (skip-chars-forward ", \t\n")
 	  ;; We should now be poised at either the start of the next file name,
 	  ;; or the terminating ":".
 	  ))
