@@ -163,9 +163,11 @@ should be called from .emacs files."
 			  "~/projects/mgi/literature"
 			  "/usr/local/src/rogers/system/jekyll"
 			  "/usr/local/src/rogers/system/scripts")
-		    (let ((subdir-tail
-			   (directory-files "/usr/lib/perl5/site_perl/" t))
-			  (bio-dirs nil))
+		    (let* ((site-perl "/usr/lib/perl5/site_perl/")
+			   (subdir-tail
+			     (and (file-directory-p site-perl)
+				  (directory-files site-perl t)))
+			   (bio-dirs nil))
 		      ;; Look for all installed Bioperl directories.
 		      (while subdir-tail
 			(let ((dir (expand-file-name "Bio" (car subdir-tail))))
