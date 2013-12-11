@@ -445,6 +445,9 @@ which are incremented lexicographically."
 	(skip-chars-forward " \t\n")
 	(when (looking-at ",")
 	  (forward-char)
+	  (skip-chars-forward " \t\n"))
+	(while (looking-at "#")
+	  (forward-line)
 	  (skip-chars-forward " \t\n"))))
     words))
 
@@ -504,7 +507,8 @@ and too impatient to wait.  -- rgr, 1-Jul-13.]")
 		  ;; define_class_slots
 		  (skip-chars-forward " \t\n(")
 		  (setq defined-names
-			(append (rgr-perl-find-quoted-names) defined-names))))))
+			(append (rgr-perl-find-quoted-names)
+				defined-names))))))
       ;; Now get non-internal sub names.
       (goto-char (point-min))
       (while (re-search-forward "^sub +\\([a-zA-Z][a-zA-Z0-9_]*\\)"
