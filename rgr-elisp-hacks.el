@@ -263,8 +263,7 @@ The source is found by using the \\[find-tag] command."
   (let ((command (key-binding key)))
     (cond ((null command)
 	    (message "%s is undefined" (key-description key)))
-	  ((and (interactive-p)
-		(eq command 'execute-extended-command))
+	  ((eq command 'execute-extended-command)
 	    (find-tag (symbol-name (read-command "Find tag for command: "))))
 	  (t
 	    (find-tag (symbol-name command))))))
