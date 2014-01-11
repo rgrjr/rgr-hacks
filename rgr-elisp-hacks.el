@@ -161,6 +161,7 @@ should be called from .emacs files."
 	  (rgr-make-tags-table-list
 	    (append (list "~/projects/mgi/modest"
 			  "~/projects/mgi/literature"
+			  "~/projects/mgi/tokenizer"
 			  "/usr/local/src/rogers/system/jekyll"
 			  "/usr/local/src/rogers/system/scripts")
 		    (let* ((site-perl "/usr/lib/perl5/site_perl/")
