@@ -33,6 +33,9 @@ but it is usually sufficient to take the default.")
 ;; Turn the menu bar off.
 (menu-bar-mode 0)
 
+;; Keep on blinking when in focus (24.3.50).  -- rgr, 1-Jan-14.
+(setq blink-cursor-blinks 0)
+
 ;; [kludge for vm in certain ModGen configs.  -- rgr, 31-Jul-12.]
 (or (fboundp 'make-local-hook)
     (defun make-local-hook (&rest ignore) nil))
