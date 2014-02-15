@@ -97,7 +97,11 @@
   (rgr-install-mouse-commands)
   (rgr-install-frame-properties)
   (and (fboundp 'custom-push-theme)
-       (rgr-x11-install-nondefault-fontset))
+       ;; [this only seems to be a problem on openSUSE 13.1.  -- rgr,
+       ;; 11-Dec-13.]
+       (condition-case ()
+	   (rgr-x11-install-nondefault-fontset)
+	 (error (message "Font installation error"))))
   (global-set-key [?\C-\.] 'ilisp-next-possibility)
   ;; Bind comment-region globally.  (This is an X11 hack because it is too hard
   ;; to type otherwise.)
