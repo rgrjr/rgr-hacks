@@ -164,6 +164,10 @@ should be called from .emacs files."
 			  "~/projects/mgi/tokenizer"
 			  "/usr/local/src/rogers/system/jekyll"
 			  "/usr/local/src/rogers/system/scripts")
+		    (and (getenv "PROFILE_HOME")
+			 (list (getenv "PROFILE_HOME")))
+		    (and (getenv "PIMA_HOME")
+			 (list (getenv "PIMA_HOME")))
 		    (let* ((site-perl "/usr/lib/perl5/site_perl/")
 			   (subdir-tail
 			     (and (file-directory-p site-perl)
