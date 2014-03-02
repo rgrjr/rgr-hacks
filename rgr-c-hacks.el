@@ -197,13 +197,16 @@ mostly for compatibility with the rgr-lisp-def-name fn.)"
     (let ((bod (point))
 	  (start nil) (name-end nil))
       (forward-sexp 1)
+      (skip-chars-forward " *")
       (cond ((eolp)
 	      ;; maybe this is the return type?
 	      (forward-line 1)
 	      (setq bod (point))
 	      (forward-sexp 1)))
-      (if (not (looking-at "("))
-	  (error "oops; not prototyped -- syntax %S" (c-guess-basic-syntax)))
+      (cond ((not (looking-at "("))
+	      (message "oops; not prototyped -- syntax %S"
+		       (c-guess-basic-syntax))
+	      (sit-for 2)))
       (setq name-end (point))
       (cond (namep
 	      (forward-sexp -1))
