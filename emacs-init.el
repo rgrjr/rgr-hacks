@@ -256,9 +256,7 @@ but it is usually sufficient to take the default.")
     ;; available from home.  -- rgr, 29-Feb-04.
     (setq ssh-per-host-option-alist
 	  '(("woburn\\.modulargenetics\\.com$"
-	     "-L" "8080:rome:80"
 	     "-L" "8081:alexandria:80"
-	     "-L" "8082:karnak:80"
 	     "-L" "8083:cordoba:80"
 	     "-L" "8084:yuggoth:80"
 	     "-L" "8085:granada:80"
