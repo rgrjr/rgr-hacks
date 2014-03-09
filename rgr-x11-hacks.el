@@ -96,12 +96,22 @@
   (require 'rgr-mouse)
   (rgr-install-mouse-commands)
   (rgr-install-frame-properties)
-  (and (fboundp 'custom-push-theme)
-       ;; [this only seems to be a problem on openSUSE 13.1.  -- rgr,
-       ;; 11-Dec-13.]
-       (condition-case ()
-	   (rgr-x11-install-nondefault-fontset)
-	 (error (message "Font installation error"))))
+  (or (and (= emacs-major-version 24)
+	   (>= emacs-minor-version 3)
+	   ;; Presumably this is only works for GTK/Freetype, but I don't know
+	   ;; how to check for that.  -- rgr, 9-Mar-14.
+	   (condition-case ()
+	       (progn (set-frame-font "DejaVu Sans Mono 9")
+		      t)
+	     (error nil)))
+      (and (fboundp 'custom-push-theme)
+	   ;; [this only seems to be a problem on openSUSE 13.1.  -- rgr,
+	   ;; 11-Dec-13.]
+	   (condition-case ()
+	       (progn (rgr-x11-install-nondefault-fontset)
+		      t)
+	     (error nil)))
+      (message "Failed to change the font"))
   (global-set-key [?\C-\.] 'ilisp-next-possibility)
   ;; Bind comment-region globally.  (This is an X11 hack because it is too hard
   ;; to type otherwise.)
