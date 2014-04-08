@@ -12,9 +12,7 @@
 ;;;
 ;;; $Id$
 
-;; [for some very wierd reason, this doesn't work in emacs 23; it tries to read
-;; the ")" at the end of eval-when-compile and fails.  -- rgr, 20-Jul-08.]
-'(eval-when-compile
+(eval-when-compile
   (require 'cc-mode))
 
 (defvar rgr-c-use-electric-dash-p nil
@@ -36,7 +34,7 @@ doesn't advertise itself in the mode line."
 	(if (null arg)
 	    (not rgr-c-use-electric-dash-p)
 	    (> (prefix-numeric-value arg) 0)))
-  (and (interactive-p)
+  (and (called-interactively-p t)
        (message "rgr-c-electric-dash mode turned %s."
 		(if rgr-c-use-electric-dash-p "on" "off")))
   rgr-c-use-electric-dash-p)
