@@ -194,7 +194,8 @@ mostly for compatibility with the rgr-lisp-def-name fn.)"
   (save-excursion
     (if (not (eq (car (car (c-guess-basic-syntax))) 'defun-open))
 	(beginning-of-defun))
-    (let ((bod (point))
+    (let ((definition-type nil)
+	  (bod (point))
 	  (start nil) (name-end nil))
       (forward-sexp 1)
       (skip-chars-forward " *")
@@ -203,7 +204,16 @@ mostly for compatibility with the rgr-lisp-def-name fn.)"
 	      (forward-line 1)
 	      (setq bod (point))
 	      (forward-sexp 1)))
-      (cond ((not (looking-at "("))
+      (cond ((looking-at "struct *{")
+	      ;; presumably, this is a typedef.
+	      (skip-chars-backward " \t\n")
+	      (setq definition-type
+		    (buffer-substring-no-properties bod (point)))
+	      (forward-sexp 2)
+	      (skip-chars-forward " \t\n")
+	      (setq bod (point))
+	      (forward-sexp 1))
+	    ((not (looking-at "("))
 	      (message "oops; not prototyped -- syntax %S"
 		       (c-guess-basic-syntax))
 	      (sit-for 2)))
@@ -225,7 +235,9 @@ mostly for compatibility with the rgr-lisp-def-name fn.)"
 	;; literal here.)
 	(while (string-match "* " result)
 	  (setq result (replace-match "*" t t result)))
-	result))))
+	(if (and definition-type (not namep))
+	    (concat definition-type " " result)
+	    result)))))
 
 (defun rgr-c-mode-definition-name ()
   ;; Interface to rgr-mode-definition-name
