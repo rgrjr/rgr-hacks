@@ -127,7 +127,7 @@ next (and subsequent) line if the current (previous) line ends in '\\'."
         (let* ((lwsp "[ \t]+")
 	       (word "[^ \t\n]+")
 	       (capture-word (concat "\\(" word "\\)")))
-	  (concat "\\(cmp\\|diff\\)" lwsp
+	  (concat "\\(cmp\\|diff\\|cp\\)" lwsp
 		  ;; optional options
 		  "\\(-" word lwsp "\\)*"
 		  ;; file name arguments
