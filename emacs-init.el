@@ -283,6 +283,12 @@ but it is usually sufficient to take the default.")
 (setq sql-user "modest")
 (setq sql-database "test_modest")
 (setq sql-server "localhost")
+;; Tweak the prompt regexp if we're going to run MariaDB.  Otherwise, prompts
+;; are not displayed until after a new command is entered.
+(if (= 0 (call-process "rpm" nil nil nil "-q" "mariadb-client"))
+    (add-hook 'sql-interactive-mode-hook
+	      #'(lambda ()
+		  (setq sql-prompt-regexp "^MariaDB \\[[a-zA-Z_0-9]*\\]> *"))))
 
 ;; Ruby hacks.
 (add-to-list 'auto-mode-alist '("\\.rb$" . ruby-mode))
