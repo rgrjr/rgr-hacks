@@ -288,7 +288,8 @@ but it is usually sufficient to take the default.")
 (if (= 0 (call-process "rpm" nil nil nil "-q" "mariadb-client"))
     (add-hook 'sql-interactive-mode-hook
 	      #'(lambda ()
-		  (setq sql-prompt-regexp "^MariaDB \\[[a-zA-Z_0-9]*\\]> *"))))
+		  (setq sql-prompt-regexp
+			"^MariaDB \\[[()a-zA-Z_0-9]*\\]> *"))))
 
 ;; Ruby hacks.
 (add-to-list 'auto-mode-alist '("\\.rb$" . ruby-mode))
