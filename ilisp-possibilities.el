@@ -74,9 +74,9 @@ interval.")
 		  (downcase mode) ilisp-possibility-buffer-gensym-index))))
 
 (defun ilisp-pop-possibilities (&optional message)
-  "Take the current possibility buffer off the stack.  The buffer is not
-killed, so it may be revisited by doing \\[ilisp-goto-possibility] in that
-buffer."
+  "Take the current possibility buffer off the stack.
+The buffer is buried if current, but not killed, so it may be
+revisited by doing \\[ilisp-goto-possibility] in that buffer."
   ;; should maybe restore the window configuration?  optionally?
   (interactive)
   (let ((old-buffer (or (ilisp-current-possibility-buffer)
@@ -84,6 +84,8 @@ buffer."
     (setq ilisp-possibilities-buffers (cdr ilisp-possibilities-buffers))
     (or message
 	(setq message (format "Popping %s" old-buffer)))
+    (and (eq old-buffer (current-buffer))
+	 (bury-buffer))
     (let ((new-buffer (ilisp-current-possibility-buffer)))
       (if new-buffer
 	  (message "%s; C-. is now next %s possibility." message new-buffer)
