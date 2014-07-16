@@ -276,7 +276,6 @@ but it is usually sufficient to take the default.")
 ;; See the M-x display-time-world command.
 (setq display-time-world-list
       '(("America/New_York" "Boston")
-	("Europe/London" "London")
 	("Australia/Sydney" "Sydney")))
 
 ;; SQL hacks.
@@ -302,16 +301,16 @@ but it is usually sufficient to take the default.")
 	      (setq load-path (cons erlang-path load-path)))
 	  (require 'erlang-start))))
 
-;; Lua hacks.
-(setq auto-mode-alist (cons '("\\.lua$" . lua-mode) auto-mode-alist))
-(autoload 'lua-mode "lua-mode" "Lua editing mode." t)
-(add-hook 'lua-mode-hook 'rgr-lua-mode-hook)
-
 (defun rgr-erlang-mode-hook ()
   ;; Try to avoid shifting.  -- rgr, 20-Dec-96.
   (define-key erlang-mode-map "-" 'rgr-c-electric-dash)
   (setq fill-column 80))
 (add-hook 'erlang-mode-hook 'rgr-erlang-mode-hook)
+
+;; Lua hacks.
+(setq auto-mode-alist (cons '("\\.lua$" . lua-mode) auto-mode-alist))
+(autoload 'lua-mode "lua-mode" "Lua editing mode." t)
+(add-hook 'lua-mode-hook 'rgr-lua-mode-hook)
 
 ;; Javascript support.  -- rgr, 11-Mar-10.
 (autoload 'moz-minor-mode "moz" "Mozilla Minor and Inferior Mozilla Modes" t)
@@ -324,7 +323,3 @@ but it is usually sufficient to take the default.")
 ;; Run this after all load-path directories are set up.
 (rgr-make-tags-table-list-hook)
 (setq tags-revert-without-query t)
-
-;; Workaround for an apparent sshd bug in openSUSE 12.2.
-(if (equal (getenv "COLUMNS") "0")
-    (setenv "COLUMNS" ""))
