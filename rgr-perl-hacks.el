@@ -637,7 +637,7 @@ the page."
   (if (save-excursion
 	(or (not (re-search-backward "^=" nil t))
 	    (looking-at "^=cut")))
-      (perl-indent-command)))
+      (indent-according-to-mode)))
 
 ;;; Scope hax.
 
