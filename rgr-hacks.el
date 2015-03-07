@@ -446,7 +446,7 @@ The default argument is equivalent to 2 (just exchange point and mark)."
     (goto-char (point-min))
     (let ((counts (vector 0 0 0 0)))
       ;; Collect them.
-      (while (re-search-forward "^   \\(\\**\\)" nil t)
+      (while (re-search-forward "\n\n   \\(\\**\\)" nil t)
 	(let ((n-stars (- (match-end 1) (match-beginning 1))))
 	  (when (>= n-stars (length counts))
 	    (let* ((old-len (length counts))
