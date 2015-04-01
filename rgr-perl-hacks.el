@@ -476,51 +476,62 @@ and too impatient to wait.  -- rgr, 1-Jul-13.]")
 	(t
 	  (rgr-union (cdr set1) (rgr-adjoin (car set1) set2)))))
 
-(defun rgr-perl-update-method-documentation ()
-  "In a Perl class, add '=head3' items for undocumented methods."
-  (interactive)
-  (save-excursion
-    (goto-char (point-min))
-    (let* ((defined-names nil) (autoloaded-names nil)
-	   (code-end (save-excursion
-		       (or (re-search-forward "^1;$" nil t)
-			   (re-search-forward "^__END__$" nil t))))
-	   (doc-start (or code-end (point-min))))
-      ;; First get accessor method names.
-      (while (re-search-forward
+(defun rgr-perl-skip-whitespace (&optional code-end)
+  ;; Skip space, tab, newline, and "#" comment lines.
+  (or code-end
+      (setq code-end (point-max)))
+  (skip-chars-forward " \t\n" code-end)
+  (while (and (< (point) code-end)
+	      (looking-at "#"))
+    (forward-line 1)
+    (skip-chars-forward " \t\n" code-end)))
+
+(defun rgr-perl-find-slot-names (&optional code-end)
+  ;; Return a list of slot names defined by class methods we know about.
+  ;; Note that ModGen::DB::Sample uses all four kinds of slot constructors.
+  (let ((defined-names nil))
+    (while (re-search-forward
 	       "->build_\\(field\\|fetch\\|set\\)_\\|->define_class_\\(slots\\)"
 	       code-end t)
 	(let ((what (or (match-string-no-properties 2)
 			(match-string-no-properties 1))))
 	  (if (not (string= what "slots"))
+	      ;; Skip the rest of the slot constructor name.
 	      (forward-sexp))
 	  ;; (message "found %S at %d" what (point))
-	  (cond ((string= what "field")
-		  ;; build_field_accessors
+	  (cond ((or (string= what "field") (string= what "slots"))
+		  ;; build_field_accessors (which takes an arrayref) and
+		  ;; define_class_slots (which takes a list).
 		  (skip-chars-forward " \t\n([")
+		  (rgr-perl-skip-whitespace code-end)
 		  (setq defined-names
 			(rgr-union (rgr-perl-find-quoted-names)
 				   defined-names)))
-		((string= what "fetch")
-		  ;; build_fetch_accessor
-		  (skip-chars-forward " \t\n")
-		  (if (looking-at "(qw(\\([a-zA-Z0-9_]+\\)")
-		      (setq defined-names
-			    (rgr-adjoin (match-string-no-properties 1)
-					defined-names))))
-		((string= what "set")
-		  ;; build_set_fetch_accessor
+		((or (string= what "fetch") (string= what "set"))
+		  ;; build_fetch_accessor and build_set_fetch_accessor
 		  (skip-chars-forward " \t\n(")
-		  (if (looking-at "'\\([a-zA-Z0-9_]+\\)'")
-		      (setq defined-names
-			    (rgr-adjoin (match-string-no-properties 1)
-					defined-names))))
-		((string= what "slots")
-		  ;; define_class_slots
-		  (skip-chars-forward " \t\n(")
-		  (setq defined-names
-			(rgr-union (rgr-perl-find-quoted-names)
-				   defined-names))))))
+		  (rgr-perl-skip-whitespace code-end)
+		  (cond ((looking-at "qw(\\([a-zA-Z0-9_]+\\)")
+			  (setq defined-names
+				(rgr-adjoin (match-string-no-properties 1)
+					    defined-names)))
+			((looking-at "'\\([a-zA-Z0-9_]+\\)'")
+			  (setq defined-names
+				(rgr-adjoin (match-string-no-properties 1)
+					    defined-names))))))))
+    defined-names))
+
+(defun rgr-perl-update-method-documentation ()
+  "In a Perl class, add '=head3' items for undocumented methods."
+  (interactive)
+  (save-excursion
+    (goto-char (point-min))
+    (let* ((autoloaded-names nil)
+	   (code-end (save-excursion
+		       (or (re-search-forward "^1;$" nil t)
+			   (re-search-forward "^__END__$" nil t))))
+	   (doc-start (or code-end (point-min)))
+	   (defined-names (rgr-perl-find-slot-names code-end)))
       ;; Now get non-internal sub names.
       (goto-char (point-min))
       (while (re-search-forward "^sub +\\([a-zA-Z][a-zA-Z0-9_]*\\)"
@@ -550,23 +561,23 @@ and too impatient to wait.  -- rgr, 1-Jul-13.]")
 		    (not (eobp)))
 	  (let* ((name (car tail))
 		 (name-regexp (format "\n=head[0-9] %s\n" name)))
+	    (while (and (looking-at "\n=head[0-9] \\(.*\\)\n")
+			(string-lessp (match-string 1) name))
+	      (or (member name rgr-perl-sub-names-to-ignore)
+		  (message "%s is no longer implemented, %s"
+			   (match-string 1) "or out of sequence"))
+	      (sit-for 2)
+	      (forward-paragraph)
+	      (rgr-perl-forward-doc-paragraphs))
 	    (cond ((looking-at name-regexp)
 		    (forward-paragraph 1)	;; skip the =head3 line.
 		    (rgr-perl-forward-doc-paragraphs))
-		  (t
-		    (while (and (looking-at "\n=head[0-9] \\(.*\\)\n")
-				(string-lessp (match-string 1) name))
-		      (or (member name rgr-perl-sub-names-to-ignore)
-			  (message "%s is no longer implemented, %s"
-				   (match-string 1) "or out of sequence"))
-		      (sit-for 1)
-		      (forward-paragraph)
-		      (rgr-perl-forward-doc-paragraphs))
+		  (t 
 		    (when (save-excursion
 			    (re-search-forward name-regexp nil t))
 		      (message "Documentation for %s is out of sequence."
 			       name)
-		      (sit-for 1))
+		      (sit-for 2))
 		    (insert "\n=head3 " name "\n")
 		    (if (member name autoloaded-names)
 			(insert "\nAutoloaded.\n"))
