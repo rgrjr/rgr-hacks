@@ -482,8 +482,10 @@ M-x buffer-menu)."
   ;; [new in emacs 22.1.  the default is 26, but 30 is slightly less
   ;; claustrophobic.  -- rgr, 27-May-06.]
   (setq Buffer-menu-name-width 30)
-  ;; [this seems to be the thing in 24.2.  -- rgr, 21-May-13.]
-  (setq Buffer-menu-buffer+size-width 30)
+  (if (rgr-emacs-version-p 24 3)
+      (setq Buffer-menu-name-width 40)
+      ;; [this seems to be the thing in 24.2.  -- rgr, 21-May-13.]
+      (setq Buffer-menu-buffer+size-width 30))
   ;; was next-line.  -- rgr, 21-Mar-94.
   (define-key Buffer-menu-mode-map " " 'rgr-buffer-menu-exit)
   ;; view in other window, staying in buffer menu.
