@@ -210,11 +210,12 @@ output buffer from '*vc-diff*' to '*vc-project-diff*'."
 
 ;;;###autoload
 (defun rgr-goto-file-in-vc-dir ()
-  "Go to the current file in a vc-dir buffer."
+  "Go to the current file or directory in a vc-dir buffer."
   (interactive)
   (apply #'rgr-vc-dir-goto-node-or-buffer
 	 (rgr-find-file-vc-dir-node
 	   (or buffer-file-name
+	       default-directory
 	       (error "Buffer has no file name.")))))
 
 ;;;; vc-history mode.
