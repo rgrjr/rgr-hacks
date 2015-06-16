@@ -148,6 +148,7 @@ but it is usually sufficient to take the default.")
 (add-hook 'mail-setup-hook 'rgr-mail-setup-hook)
 (add-hook 'mail-setup-hook 'rgr-mail-abbrevs-setup)
 (add-hook 'vm-mail-mode-hook 'rgr-vm-mail-mode-hook)
+(setq compose-mail-user-agent-warnings nil)	;; suppress warnings for root.
 ;; [this seems to be necessary, even with vm, in 23.2.  -- rgr, 11-Dec-09.]
 (setq mail-signature nil)
 (cond ((file-directory-p "/usr/src/viewmail/lisp")
