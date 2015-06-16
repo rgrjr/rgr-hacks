@@ -172,12 +172,8 @@ but it is usually sufficient to take the default.")
 (setq mc-pgp-keydir (expand-file-name "~/.gnupg"))
 (setq mc-passwd-timeout 600)	;; ten minutes.
 ;; TMDA stuff.  -- rgr, 18-May-04.
-(let ((base (expand-file-name (if (eq rgr-site 'home)
-				  "~/.tmda/"
-				  "~/.tmda/lists/"))))
-  (setq tmda-default-whitelist
-	(expand-file-name (if (eq rgr-site 'home) "accepted" "whitelist")
-			  base))
+(let ((base (expand-file-name "~/.tmda/")))
+  (setq tmda-default-whitelist (expand-file-name "accepted" base))
   (setq tmda-default-blacklist (expand-file-name "rejected" base)))
 
 (add-hook 'comint-mode-hook 'rgr-comint-mode-hook)
@@ -197,11 +193,12 @@ but it is usually sufficient to take the default.")
 (add-hook 'text-mode-hook 'rgr-text-mode-hook)
 (add-hook 'c-mode-hook 'rgr-c-mode-hook)
 (setq rgr-c-use-electric-dash-p t)
-;; [this rules out files in CVS/SVN directories, TAGS files, normal emacs backup
-;; and autosave files, and CVS ".#file.version" files.  -- rgr, 28-Feb-05.]
+;; [this rules out (among other things) files in CVS/SVN directories, TAGS
+;; files, emacs backup and autosave files, and CVS ".#file.version" files.  --
+;; rgr, 28-Feb-05.]
 (setq grep-find-command
       (concat "find . -type f "
-	      "| grep -Ev '/\\.?#|~$|/TAGS$|/\.svn/|/old|/cover_|/CVS/|\.(patch|tmp)$' "
+	      "| grep -Ev '/\\.?#|~$|/TAGS$|/(\\.svn|old|cover_)|/CVS/|\\.(patch|tmp)$' "
 	      "| xargs -e grep -n -e "))
 (add-hook 'compilation-mode-hook 'rgr-compilation-mode-hook)
 (add-hook 'makefile-mode-hook 'rgr-makefile-mode-hook)
