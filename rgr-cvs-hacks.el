@@ -197,7 +197,10 @@ output buffer from '*vc-diff*' to '*vc-project-diff*'."
   '(message "got %S in %S" vc-dir-node vc-dir-buffer)
   (cond ((not vc-dir-buffer)
 	  ;; Totally failed, so offer to start vc-dir.
-	  (call-interactively 'vc-dir))
+	  (let ((root (or (vc-svn-root default-directory)
+			  default-directory)))
+	    (vc-dir (read-directory-name "VC status for directory: "
+					 root root t nil))))
 	((not vc-dir-node)
 	  (switch-to-buffer-other-window vc-dir-buffer)
 	  (ewoc-goto-node vc-ewoc (ewoc-nth vc-ewoc 0))
