@@ -13,10 +13,12 @@
   "Where rgr-hacks files live.
 This is a defvar so that it can be set globally by some prior .emacs file,
 but it is usually sufficient to take the default.")
-(or (member rgr-emacs load-path)
-    (setq load-path (cons rgr-emacs load-path)))
+(add-to-list 'load-path rgr-emacs)
 (load (expand-file-name "rgr-hacks-autoloads.el" rgr-emacs))
 ;; For other packages.
+(if (file-directory-p "/usr/share/emacs/site-lisp/vm")
+    ;; This is the emacs-vm RPM location.
+    (add-to-list 'load-path "/usr/share/emacs/site-lisp/vm"))
 (defvar rgr-imported-packages (expand-file-name "../imported" rgr-emacs)
   "Directory for other private emacs packages.")
 (if (and (file-directory-p rgr-imported-packages)
@@ -212,9 +214,7 @@ but it is usually sufficient to take the default.")
 (add-hook 'command-history-hook 'rgr-command-history-hook)
 
 ;; Oops; vm doesn't do this.  -- rgr, 27-Nov-00.
-(let ((entry '("[^/.]\\.vm$" . vm-mode)))
-  (or (member entry auto-mode-alist)
-      (setq auto-mode-alist (cons entry auto-mode-alist))))
+(add-to-list 'auto-mode-alist '("INBOX$\\|[^/.]\\.vm$" . vm-mode))
 
 ;; Add html-helper-mode plus my HTML code hacks.
 (autoload 'html-helper-mode "html-helper-mode" "Yay HTML" t)
@@ -251,7 +251,7 @@ but it is usually sufficient to take the default.")
     (setq ssh-per-host-option-alist
 	  '(("woburn\\.modulargenetics\\.com$"
 	     "-L" "8081:alexandria:80"
-	     "-L" "8083:cordoba:80"
+	     "-L" "8083:persepolis:80"
 	     "-L" "8084:yuggoth:80"
 	     "-L" "8085:granada:80"
 	     "-L" "8086:xanadu:80")
