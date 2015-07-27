@@ -68,24 +68,27 @@ elements in http://www.w3.org/TR/html40/index/elements.html with
     (dd (dd dt a-name p) nil (dl))
     (dt (dd dt a-name p) nil (dl))
     (dl (a-name p) (dd dt a-name p))
-    (div nil nil nil nil (div))
-    (form nil nil nil nil (form))
+    ;;    1   2   3   4   5   6
+    (form nil nil nil nil nil (form))
     ;; Headings must be directly in <body>, possibly with <center>, <div>, or
     ;; <form> intervening.
-    (h1 (a-name p) nil (body) (center div form))
-    (h2 (a-name p) nil (body) (center div form))
-    (h3 (a-name p) nil (body) (center div form))
-    (h4 (a-name p) nil (body) (center div form))
-    (h5 (a-name p) nil (body) (center div form))
-    (h6 (a-name p) nil (body) (center div form))
-    (hr (a-name p) nil (body) (center div form))
-    (li (li a-name p) (a-name p) (ul ol dir menu))
+    ;;  1          2   3   4      5
+    (h1 (a-name p) nil nil (body) (center div form))
+    (h2 (a-name p) nil nil (body) (center div form))
+    (h3 (a-name p) nil nil (body) (center div form))
+    (h4 (a-name p) nil nil (body) (center div form))
+    (h5 (a-name p) nil nil (body) (center div form))
+    (h6 (a-name p) nil nil (body) (center div form))
+    (hr (a-name p) nil nil (body) (center div form))
+    ;;  1             2          3                4
+    (li (li a-name p) (a-name p) (ul ol dir menu) (ul ol))
     (ul (a-name p) (li a-name p))
     (ol (a-name p) (li a-name p))
     (option (option) nil (select optgroup))
     (optgroup (option) (option) (select))
     (p (a-name p))
-    (pre nil nil nil nil (pre))
+    ;;   1   2   3   4   5   6
+    (pre nil nil nil nil nil (pre))
     (colgroup (colgroup) nil (table))
     (tbody (colgroup) (tr) (table))
     (thead (colgroup) (tr) (table))
@@ -93,18 +96,20 @@ elements in http://www.w3.org/TR/html40/index/elements.html with
     (tgroup (colgroup) (tr) (table))
     (td (td th) nil (tr))
     (th (th td) nil (tr))
-    (tr (colgroup tr th td) (th td) (table tbody thead tfoot tgroup) nil)
+    ;;  1                   2       3   4
+    (tr (colgroup tr th td) (th td) nil (table tbody thead tfoot tgroup))
     (table (a-name p) (tbody thead tfoot tgroup tr th td)))
   "Alist of lists that specify how to treat certain tags.
 List elements are
 
-    tag name (a symbol)
-    list of other tags implicitly closed by an open tag
-    list of other tags implicitly closed by a close tag
-    container tag that ends the scope of implicit closes
-    list of container tags inside which this tag must appear
-    list of allowed intervening tags
-    list of forbidden container tags
+nth Meaning
+ 0  tag name (a symbol)
+ 1  list of other tags implicitly closed by an open tag
+ 2  list of other tags implicitly closed by a close tag
+ 3  container tag that ends the scope of implicit closes
+ 4  list of container tags inside which this tag must appear
+ 5  list of allowed intervening tags
+ 6  list of forbidden container tags
 
 For example,
 
