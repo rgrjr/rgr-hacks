@@ -457,9 +457,9 @@ which are incremented lexicographically."
     (forward-paragraph)))
 
 (defvar rgr-perl-sub-names-to-ignore
-  '(home_page_url insert local_display_fields post_web_update
+  '(creation_time_field home_page_url local_display_fields post_web_update
     pretty_name primary_key search_page_name table_audited_p
-    table_name type_pretty_name web_search web_update)
+    table_name web_search web_update)
   "List of symbols naming subs that do not need to be documented.
 Presumably this is because they implement a well-known API
 defined by a superclass.  (I'd really prefer a more elegant
@@ -563,7 +563,8 @@ and too impatient to wait.  -- rgr, 1-Jul-13.]")
 		 (name-regexp (format "\n=head[0-9] %s\n" name)))
 	    (while (and (looking-at "\n=head[0-9] \\(.*\\)\n")
 			(string-lessp (match-string 1) name))
-	      (or (member name rgr-perl-sub-names-to-ignore)
+	      (or (member (intern (match-string 1))
+			  rgr-perl-sub-names-to-ignore)
 		  (message "%s is no longer implemented, %s"
 			   (match-string 1) "or out of sequence"))
 	      (sit-for 2)
