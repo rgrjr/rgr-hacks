@@ -478,9 +478,9 @@ This is useful, for instance, when a definition has been deleted."
 	      (let ((new-end-col
 		     (+ (save-excursion
 			  (goto-char (match-beginning 0))
-			  (end-of-line)
 			  (current-column))
-			(1- (- (match-end 0) (match-beginning 0)))
+			;; We match three chars, and replace them with one.
+			-2
 			(save-excursion
 			  (goto-char (match-end 0))
 			  (end-of-line)
