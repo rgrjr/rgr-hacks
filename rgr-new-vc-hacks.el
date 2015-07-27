@@ -24,7 +24,8 @@
   (interactive)
   ;; [should check to see if some of these aren't already in the list, and
   ;; insert only new ones.  -- rgr, 20-Jul-08.]
-  (vc-log--insert-file-names (log-edit-files))
+  (vc-log--insert-file-names (with-current-buffer (current-buffer)
+			       (log-edit-files)))
   (goto-char (point-min))
   (forward-line))
 
@@ -302,15 +303,6 @@ If a prefix argument is given, move by that many lines."
   "Unmark all files with the same extension as the current one."
   (interactive "P")
   (vc-dir-mark-unmark-matching-files nil state-p))
-
-;;;###autoload
-(defun vc-root-dir ()
-  "Enter vc-dir for the VC root."
-  (interactive)
-  (let* ((backend (or (vc-deduce-backend)
-		      (error "Buffer is not version controlled")))
-	 (rootdir (vc-call-backend backend 'root default-directory)))
-    (vc-dir rootdir backend)))
 
 ;;;; Installation.
 
