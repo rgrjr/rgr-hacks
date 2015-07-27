@@ -326,11 +326,10 @@ protein sequence."
       (setcdr subentry (cons value (cdr subentry))))
     alist))
 
-(defun rgr-annotation-display-diffs (alist)
+(defun rgr-annotation-display-diffs (alist &optional have-delimiter-p)
   ;; Find and display differences.
   (let ((tail (sort alist #'(lambda (cell1 cell2)
-			      (string-lessp (car cell1) (car cell2)))))
-	(need-final-delimiter-p nil))
+			      (string-lessp (car cell1) (car cell2))))))
     '(message "%S" tail)
     (while tail
       (let* ((entry (car tail))
@@ -343,9 +342,9 @@ protein sequence."
 	(while (or add del)
 	  (cond ((or (not (equal (car del) (car add)))
 		     (equal key "(locus)"))
-		 (cond ((not need-final-delimiter-p)
+		 (cond ((not have-delimiter-p)
 			(princ "@@\n")
-			(setq need-final-delimiter-p t)))
+			(setq have-delimiter-p t)))
 		 (cond ((equal (car del) (car add))
 			 ;; Display the locus for user orientation.
 			 (princ (format " %s=%s\n" key (car del))))
@@ -356,9 +355,7 @@ protein sequence."
 			     (princ (format "+%s=%s\n" key (car add))))))))
 	  (setq add (cdr add))
 	  (setq del (cdr del))))
-      (setq tail (cdr tail)))
-    (if need-final-delimiter-p
-	(princ "@@\n"))))
+      (setq tail (cdr tail)))))
 
 ;;;###AUTOLOAD
 (defun rgr-diff-annotation (start end)
@@ -381,10 +378,20 @@ protein sequence."
 			    (value (match-string-no-properties 2)))
 			(setq alist (rgr-add-entry alist dir key value)))
 		      (goto-char (match-end 0))
-		      (skip-chars-forward ", \t\r\n"))))
+		      (if (looking-at ",")
+			  (skip-chars-forward ", \t\r\n")))))
 		((looking-at "^@@")
 		  ;; End of the hunk.
 		  (rgr-annotation-display-diffs alist)
+		  (princ (buffer-substring-no-properties
+			   (point)
+			   (save-excursion
+			     (progn (forward-line) (point)))))
+		  (setq alist nil)
+		  (forward-line))
+		((looking-at "^ ")
+		  ;; End of difference within the hunk.
+		  (rgr-annotation-display-diffs alist t)
 		  (setq alist nil)
 		  (forward-line))
 		((looking-at "^\\(\\+\\+\\+\\|---\\)")
