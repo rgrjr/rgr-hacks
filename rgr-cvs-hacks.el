@@ -39,8 +39,9 @@
   (let ((script
 	  ;; Prefer the Ruby version if Ruby is available, else fall back to the
 	  ;; Perl script.
-	  (if (executable-find "ruby") "vc-chrono-log.rb" "vc-chrono-log.pl")))
+	  (if (executable-find "perl") "vc-chrono-log.pl" "vc-chrono-log.rb")))
     `((CVS ,(concat "cvs -q log -d '>%s' | " script))
+      (Git ,(concat "git log --since '%s' | " script))
       (SVN ,(concat "svn log --xml --verbose --revision '{%s}:HEAD' | "
 		    script))))
   "Alist mapping backend names to log summary commands for handled
