@@ -37,9 +37,7 @@
 
 (defvar rgr-vc-backend-to-log-command
   (let ((script
-	  ;; Prefer the Ruby version if Ruby is available, else fall back to the
-	  ;; Perl script.
-	  (if (executable-find "perl") "vc-chrono-log.pl" "vc-chrono-log.rb")))
+	 (if (executable-find "perl") "vc-chrono-log.pl" "vc-chrono-log.rb")))
     `((CVS ,(concat "cvs -q log -d '>%s' | " script))
       (Git ,(concat "git log --since '%s' | " script))
       (SVN ,(concat "svn log --xml --verbose --revision '{%s}:HEAD' | "
@@ -232,7 +230,9 @@ output buffer from '*vc-diff*' to '*vc-project-diff*'."
 
 (require 'log-view)
 
-(defvar vc-history-message-re "^\\([0-9]+-[0-9]+-[0-9]+ [0-9:]+\\):")
+(defvar vc-history-message-re "^\\([0-9]+-[0-9]+-[0-9]+ [0-9:]+\\):"
+  "Regular expression that matches a date.
+Really, this is only useful for CVS histories.")
 
 (defgroup vc-history nil
   "Major mode for browsing M-x rgr-vc-recent-changes summaries of VC history."
@@ -262,18 +262,17 @@ output buffer from '*vc-diff*' to '*vc-project-diff*'."
 
 (defun vc-history-current-tag (&optional where)
   "Return a tag that describes the revision at point, or at WHERE if supplied.
-For Subversion, this will be the revision number; otherwise, it is the date."
+For Subversion, this will be the revision number; for Git, the revision hash;
+otherwise, it is the date."
   (save-excursion
     (when where
       (goto-char where))
-    (forward-line 1)
-    (if (re-search-backward vc-history-message-re nil t)
-	(let ((date-tag (match-string 1)))
-	  ;; try to do better for SVN.
-	  (forward-line 1)
-	  (if (looking-at "^ *revision: *\\([0-9]+\\)")
-	      (match-string 1)
-	      date-tag)))))
+    (cond ((re-search-forward "^ *revision: *\\([0-9a-f]+\\)")
+	    (match-string 1))
+	  ((save-excursion
+	     (forward-line 1)
+	     (re-search-backward vc-history-message-re nil t))
+	    (match-string 1)))))
 
 (defun vc-history-diff (beg end)
   "Get the diff between two revision summaries.
