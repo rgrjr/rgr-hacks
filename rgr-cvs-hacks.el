@@ -195,9 +195,13 @@ output buffer from '*vc-diff*' to '*vc-project-diff*'."
 (defun rgr-vc-dir-goto-node-or-buffer (vc-dir-node vc-dir-buffer)
   '(message "got %S in %S" vc-dir-node vc-dir-buffer)
   (cond ((not vc-dir-buffer)
-	  ;; Totally failed, so offer to start vc-dir.
-	  (let ((root (or (vc-svn-root default-directory)
-			  default-directory)))
+	  ;; Totally failed, so offer to start vc-dir on the backend root
+	  ;; directory.
+	  (let* ((backend (vc-deduce-backend))
+		 (root (or (and backend
+				(vc-call-backend backend 'root
+						 default-directory))
+			   default-directory)))
 	    (vc-dir (read-directory-name "VC status for directory: "
 					 root root t nil))))
 	((not vc-dir-node)
