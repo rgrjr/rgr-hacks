@@ -1,0 +1,6 @@
+#*
+*~
+.gitignore
+rgr-hacks-autoloads.el
+*.elc
+*.patch
