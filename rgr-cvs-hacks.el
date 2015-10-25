@@ -39,7 +39,7 @@
   (let ((script
 	 (if (executable-find "perl") "vc-chrono-log.pl" "vc-chrono-log.rb")))
     `((CVS ,(concat "cvs -q log -d '>%s' | " script))
-      (Git ,(concat "git log --since '%s' | " script))
+      (Git ,(concat "(git show-ref --head && git log --since '%s') | " script))
       (SVN ,(concat "svn log --xml --verbose --revision '{%s}:HEAD' | "
 		    script))))
   "Alist mapping backend names to log summary commands for handled
