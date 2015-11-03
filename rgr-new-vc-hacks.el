@@ -20,6 +20,14 @@
 (defvar vc-log-fileset)
 
 ;;;###autoload
+(defun vc-log-update-fileset-skeleton ()
+  "Update the fileset skeleton if the buffer is nonempty, else insert it."
+  (interactive)
+  (if (log-edit-empty-buffer-p)
+      (vc-log-insert-fileset-skeleton)
+      (vc-log-refresh-fileset-skeleton)))
+
+;;;###autoload
 (defun vc-log-insert-fileset-skeleton ()
   (interactive)
   ;; [should check to see if some of these aren't already in the list, and
