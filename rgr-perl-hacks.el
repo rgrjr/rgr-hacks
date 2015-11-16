@@ -750,7 +750,8 @@ the page."
   ;; Put in interpreter magic.  -- rgr, 29-Apr-97.  [but not in library modules.
   ;; -- rgr, 16-May-97.]  [/usr/bin/perl is more standard, so prefer that.  --
   ;; rgr, 22-Oct-02.]
-  (cond ((not (string-match "\.pr?l$" (buffer-file-name))))
+  (cond ((and (buffer-file-name)
+	      (not (string-match "\.pr?l$" (buffer-file-name)))))
 	((rgr-emacs-version-p 23)
 	  ;; Not needed in perl-mode in Emacs 23.x.
 	  )
