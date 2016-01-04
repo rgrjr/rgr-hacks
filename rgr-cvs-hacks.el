@@ -16,7 +16,11 @@
 (eval-when-compile
   (require 'add-log)
   (require 'log-edit)
+  (require 'ewoc)
   (require 'vc))
+
+;; Quiet the compiler.
+(defvar vc-ewoc)
 
 (defun rgr-find-more-recent-buffer (&rest buffers)
   ;; buffers is a list of buffers, some of which may be nil.  if there is more
@@ -120,6 +124,12 @@ month (30 days, actually)."
 		 (rgr-vc-recent-changes default-directory
 					vc-recent-changes-number-of-days)))
 	(set-buffer-modified-p nil)))))
+
+(defun vc-history-set-days (number-of-days)
+  "In a vc-history buffer, set the days shown with a numeric arg, and revert.
+Without a numeric arg, just revert the buffer (same as 'g')."
+  (interactive (list current-prefix-arg))
+  (rgr-vc-recent-changes default-directory number-of-days))
 
 ;;;###autoload
 (defun rgr-vc-project-diff ()
@@ -248,6 +258,7 @@ Really, this is only useful for CVS histories.")
     ("z" . kill-this-buffer)
     ("m" . set-mark-command)
     ("d" . vc-history-diff)
+    ("G" . vc-history-set-days)
     ("=" . vc-history-diff)
     ;; ("f" . log-view-find-version)
     ("n" . log-view-msg-next)
@@ -507,6 +518,12 @@ This is useful, for instance, when a definition has been deleted."
 	(error "Not in the second of two file heading lines.")))
   (replace-match "," t t))
 
+(defun rgr-vc-log-diff ()
+  "Do vc-diff, then go back to the original window."
+  (interactive)
+  (vc-diff)
+  (other-window 1))
+
 ;;;###autoload
 (defun rgr-vc-log-edit-hook ()
   ;; This makes fill-paragraph operate on each comment individually.
@@ -521,7 +538,10 @@ This is useful, for instance, when a definition has been deleted."
 			    ;; current window.
 			    vc-diff)))
   (if (rgr-emacs-version-p 23)
-      (new-vc-install-log-edit-mode-keys)))
+      (new-vc-install-log-edit-mode-keys))
+  ;; vc-diff must come last because it changes the current window.
+  (save-excursion
+    (vc-diff)))
 
 ;;;###autoload
 (defun rgr-change-log-insert-plus ()
