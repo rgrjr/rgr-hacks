@@ -49,22 +49,37 @@
   "Alist mapping backend names to log summary commands for handled
 version control back ends.")
 
-(defvar vc-recent-changes-number-of-days 3
+(defvar vc-recent-changes-number-of-days 7
   "Default number of history days to show.")
+
+(defun rgr-vc-number-of-days (number-of-days)
+  ;; Interpret a raw numeric argument for rgr-vc-recent-changes.
+  (cond ((not number-of-days) vc-recent-changes-number-of-days)
+	((integerp number-of-days) number-of-days)
+	((equal number-of-days '(4))
+	  ;; C-u
+	  14)
+	((equal number-of-days '(16))
+	  ;; C-u C-u
+	  30)
+	((equal number-of-days '(64))
+	  ;; C-u C-u C-u
+	  90)
+	((consp number-of-days) (car number-of-days))
+	(t (error "got number-of-days %S" number-of-days))))
 
 ;;;###autoload
 (defun rgr-vc-recent-changes (directory &optional number-of-days)
   "Show a summary of 'cvs log' or 'svn log' output.
 The summary is in reverse chronological order, with changed files
 shown where possible, and is put in a buffer named '*dir-recent-changes*',
-where 'dir' is the directory name.  By default, it covers the last
-three days for the current directory; the default number of days
-comes from the vc-recent-changes-number-of-days variable.
+where 'dir' is the working copy directory name.  By default, it covers
+the last week; the default number of days comes from the
+vc-recent-changes-number-of-days variable.
 
-A numeric argument shows the log for
-that many days, and also prompts for a directory.  If you give a
-C-u, it shows the last week's worth; if C-u C-u, then the last
-month (30 days, actually)."
+A numeric argument shows the log for that many days, and also prompts
+for a directory.  If you give a C-u, it shows the last two weeks' worth;
+if C-u C-u, then the last 30 days; if C-u C-u C-u, then 90 days."
   (interactive
    (list (if current-prefix-arg
 	     (file-truename
@@ -84,17 +99,7 @@ month (30 days, actually)."
 		 (t
 		   (error "Don't know how to deal with backend '%S'."
 			  backend))))
-	 (number-of-days
-	   (cond ((integerp number-of-days) number-of-days)
-		 ((not number-of-days) vc-recent-changes-number-of-days)
-		 ((equal number-of-days '(4))
-		   ;; control-U
-		   7)
-		 ((equal number-of-days '(16))
-		   ;; control-U control-U
-		   30)
-		 ((consp number-of-days) (car number-of-days))
-		 (t (error "got number-of-days %S" number-of-days))))
+	 (number-of-days (rgr-vc-number-of-days number-of-days))
 	 (n-days-ago (subtract-time (current-time)
 				    (days-to-time number-of-days)))
 	 (n-days-ago-string
@@ -127,9 +132,11 @@ month (30 days, actually)."
 
 (defun vc-history-set-days (number-of-days)
   "In a vc-history buffer, set the days shown with a numeric arg, and revert.
-Without a numeric arg, just revert the buffer (same as 'g')."
+The numeric arg (e.g. for C-u) is interpreted the same way as for
+\\[rgr-vc-recent-changes].  Without a numeric arg, reset to the default."
   (interactive (list current-prefix-arg))
-  (rgr-vc-recent-changes default-directory number-of-days))
+  (rgr-vc-recent-changes default-directory
+			 (rgr-vc-number-of-days number-of-days)))
 
 ;;;###autoload
 (defun rgr-vc-project-diff ()
