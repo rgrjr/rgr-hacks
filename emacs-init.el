@@ -311,11 +311,6 @@ but it is usually sufficient to take the default.")
   (setq fill-column 80))
 (add-hook 'erlang-mode-hook 'rgr-erlang-mode-hook)
 
-;; Lua hacks.
-(setq auto-mode-alist (cons '("\\.lua$" . lua-mode) auto-mode-alist))
-(autoload 'lua-mode "lua-mode" "Lua editing mode." t)
-(add-hook 'lua-mode-hook 'rgr-lua-mode-hook)
-
 ;; Javascript support.  -- rgr, 11-Mar-10.
 (autoload 'moz-minor-mode "moz" "Mozilla Minor and Inferior Mozilla Modes" t)
 (autoload 'espresso-mode "espresso" "Espresso mode for editing Javascript" t)
