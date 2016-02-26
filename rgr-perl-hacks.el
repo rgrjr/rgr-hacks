@@ -491,10 +491,11 @@ and too impatient to wait.  -- rgr, 1-Jul-13.]")
   ;; Note that ModGen::DB::Sample uses all four kinds of slot constructors.
   (let ((defined-names nil))
     (while (re-search-forward
-	       "->build_\\(field\\|fetch\\|set\\)_\\|->define_class_\\(slots\\)"
+	       "->build_\\(inheriting_\\)?\\(field\\|fetch\\|set\\)_\\|->define_class_\\(slots\\)"
 	       code-end t)
-	(let ((what (or (match-string-no-properties 2)
-			(match-string-no-properties 1))))
+	(let ((what (or (match-string-no-properties 3)
+			(match-string-no-properties 2)))
+	      (inheriting-p (match-string-no-properties 1)))
 	  (if (not (string= what "slots"))
 	      ;; Skip the rest of the slot constructor name.
 	      (forward-sexp))
@@ -506,7 +507,12 @@ and too impatient to wait.  -- rgr, 1-Jul-13.]")
 		  (rgr-perl-skip-whitespace code-end)
 		  (setq defined-names
 			(rgr-union (rgr-perl-find-quoted-names)
-				   defined-names)))
+				   defined-names))
+		  (when inheriting-p
+		    (skip-chars-forward " \t\n,][")
+		    (setq defined-names
+			  (rgr-union (rgr-perl-find-quoted-names)
+				     defined-names))))
 		((or (string= what "fetch") (string= what "set"))
 		  ;; build_fetch_accessor and build_set_fetch_accessor
 		  (skip-chars-forward " \t\n(")
