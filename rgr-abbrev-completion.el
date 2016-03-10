@@ -21,9 +21,6 @@
 ;;;
 ;;;    Bugs/to do:
 ;;;
-;;;    1.  need an undo boundary before insertion.  [this seems to work OK in
-;;; GNU emacs.  -- rgr, 22-Aug-99.]
-;;;
 ;;;    2.  It would be nice to get rid of trailing "." and "]" (and probably
 ;;; others) in words.  Also, "words" that are entirely nonalphabetic should
 ;;; probably be omitted.  The problem is finding a reasonable choke-point for
@@ -32,13 +29,6 @@
 ;;;    4.  Should replace fast-string-hash with a simple intern of the first
 ;;; three letters.  Probably faster, since it will run in C rather than byte
 ;;; code.
-;;;
-;;;    5.  The sets of (string from to) args that were used for efficiency in
-;;; Zmacs could now be replaced with a single "word" or "prefix" argument.
-;;; [done.  -- rgr, 1-Feb-98.]
-;;;
-;;;    6.  Flush text attributes in completion text.  -- rgr, 12-Dec-96.
-;;; [done.  -- rgr, 22-Aug-99.]
 ;;;
 ;;;    7.  ***bug***:  new version considers it OK that a string is a completion
 ;;; of itself.
@@ -141,7 +131,7 @@ and (current-index . possibilities).")
 ;;;; Low-level utility definitions.
 
 (defsubst rgr-alphanumericp (char)
-  ;; Curiously, this also includes digits in both Lisp and C sytaxes.  -- rgr,
+  ;; Curiously, this also includes digits in both Lisp and C syntaxes.  -- rgr,
   ;; 29-Nov-96.
   (eq (char-syntax char) ?w))
 
@@ -154,7 +144,7 @@ and (current-index . possibilities).")
 (defsubst rgr-identifier-char-p (char)
   "Return T if legal in an identifier.  Characters that are true for
 this test but are not alphabetic are used as break characters when
-identifiers up into words."
+splitting identifiers up into words."
   ;; Unfortunately, this is not quite isomorphic between systems.
   (let ((code (char-syntax char)))
     (or (eq code ?w)
@@ -895,8 +885,8 @@ the original state if the file isn't already in a buffer."
 	  t)))
 
 (defun rgr-completion-start-auto-save ()
-  "Start auto-save for the abbrev-completion feature.  Filtered
-completions will be saved normally to the file named by
+  "Start auto-save for the abbrev-completion feature.
+Filtered completions will be saved normally to the file named by
 rgr-abbrev-completion-save-file at a random time between 01:00 and
 02:00."
   (interactive)
