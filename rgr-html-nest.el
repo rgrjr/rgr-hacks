@@ -38,7 +38,8 @@
   (open nil)		;; point of open tag
   )
 
-(defun rgr-html-report-tag-error-internal (message &optional location)
+(defun rgr-html-report-tag-error-internal
+    (message &optional location tag-stack)
   ;; Generate a detail line that looks like "grep -n" on the standard-output,
   ;; and increment rgr-html-n-tag-nest-errors by 1.  location defaults to
   ;; (point), naturally.
@@ -50,13 +51,18 @@
       (while (<= (point) location)
 	(setq line-number (1+ line-number))
 	(forward-line)))
-    (princ (format "%s:%s: %s\n"
+    (princ (format "%s:%s: %s"
 		   (if buffer-file-name
 		       (file-name-nondirectory buffer-file-name)
 		       ;; this doesn't work for C-x `.  -- rgr, 24-Mar-98.
 		       (buffer-name))
 		   line-number
 		   message))
+    (if tag-stack
+	(princ (format ", tag stack %S at %S"
+		       (mapcar #'rgr-htd-tag-name tag-stack)
+		       (point))))
+    (princ "\n")
     (setq rgr-html-n-tag-nest-errors (1+ rgr-html-n-tag-nest-errors))))
 
 (defun rgr-html-report-tag-errors (buffer)
@@ -76,7 +82,8 @@
 	      (setq mode-name "Tag-Errs")
 	      (if emacs-22-p
 		  ;; Emacs 22 setup.
-		  (setq next-error-function 'compilation-next-error-function)))))
+		  (setq next-error-function
+			'compilation-next-error-function)))))
     (cond ((= rgr-html-n-tag-nest-errors 1)
 	    ;; [somewhat kludgy; if there's only one tag error, we just go to it
 	    ;; and report it.  but there's no clean interface for this.  -- rgr,
@@ -271,8 +278,8 @@
 	     (tail (cdr tag-stack))
 	     (new-tail nil))
 	(cond ((member name implicitly-closed)
-		'(message "implicitly closing %s because of <%s%s>"
-			 name (if close-p "/" "") tag-name)
+		'(message "implicitly closing %s because of <%s%s> at %S"
+			 name (if close-p "/" "") tag-name (point))
 	        (rgr-html-process-implicit-closes tag-name close-p tail))
 	      ((if close-p
 		   ;; A close tag can only close tags that started within it.
@@ -280,6 +287,9 @@
 		   ;; Open tags can only close tags within containers.
 		   (memq name containers))
 		;; End of scope; return the stack unmodified.
+		tag-stack)
+	      ((eq name 'table)
+		;; [kludge: don't recur past tables.  -- rgr, 14-Mar-16.]
 		tag-stack)
 	      ((eq (setq new-tail (rgr-html-process-implicit-closes
 				    tag-name close-p tail))
