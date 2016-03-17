@@ -327,3 +327,14 @@ but it is usually sufficient to take the default.")
 ;; Run this after all load-path directories are set up.
 (rgr-make-tags-table-list-hook)
 (setq tags-revert-without-query t)
+
+;; Git hacks.  -- rgr, 23-Dec-15.
+(cond ((not (cadr command-line-args)))
+      ((string-match "/rebase-merge/git-rebase-todo$"
+		     (cadr command-line-args))
+	(message "Rebasing ...")
+	(setq default-truncate-lines t)
+	(delete-other-windows))
+      ((string-match "/COMMIT_EDITMSG$" (cadr command-line-args))
+	(message "Committing ...")
+	(delete-other-windows)))
