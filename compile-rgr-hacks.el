@@ -67,7 +67,6 @@ rgr-hacks-compile-module (see below).")
 	  "rgr-shell-hacks"
 	  "rgr-squid-log"
 	  ("rgr-vm-hacks" require (vm))
-	  ("rgr-w3-hacks" require (w3))
 	  "rgr-x11-hacks"
 	  ("vm+qmail" require (vm)))
   "List of source file specs, which can be either the file stem, or a
