@@ -62,13 +62,6 @@ long as hours < 60."
 	      (if (not suppress-seconds-p)
 		  (concat ":" (rgr-make-interval-field secs)))))))
 
-(defun add-time (t1 t2)
-  "Add two internal times."
-  (let* ((lsw-sum (+ (car (cdr t1)) (car (cdr t2))))
-	 (lsw (mod lsw-sum 65536))
-	 (carry (/ lsw-sum 65536)))
-    (list (+ (car t1) (car t2) carry) lsw)))
-
 ;;;###autoload
 (defun rgr-compute-region-interval (start end &optional insert-p)
   ;; helper for rgr-weekly-intervals & rgr-compute-interval fns.
@@ -173,7 +166,7 @@ long as hours < 60."
 		((and last
 		      (equal (cdr this) (cdr last))
 		      (< (float-time
-			   (subtract-time (car this) (car last)))
+			   (time-subtract (car this) (car last)))
 			 10))
 		  ;; Ignore redundant entries; KDE generates these on login.
 		  ;; (message "Redundant entry %S within 10s of %S" this last)
@@ -195,7 +188,7 @@ long as hours < 60."
 	  (if accumulate-p
 	      ;; Accumulate this interval.
 	      (let ((delta (subtract-time time pending-login-time)))
-		(setq total (if total (add-time total delta) delta))
+		(setq total (if total (time-add total delta) delta))
 		(setq pending-login-time nil)))
 	  ;; (message "%S => %S total" time total)
 	  (setq last this))))
@@ -205,8 +198,8 @@ long as hours < 60."
 	  ((zerop sigma-signs))
 	  (pending-login-time
 	    ;; Assume the current time.
-	    (let ((delta (subtract-time (current-time) pending-login-time)))
-	      (setq total (if total (add-time total delta) delta))))
+	    (let ((delta (time-subtract (current-time) pending-login-time)))
+	      (setq total (if total (time-add total delta) delta))))
 	  ((not effectively-out)
 	    (message "[oops; no %S or %S, but %S is %S.]"
 		     'pending-login-time 'effectively-out
