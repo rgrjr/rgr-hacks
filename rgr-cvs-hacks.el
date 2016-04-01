@@ -112,7 +112,19 @@ if C-u C-u, then the last 30 days; if C-u C-u C-u, then 90 days."
 				 (directory-file-name default-directory)))
 			     (t
 			      (buffer-name)))
-		   "-recent-changes*")))
+		   "-recent-changes*"))
+	 (old-point (and (equal buf-name (buffer-name))
+			 (eq major-mode 'vc-history-mode)
+			 ;; We're in the output buffer already, so we must be
+			 ;; reverting; attempt to preserve point.
+			 (let ((point (point)))
+			   (save-excursion
+			     (or (looking-at "^[0-9-]+ [0-9:]+:$")
+				 (log-view-msg-prev))
+			     (list (buffer-substring-no-properties
+				     (point)
+				     (save-excursion (end-of-line) (point)))
+				   (- point (point))))))))
     ;; (error "Date '%s'." n-days-ago-string)
     (let ((output (get-buffer-create buf-name)))
       (shell-command (format command-format n-days-ago-string) output)
@@ -128,6 +140,11 @@ if C-u C-u, then the last 30 days; if C-u C-u C-u, then 90 days."
 	     #'(lambda (ignore-auto noconfirm)
 		 (rgr-vc-recent-changes default-directory
 					vc-recent-changes-number-of-days)))
+	(when (and old-point
+		   (search-forward (car old-point) nil t))
+	  ;; Restore our place in the buffer.
+	  (beginning-of-line)
+	  (forward-char (cadr old-point)))
 	(set-buffer-modified-p nil)))))
 
 (defun vc-history-set-days (number-of-days)
