@@ -47,7 +47,7 @@ mean a paragraph start; rgr-html-move-one-paragraph examines the tag to
 see.")
 
 (defconst rgr-html-empty-tags
-          '(! area base basefont br col frame
+          '(! a-name area base basefont br col frame
 	    hr img input isindex link meta param wbr)
   "Tags that can never have content.  These are all the elements in
 http://www.w3.org/TR/html40/index/elements.html with \"E\" in the \"Empty\"
@@ -61,74 +61,6 @@ always just '<br>' and we shouldn't look for a close.")
   "Tags for which </tag> is not required.  These are all the
 elements in http://www.w3.org/TR/html40/index/elements.html with
 \"O\" in the \"End Tag\" column.")
-
-(defvar rgr-html-tag-rules
-  '((address (a-name p))
-    (body (head) (a-name p))
-    (dd (dd dt a-name p) nil (dl))
-    (dt (dd dt a-name p) nil (dl))
-    (dl (a-name p) (dd dt a-name p))
-    ;;    1   2   3   4   5   6
-    (form nil nil nil nil nil (form))
-    ;; Headings must be directly in <body>, possibly with <center>, <div>, or
-    ;; <form> intervening.
-    ;;  1          2   3   4      5
-    (h1 (a-name p) nil nil (body) (center div form))
-    (h2 (a-name p) nil nil (body) (center div form))
-    (h3 (a-name p) nil nil (body) (center div form))
-    (h4 (a-name p) nil nil (body) (center div form))
-    (h5 (a-name p) nil nil (body) (center div form))
-    (h6 (a-name p) nil nil (body) (center div form))
-    (hr (a-name p) nil nil (body) (center div form))
-    ;;  1             2          3                4
-    (li (li a-name p) (a-name p) (ul ol dir menu) (ul ol))
-    (ul (a-name p) (li a-name p))
-    (ol (a-name p) (li a-name p))
-    (option (option) nil (select optgroup))
-    (optgroup (option) (option) (select))
-    (p (a-name p))
-    ;;   1   2   3   4   5   6
-    (pre nil nil nil nil nil (pre))
-    (colgroup (colgroup) nil (table))
-    (tbody (colgroup) (tr) (table))
-    (thead (colgroup) (tr) (table))
-    (tfoot (colgroup) (tr) (table))
-    (tgroup (colgroup) (tr) (table))
-    (td (td th) nil (tr))
-    (th (th td) nil (tr))
-    ;;  1                   2       3   4
-    (tr (colgroup tr th td) (th td) nil (table tbody thead tfoot tgroup))
-    (table (a-name p) (tbody thead tfoot tgroup tr th td)))
-  "Alist of lists that specify how to treat certain tags.
-List elements are
-
-nth Meaning
- 0  tag name (a symbol)
- 1  list of other tags implicitly closed by an open tag
- 2  list of other tags implicitly closed by a close tag
- 3  container tag that ends the scope of implicit closes
- 4  list of container tags inside which this tag must appear
- 5  list of allowed intervening tags
- 6  list of forbidden container tags
-
-For example,
-
-    (tr (colgroup tr th td) (th td) (table tbody thead tfoot tgroup) nil)
-
-means that:
-
-   1.  a <tr> tag implicitly closes any open <colgroup>, <tr>,
-<th>, or <td>;
-
-   2.  a </tr> closes any open <th> or <td>;
-
-   3.  every <tr> must appear directly within one of <table>,
-<tbody>, <thead>, <tfoot>, or <tgroup>, with no intervening tags,
-which bounds the search for any implicit closes.
-
-If the list of allowed intervening tags is t, then any tags may
-come between it and a required container.
-")
 
 ;;; General tag hackery.
 
@@ -258,104 +190,6 @@ return it as a symbol (after converting to lower case)."
 	(goto-char (match-end 0)))
     (nreverse result)))
 
-;;; rgr-html-forward-markup and support.
-
-(defun rgr-html-forward-markup (&optional n mismatch-is-error-p)
-  "Markup-oriented version of forward-sexp (q.v.).
-Interactively, a numeric arg supplies the number of markup expressions N
-past which to move; the sign indicates the direction.  Handles errors
-Zmacs-style \(i.e. like a Lisp Machine) in that if an unmatched close
-is encountered,
-we move past it and stop immediately, no matter how many markup forms
-were requested.  This can be treated as an error by supplying the
-optional third MISMATCH-IS-ERROR-P arg.  But if the start or end of the
-buffer is encountered, that is always an error."
-  (interactive "p")
-  (or n (setq n 1))
-  (let* ((forward-p (>= n 0))
-	 (re-searcher (if forward-p 're-search-forward 're-search-backward))
-	 ;; Search state.
-	 (last-a-tag nil)		;; is </a> for <a name=...> or href?
-	 (n (abs n))
-	 (nest 0))
-    (while (and (> n 0)
-		;; need this to detect popping up a nest level
-		(>= nest 0))
-      (or (funcall re-searcher rgr-html-tag-regexp nil 'move)
-	  (error "No more markup."))
-      (let ((open-p (not (match-beginning 1)))
-	    (tag (rgr-html-matched-tag-name)))
-	;; Skip the <...> business (how depends on direction).
-	(cond (forward-p
-		(goto-char (match-beginning 0))
-		(forward-sexp)))
-	;; open-p really means a markup tag for which we should increase the
-	;; nesting depth (if it nests).  in the forward direction, that means
-	;; the opens; in the reverse direction, we increment on closes and
-	;; decrement on opens.
-	(if (not forward-p)
-	    (setq open-p (not open-p)))
-	;; [this loses when going backwards.  -- rgr, 4-Dec-97.]
-	(cond ((or (not forward-p) (not (memq tag '(a a-name)))))
-	      (open-p (setq last-a-tag tag))
-	      (last-a-tag (setq tag last-a-tag)))
-	;; (message "tag %s last-a-tag %s" tag last-a-tag) (sit-for 1)
-	(cond ((memq tag rgr-html-empty-tags)
-		;; Treat an empty tag at top level as an "atom", and count
-		;; it against the number of forms we have to move.
-		(if (zerop nest)
-		    (setq n (1- n))))
-	      (open-p
-		(setq nest (1+ nest)))
-	      (t
-		(setq nest (1- nest))
-		;; If nest is zero now, it must have been positive (since we
-		;; just decremented it), so that means we've passed the matching
-		;; close of a complete markup "sexp".
-		(if (zerop nest)
-		    (setq n (1- n)))))))
-    ;; Figure out why we exited.  [could also check for other pathologies, like
-    ;; insufficient number of expressions.  -- rgr, 4-Dec-97.]
-    ;(message "nest %d n %d" nest n)
-    (if (and (< nest 0)
-	     (and mismatch-is-error-p (not (eq mismatch-is-error-p 'never))))
-	(error "Containing markup ends prematurely."))
-    (if (eq mismatch-is-error-p 'never)
-	;; this is used by rgr-html-backward-up-markup, below.
-	nest
-	;; [useful return value?  -- rgr, 4-Dec-97.]
-	n)))
-
-(defun rgr-html-backward-markup (&optional n mismatch-is-error-p)
-  "Markup-oriented version of backward-sexp (q.v.).
-This is the same as rgr-html-forward-markup (invoked as
-\\[rgr-html-forward-markup], q.v.), only a positive numeric arg (which
-supplies the number of markup expressions N past which to move, and
-defaults to 1) indicates backward motion.  The other args are the same.
-[Note that the code is unable to distinguish <a name=...> from <a
-href=...> when moving backward.  This won't bite you as long as your use
-of </a> for <a name=...> is consistent -- rgr, 4-Dec-97.]"
-  (interactive "p")
-  (rgr-html-forward-markup (- (or n 1)) mismatch-is-error-p))
-
-(defun rgr-html-backward-up-markup (&optional n)
-  "Markup-oriented version of \\[backward-up-list] (q.v.).  This uses
-rgr-html-forward-markup (\\[rgr-html-forward-markup], q.v.)  N times to
-skip backward an arbitrary amount of markup, going up each time."
-  (interactive "p")
-  (or n (setq n 1))
-  (if (< n 0)
-      ;; [sigh.  -- rgr, 4-Dec-97.]
-      (error "Sorry, this version doesn't allow a negative arg."))
-  (while (> n 0)
-    (let* ((last-point (point))
-	   (nest (rgr-html-forward-markup -99999 'never)))
-      (cond ((>= nest 0)
-	      ;; [this doesn't quite seem to work . . .  -- rgr, 4-Dec-97.]
-	      (goto-char last-point)
-	      (error "At top level."))))
-    (setq n (1- n))))
-
 (defun rgr-html-kill-markup (arg)
   ;; Code stolen from same.  -- rgr, 21-Mar-98.
   "Like \\[kill-sexp] in Lisp, but kills the markup following the cursor.
@@ -391,12 +225,12 @@ Does not move point or adjust the position of line breaks."
 
 (defvar rgr-html-tags-needing-newline-after-close '(html head body
 						    h1 h2 h3 h4 h5 h6
-						    pre blockquote
+						    div pre blockquote
 						    ol ul dl)
   "Names of tags after which we should add a newline when we close.")
 
 (defvar rgr-html-tags-needing-fresh-line-before-close '(html head body
-							pre blockquote
+							div pre blockquote
 							ol ul dl)
   "Names of tags which should start a line when closed.")
 
@@ -418,11 +252,11 @@ surrounding whitespace."
   (interactive "p")
   (let ((resume (point)) (tag nil))
     (while (and (> n 0)
-		(setq tag (save-excursion
-			    (goto-char resume)
-			    (rgr-html-backward-up-markup)
-			    (prog1 (rgr-html-matched-tag-name)
-			      (setq resume (point))))))
+		(save-excursion
+		  (goto-char resume)
+		  (rgr-html-backward-up-markup)
+		  (setq resume (point))
+		  (setq tag (rgr-html-matched-tag-name))))
       (if (and (memq tag rgr-html-tags-needing-fresh-line-before-close)
 	       (save-excursion
 		 (skip-chars-backward " \t")

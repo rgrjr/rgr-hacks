@@ -1,9 +1,5 @@
 ;;;; Tag nesting.
 ;;;
-;;;    The tag nesting variables
-;;; are in ./rgr-html-hacks, where they are also used by the
-;;; rgr-html-forward-markup command.
-;;;
 ;;;    [old] Modification history:
 ;;;
 ;;; . . .
@@ -21,7 +17,6 @@
 ;;; rgr-html-parse-tags: eql -> eq.  -- rgr, 1-May-00.
 ;;; rgr-html-collect-tag-data: implicit tag closing.  -- rgr, 6-Aug-02.
 ;;;
-;;; $Id$
 
 (require 'rgr-html-hacks)
 (require 'thingatpt)
@@ -31,6 +26,88 @@
 
 (defvar rgr-html-n-tag-nest-errors 0
   "Internal counter for rgr-html-check-tag-nesting command.")
+
+(cl-defstruct (rgr-htr (:type list) (:copier nil) (:predicate nil))
+  ;; Dissects an element in the rgr-html-tag-rules list.  The use and meaning of
+  ;; the slots are described more fully in the documentation of that variable.
+  name			; tag name (a symbol)
+  open-implicit-closes	; list of other tags implicitly closed by an open tag
+  close-implicit-closes	; list of other tags implicitly closed by a close tag
+  container		; container tag that ends the scope of implicit closes
+  must-be-in		; list of container tags where this tag must appear
+  may-intervene		; list of allowed intervening tags for must-be-in
+  must-not-be-in	; list of forbidden container tags
+  )
+
+(defvar rgr-html-tag-rules
+  '((address (a-name p))
+    (body (head) (p))
+    (blockquote (p))
+    (div (p))
+    (dd (dd dt a-name p) nil (dl))
+    (dt (dd dt a-name p) nil (dl))
+    (dl (a-name p) (dd dt a-name p))
+    ;;    1   2   3   4   5   6
+    (form (p) nil nil nil nil (form))
+    ;; Headings must be directly in <body>, possibly with <center>, <div>, or
+    ;; <form> intervening.
+    ;;  1          2   3   4      5
+    (h1 (a-name p) nil nil (body) (center div form))
+    (h2 (a-name p) nil nil (body) (center div form))
+    (h3 (a-name p) nil nil (body) (center div form))
+    (h4 (a-name p) nil nil (body) (center div form))
+    (h5 (a-name p) nil nil (body) (center div form))
+    (h6 (a-name p) nil nil (body) (center div form))
+    (hr (a-name p) nil nil (body) (center div form))
+    ;;  1             2          3                4
+    (li (li a-name p) (a-name p) (ul ol dir menu) (ul ol))
+    (ul (a-name p) (li a-name p))
+    (ol (a-name p) (li a-name p))
+    (option (option) nil (select optgroup))
+    (optgroup (option) (option) (select))
+    (p (p) nil)
+    ;;   1   2   3   4   5   6
+    (pre (p) nil nil nil nil (pre))
+    (colgroup (colgroup) nil (table))
+    (tbody (colgroup) (tr) (table))
+    (thead (colgroup) (tr) (table))
+    (tfoot (colgroup) (tr) (table))
+    (tgroup (colgroup) (tr) (table))
+    (td (td th) nil (tr))
+    (th (th td) nil (tr))
+    ;;  1                   2       3   4
+    (tr (colgroup tr th td) (th td) nil (table tbody thead tfoot tgroup))
+    (table (a-name p) (tbody thead tfoot tgroup tr th td)))
+  "Alist of lists (really rgr-htr structs) that specify tag nesting.
+List elements are
+
+nth Meaning
+ 0  tag name (a symbol)
+ 1  list of other tags implicitly closed by an open tag
+ 2  list of other tags implicitly closed by a close tag
+ 3  container tag that ends the scope of implicit closes
+ 4  list of container tags inside which this tag must appear
+ 5  list of allowed intervening tags
+ 6  list of forbidden container tags
+
+For example,
+
+    (tr (colgroup tr th td) (th td) nil (table tbody thead tfoot tgroup))
+
+means that:
+
+   1.  a <tr> tag implicitly closes any open <colgroup>, <tr>,
+<th>, or <td>;
+
+   2.  a </tr> closes any open <th> or <td>;
+
+   3.  every <tr> must appear directly within one of <table>,
+<tbody>, <thead>, <tfoot>, or <tgroup>, with no intervening tags,
+which bounds the search for any implicit closes.
+
+If the list of allowed intervening tags is t, then any tags may
+come between it and a required container.
+")
 
 ;; Data structure describing tag nesting status within this buffer.
 (defstruct (rgr-html-tag-data (:conc-name rgr-htd-) (:predicate nil))
@@ -65,10 +142,10 @@
     (princ "\n")
     (setq rgr-html-n-tag-nest-errors (1+ rgr-html-n-tag-nest-errors))))
 
-(defun rgr-html-report-tag-errors (buffer)
+(defun rgr-html-report-tag-errors (buffer &optional first-error-start)
   ;; Now generate messages for all tags that have had some problem, doing the
   ;; simple thing if there's only a single problem.
-  (let ((emacs-22-p (fboundp 'compilation-next-error-function)))
+  (let ()
     (cond ((zerop rgr-html-n-tag-nest-errors)
 	    (kill-buffer buffer)
 	    (message "All tags appear properly nested."))
@@ -80,26 +157,16 @@
 	      (require 'compile)
 	      (compilation-mode)
 	      (setq mode-name "Tag-Errs")
-	      (if emacs-22-p
-		  ;; Emacs 22 setup.
-		  (setq next-error-function
-			'compilation-next-error-function)))))
+	      (setq next-error-function 'compilation-next-error-function))))
     (cond ((= rgr-html-n-tag-nest-errors 1)
 	    ;; [somewhat kludgy; if there's only one tag error, we just go to it
 	    ;; and report it.  but there's no clean interface for this.  -- rgr,
 	    ;; 24-Mar-98.]
 	    (push-mark)
 	    (save-window-excursion
-	      ;; this is from (next-error).
-	      (cond (emacs-22-p
-		      ;; this doesn't work within save-excursion . . .
-		      (set-buffer buffer)
-		      (funcall next-error-function 1 t))
-		    (t
-		      ;; [Emacs 21 version -- this gets no less than two
-		      ;; compiler warnings under 22.  -- rgr, 28-Dec-06.]
-		      (compilation-goto-locus
-		        (compilation-next-error-locus 1 t)))))
+	      ;; this doesn't work within save-excursion . . .
+	      (set-buffer buffer)
+	      (funcall next-error-function 1 t))
 	    (setq compilation-last-buffer nil)
 	    (with-current-buffer buffer
 	      (let ((start (point)))
@@ -111,6 +178,7 @@
 		  (message 
 		    "Apparent errors found; use \\[next-error] to visit them."))
 	      (switch-to-buffer-other-window buffer)
+	      (goto-char (or first-error-start (point-min)))
 	      (select-window original-window)
 	      (message "%s" (substitute-command-keys message)))))))
 
@@ -145,7 +213,8 @@
 		(not (if (atom required-container)
 			 (eq tag required-container)
 			 (memq tag required-container))))
-      (or (memq tag allowed-intermediates)
+      (or (eq allowed-intermediates t)
+	  (memq tag allowed-intermediates)
 	  (setq illegal-intermediates
 		(cons (car tag-stack) illegal-intermediates)))
       (setq tag-stack (cdr tag-stack)))
@@ -153,7 +222,7 @@
 	    ;; we're OK.
 	    )
 	  ((null tag-stack)
-	    ;; popped the whole thing; no required tag is there at all.
+	    ;; Popped the whole thing; no required tag is there at all.
 	    (rgr-html-report-tag-error-internal
 	      (format "Found <%s> outside of %s"
 		      tag-name
@@ -270,8 +339,11 @@
   ;; allows for weird floating constructs such as <form> to cross block-level
   ;; boundaries.  See rgr-html-tag-rules for the full set.
   (let* ((rules (assoc tag-name rgr-html-tag-rules))
-	 (implicitly-closed (nth (if close-p 2 1) rules))
-	 (containers (nth 3 rules)))
+	 (implicitly-closed
+	   (if close-p
+	       (rgr-htr-close-implicit-closes rules)
+	       (rgr-htr-open-implicit-closes rules)))
+	 (containers (rgr-htr-container rules)))
     (when tag-stack
       (let* ((head (car tag-stack))
 	     (name (rgr-htd-tag-name head))
@@ -326,11 +398,12 @@
 			  tag-name close-p tag-stack))
 	;; Look for placement problems for open tags.
 	(unless close-p
-	  (let ((must-be-in (nth 3 rules))
-		(must-not-be-in (nth 5 rules)))
+	  (let ((must-be-in (rgr-htr-must-be-in rules))
+		(must-not-be-in (rgr-htr-must-not-be-in rules)))
 	    (when must-be-in
 	      (rgr-html-tag-must-be-directly-in tag-name tag-stack
-						must-be-in (nth 4 rules)))
+						must-be-in
+						(rgr-htr-may-intervene rules)))
 	    (when must-not-be-in
 	      (rgr-html-tag-must-not-nest tag-name tag-stack must-not-be-in))))
 	;; Update stack.
@@ -405,17 +478,155 @@ is not likely to be doubly emphasized on that account.
 The rules used are defined by the rgr-html-tag-rules alist (q.v.)."
   (interactive)
   (let* ((orig-buffer-name (buffer-name))
-	 (buffer (get-buffer-create (concat "*" orig-buffer-name " tags*"))))
+	 (buffer (get-buffer-create (concat "*" orig-buffer-name " tags*")))
+	 (first-error-start nil))
     ;; initialize error buffer
     (with-current-buffer buffer
       (setq buffer-read-only nil)
       (erase-buffer)
-      (insert "HTML tag nesting errors in " orig-buffer-name "\n\n"))
+      (insert "HTML tag nesting errors in " orig-buffer-name "\n\n")
+      (setq first-error-start (point)))
     (let ((standard-output buffer)
 	  (rgr-html-n-tag-nest-errors 0))
       (save-excursion
 	(goto-char (point-min))
 	(rgr-html-collect-tag-data))
-      (rgr-html-report-tag-errors buffer))))
+      (rgr-html-report-tag-errors buffer first-error-start))))
+
+;;; rgr-html-forward-markup and support.
+
+;;;###autoload
+(defun rgr-html-forward-markup (&optional n)
+  "Markup-oriented version of forward-sexp (q.v.).
+Interactively, a numeric arg supplies the number of markup expressions N
+past which to move; the sign indicates the direction.  Handles errors
+Zmacs-style \(i.e. like a Lisp Machine) in that if an unmatched close
+is encountered, we move past it and stop immediately, no matter
+how many markup forms were requested.  If the end of the buffer
+is encountered, that is always an error."
+  (interactive "p")
+  (or n (setq n 1))
+  (if (<= n 0)
+      (rgr-html-backward-markup (- n))
+    (let* ((forward-p (>= n 0))
+	   ;; Search state.
+	   (tag-stack nil)
+	   (n (abs n)))
+      (while (and (> n 0))
+	(or (re-search-forward rgr-html-tag-regexp nil 'move)
+	    (error "No more markup."))
+	(let ((open-p (not (match-beginning 1)))
+	      (start (match-beginning 0))
+	      (tag-name (rgr-html-matched-tag-name)))
+	  ;; Skip the <...> business.
+	  (goto-char (match-beginning 0))
+	  (forward-sexp)
+
+	  ;; Process implicit closes.
+	  (when tag-stack
+	    (setq tag-stack (rgr-html-process-implicit-closes
+			      tag-name (not open-p) tag-stack))
+	    (when (null tag-stack)
+	      ;; The tag-name open tag has implicitly closed everything we've
+	      ;; seen so for, so count this as passing complete markup.
+	      (setq n (1- n))
+	      (when (zerop n)
+		;; We're done.
+		(goto-char start)
+		(setq tag-name nil))))
+
+	  ;; Handle this tag.
+	  (cond ((null tag-name)
+		  ;; Already handled by implicit closes.
+		  )
+		((memq tag-name rgr-html-empty-tags)
+		  ;; Treat an empty tag at top level as an "atom", and count
+		  ;; it against the number of forms we have to move.
+		  (if (null tag-stack)
+		      (setq n (1- n))))
+		(open-p
+		  (let ((tag-entry (make-rgr-html-tag-data :tag-name tag-name
+							   :open start)))
+		    (setq tag-stack (cons tag-entry tag-stack))))
+		(t
+		  (pop tag-stack)
+		  ;; If tag-stack is empty now, it must have been positive
+		  ;; (since we just decremented it), so that means we've passed
+		  ;; the matching close of a complete markup "sexp".
+		  (if (null tag-stack)
+		      (setq n (1- n))))))))))
+
+;;;###autoload
+(defun rgr-html-backward-markup (&optional n)
+  "Markup-oriented version of backward-sexp (q.v.).
+Interactively, a numeric arg supplies the number of markup expressions N
+past which to move; the sign indicates the direction.  Handles errors
+Zmacs-style \(i.e. like a Lisp Machine) in that if an unmatched open
+is encountered, we move before it and stop immediately, no matter
+how many markup forms were requested, as rgr-html-backward-up-markup
+\(\\[rgr-html-backward-up-markup]) would do.  If the start of the
+buffer is encountered, that is always an error."
+  (interactive "p")
+  (or n (setq n 1))
+  (if (<= n 0)
+      (rgr-html-forward-markup (- n))
+    (let* ((tag-stack nil)
+	   (tag-after-start (or (rgr-html-looking-at-tag-p) 'html))
+	   (tag-after-close-p (match-beginning 1)))
+      (while (> n 0)
+	(or (re-search-backward rgr-html-tag-regexp nil 'move)
+	    (error "No more previous markup."))
+	(let ((close-p (match-beginning 1))
+	      (start (match-beginning 0))
+	      (tag-name (rgr-html-matched-tag-name)))
+	  '(message "start %S close-p %S tag-name %S tag-stack %S"
+		   start close-p tag-name tag-stack)
+	  ;; Process implicit closes.
+	  (setq tag-stack (rgr-html-process-implicit-closes
+			    tag-name
+			    ;; When going backward, a close is effectively an
+			    ;; open, and vice versa.
+			    (not close-p) tag-stack))
+	  (cond ((memq tag-name rgr-html-empty-tags)
+		  ;; Treat an empty tag at top level as an "atom", and count
+		  ;; it against the number of forms we have to move.
+		  (if (null tag-stack)
+		      (setq n (1- n))))
+		(close-p
+		  (let ((tag-entry (make-rgr-html-tag-data :tag-name tag-name
+							   :open start)))
+		    (setq tag-stack (cons tag-entry tag-stack))))
+		((null tag-stack)
+		  ;; Open without close at top level.
+		  (let* ((rules (assoc tag-after-start rgr-html-tag-rules))
+			 (implicitly-closed
+			   (and rules
+				(if tag-after-close-p
+				    (rgr-htr-close-implicit-closes rules)
+				    (rgr-htr-open-implicit-closes rules)))))
+		    (if (member tag-name implicitly-closed)
+			(setq n (1- n))
+		        ;; Assume this is the open of the enclosing container.
+		        (setq n 0))))
+		((not (eq tag-name (rgr-htd-tag-name (car tag-stack))))
+		  ;; This is not the open for a close we've seen; ignore it.
+		  )
+		(t
+		  ;; We've just passed the open of a complete markup "sexp".
+		  (pop tag-stack)
+		  (if (null tag-stack)
+		      (setq n (1- n))))))))))
+
+;;;###autoload
+(defun rgr-html-backward-up-markup (&optional n)
+  "Markup-oriented version of \\[backward-up-list] (q.v.)."
+  (interactive "p")
+  (or n (setq n 1))
+  (if (< n 0)
+      ;; [sigh.  -- rgr, 4-Dec-97.]
+      (error "Sorry, this version doesn't allow a negative arg."))
+  (while (> n 0)
+    (rgr-html-backward-markup 99999)
+    (setq n (1- n))))
 
 (provide 'rgr-html-nest)
