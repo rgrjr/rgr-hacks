@@ -68,54 +68,22 @@
   (let ((interprogram-paste-function 'x-cut-buffer-or-selection-value))
     (yank arg)))
 
-(defun rgr-x11-install-nondefault-fontset ()
-  (let ((font nil))
-    (dolist (fontset (fontset-list))
-      (if (not font)
-	  (or (string-match "fontset-default$" fontset)
-	      (string-match "fontset-8$" fontset)
-	      (string-match "fontset-auto[0-9]$" fontset)
-	      (setq font fontset))))
-    (when font
-      ;; [this is all magic from the menu-set-font fn.  -- rgr, 3-Feb-10.]
-      (set-face-attribute 'default (selected-frame)
-			  :width 'normal
-			  :weight 'normal
-			  :slant 'normal
-			  :font font)
-      (let ((font-object (face-attribute 'default :font)))
-	(dolist (f (frame-list))
-	  (and (not (eq f (selected-frame)))
-	       (display-graphic-p f)
-	       (set-face-attribute 'default f :font font-object)))
-	(set-face-attribute 'default t :font font-object))
-      (let ((spec (list (list t (face-attr-construct 'default)))))
-	(put 'default 'customized-face spec)
-	(custom-push-theme 'theme-face 'default 'user 'set spec))
-      (put 'default 'face-modified nil))))
-
 ;;;###autoload
 (defun rgr-install-x11-hacks ()
   (require 'rgr-mouse)
   (rgr-install-mouse-commands)
   (rgr-install-frame-properties)
-  (or (and (= emacs-major-version 24)
-	   (>= emacs-minor-version 3)
-	   ;; Presumably this is only works for GTK/Freetype, but I don't know
-	   ;; how to check for that.  -- rgr, 9-Mar-14.
-	   (condition-case ()
-	       (progn (set-frame-font "DejaVu Sans Mono 9")
-		      t)
-	     (error nil)))
-      (cond ((>= emacs-major-version 25)
-	      (set-frame-font "Efont Fixed 10" nil t))
-	    ((fboundp 'custom-push-theme)
-	      ;; [this only seems to be a problem on openSUSE 13.1.  -- rgr,
-	      ;; 11-Dec-13.]
-	      (condition-case ()
-		  (progn (rgr-x11-install-nondefault-fontset)
-			 t)
-		(error nil))))
+  (or (when (and (= emacs-major-version 24)
+		 (>= emacs-minor-version 3))
+	;; Presumably this is only works for GTK/Freetype, but I don't know how
+	;; to check for that.  -- rgr, 9-Mar-14.
+	(condition-case ()
+	    (progn (set-frame-font "DejaVu Sans Mono 9")
+		   t)
+	  (error nil)))
+      (when (>= emacs-major-version 25)
+	(set-frame-font "Efont Fixed 10" nil t)
+	t)
       (message "Failed to change the font"))
   (global-set-key [?\C-\.] 'ilisp-next-possibility)
   ;; Bind comment-region globally.  (This is an X11 hack because it is too hard
