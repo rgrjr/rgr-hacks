@@ -1,6 +1,5 @@
 #*
 *~
-.gitignore
 rgr-hacks-autoloads.el
 TAGS
 *.elc
