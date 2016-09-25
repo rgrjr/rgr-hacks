@@ -9,7 +9,7 @@
   ;; Get a decent label and background color.
   (let* ((version
 	  (cond ((or (and (= emacs-major-version 25)
-			  (<= emacs-minor-version 1))
+			  (<= emacs-minor-version 2))
 		     (and (= emacs-major-version 24)
 			  (or (= emacs-minor-version 4)
 			      (= emacs-minor-version 5))))
