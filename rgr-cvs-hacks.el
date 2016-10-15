@@ -70,7 +70,7 @@ version control back ends.")
 
 ;;;###autoload
 (defun rgr-vc-recent-changes (directory &optional number-of-days)
-  "Show a summary of 'cvs log' or 'svn log' output.
+  "Show a summary of VCS log output using vc-chrono-log.pl.
 The summary is in reverse chronological order, with changed files
 shown where possible, and is put in a buffer named '*dir-recent-changes*',
 where 'dir' is the working copy directory name.  By default, it covers
@@ -154,6 +154,27 @@ The numeric arg (e.g. for C-u) is interpreted the same way as for
   (interactive (list current-prefix-arg))
   (rgr-vc-recent-changes default-directory
 			 (rgr-vc-number-of-days number-of-days)))
+
+(defun rgr-vc-find-recent-changes (directory)
+  "Find summary of VCS log output for directory without updating it."
+  (interactive
+   (list (if current-prefix-arg
+	     (file-truename
+	       (read-file-name "Find VC recent changes for directory: "
+			       default-directory default-directory t
+			       nil #'file-directory-p))
+	     default-directory)))
+  (let* ((buf-name
+	   (concat "*" (cond (directory
+			       (file-name-nondirectory
+				 (directory-file-name directory)))
+			     (t
+			       (buffer-name)))
+		   "-recent-changes*"))
+	 (output (get-buffer buf-name)))
+    (if output
+	(pop-to-buffer output)
+      (rgr-vc-recent-changes directory vc-recent-changes-number-of-days))))
 
 ;;;###autoload
 (defun rgr-vc-project-diff ()

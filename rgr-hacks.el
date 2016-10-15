@@ -532,6 +532,7 @@ M-x buffer-menu)."
   (setq scroll-step 8)
   ;; Bind rgr-vc-recent-changes.
   (global-set-key "\C-xv!" 'rgr-vc-recent-changes)
+  (global-set-key "\C-xvc" 'rgr-vc-find-recent-changes)
   ;; Use ".~#~" versions on edited files.  -- rgr, 8-Apr-94.
   (setq version-control t) ;; was nil
   (setq dired-kept-versions 3) ;; was 2
