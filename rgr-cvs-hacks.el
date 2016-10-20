@@ -68,6 +68,22 @@ version control back ends.")
 	((consp number-of-days) (car number-of-days))
 	(t (error "got number-of-days %S" number-of-days))))
 
+(defun rgr-vc-recent-changes-buffer-name (&optional directory)
+  (or directory
+      (setq directory default-directory))
+  (let* ((base-name (file-name-nondirectory (directory-file-name directory)))
+	 (buf-name (concat "*" base-name "-recent-changes*"))
+	 (buffer nil)
+	 (idx 1))
+    (while (let ((buffer (get-buffer buf-name)))
+	     (and buffer
+		  (not (equal (with-current-buffer buffer
+				default-directory)
+			      directory))))
+      (setq idx (1+ idx))
+      (setq buf-name (format "*%s-%d-recent-changes*" base-name idx)))
+    buf-name))
+
 ;;;###autoload
 (defun rgr-vc-recent-changes (directory &optional number-of-days)
   "Show a summary of VCS log output using vc-chrono-log.pl.
@@ -106,13 +122,7 @@ if C-u C-u, then the last 30 days; if C-u C-u C-u, then 90 days."
 	   ;; this is an easy-to-parse format that is understood by all the VC
 	   ;; backends I use.  -- rgr, 26-Nov-05.
 	   (format-time-string "%Y-%m-%d %H:%M" n-days-ago))
-	 (buf-name
-	   (concat "*" (cond (default-directory
-			       (file-name-nondirectory
-				 (directory-file-name default-directory)))
-			     (t
-			      (buffer-name)))
-		   "-recent-changes*"))
+	 (buf-name (rgr-vc-recent-changes-buffer-name default-directory))
 	 (old-point (and (equal buf-name (buffer-name))
 			 (eq major-mode 'vc-history-mode)
 			 ;; We're in the output buffer already, so we must be
@@ -164,13 +174,7 @@ The numeric arg (e.g. for C-u) is interpreted the same way as for
 			       default-directory default-directory t
 			       nil #'file-directory-p))
 	     default-directory)))
-  (let* ((buf-name
-	   (concat "*" (cond (directory
-			       (file-name-nondirectory
-				 (directory-file-name directory)))
-			     (t
-			       (buffer-name)))
-		   "-recent-changes*"))
+  (let* ((buf-name (rgr-vc-recent-changes-buffer-name directory))
 	 (output (get-buffer buf-name)))
     (if output
 	(pop-to-buffer output)
