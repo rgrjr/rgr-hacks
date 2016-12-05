@@ -10,9 +10,7 @@
   (let* ((version
 	  (cond ((or (and (= emacs-major-version 25)
 			  (<= emacs-minor-version 2))
-		     (and (= emacs-major-version 24)
-			  (or (= emacs-minor-version 4)
-			      (= emacs-minor-version 5))))
+		     (and (= emacs-major-version 26)))
 		  ;; don't show the standard version(s).
 		  "")
 		;; In the versions "19.34.1" and "24.0.50.1", the last component
