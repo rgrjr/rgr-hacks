@@ -457,7 +457,8 @@ which are incremented lexicographically."
     (forward-paragraph)))
 
 (defvar rgr-perl-sub-names-to-ignore
-  '(creation_time_field home_page_url local_display_fields post_web_update
+  '(creation_time_field contained_item_key contained_item_parent_key
+    home_page_url local_display_fields post_web_update
     pretty_name primary_key search_page_name table_audited_p
     table_name web_search web_update)
   "List of symbols naming subs that do not need to be documented.
@@ -557,7 +558,8 @@ and too impatient to wait.  -- rgr, 1-Jul-13.]")
       (setq defined-names (sort defined-names #'string-lessp))
       ;; Look for undefined ones.
       (goto-char doc-start)
-      (or (re-search-forward "^=head2 \\(Method\\|Accessor\\)" nil t)
+      (or (re-search-forward "^=head2 Accessors and Methods" nil t)
+	  (re-search-forward "^=head2 \\(Method\\|Accessor\\)" nil t)
 	  (error "No 'Accessors and methods' section below %S." doc-start))
       (forward-line)
       (rgr-perl-forward-doc-paragraphs)
