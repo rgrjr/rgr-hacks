@@ -152,7 +152,10 @@ but it is usually sufficient to take the default.")
 (add-hook 'vm-mail-mode-hook 'rgr-vm-mail-mode-hook)
 (if (and (eq rgr-site 'home)
 	 (not (equal (user-real-login-name) "root"))
-	 (getenv "SSH_CONNECTION")
+	 (let ((conn (getenv "SSH_CONNECTION")))
+	   ;; Insist on an SSH connection, but not internal to the home net.
+	   (and conn
+		(not (string-match "^10\\." conn))))
 	 (fboundp 'v+q-mbox-status))
     (add-hook 'focus-in-hook 'v+q-mbox-status))
 (setq compose-mail-user-agent-warnings nil)	;; suppress warnings for root.
