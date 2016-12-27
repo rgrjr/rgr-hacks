@@ -9,7 +9,6 @@
 ;;;
 ;;; somewhere in your .emacs to use this.
 ;;;
-;;; $Id$
 
 (require 'vc)
 
@@ -116,7 +115,7 @@ if C-u C-u, then the last 30 days; if C-u C-u C-u, then 90 days."
 		   (error "Don't know how to deal with backend '%S'."
 			  backend))))
 	 (number-of-days (rgr-vc-number-of-days number-of-days))
-	 (n-days-ago (subtract-time (current-time)
+	 (n-days-ago (time-subtract (current-time)
 				    (days-to-time number-of-days)))
 	 (n-days-ago-string
 	   ;; this is an easy-to-parse format that is understood by all the VC
@@ -320,6 +319,8 @@ Really, this is only useful for CVS histories.")
 ;;;###autoload
 (define-derived-mode vc-history-mode log-view-mode "VC-History"
   "Major mode for browsing VC summary log output."
+  :syntax-table nil
+  :abbrev-table nil
   (set (make-local-variable 'log-view-message-re) vc-history-message-re)
   ;; This makes "d" work in history buffers.
   (set (make-local-variable 'vc-log-fileset) (list default-directory)))
