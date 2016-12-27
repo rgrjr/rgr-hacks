@@ -68,6 +68,7 @@ rgr-hacks-compile-module (see below).")
 	  "rgr-intervals"
 	  "rgr-lisp-hacks"
 	  ("rgr-mail-hacks" require (vm))
+	  "rgr-snoop-maildir"
 	  "rgr-makefile-hacks"
 	  ("rgr-mouse" use (tex-mode) require (ilisp-mouse browse-url))
 	  "rgr-mouse-doc"

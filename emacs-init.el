@@ -184,10 +184,9 @@ but it is usually sufficient to take the default.")
      (setq mc-gpg-user-id "Bob Rogers (main 2003) <rogers@rgrjr.dyndns.org>"))
 (setq mc-pgp-keydir (expand-file-name "~/.gnupg"))
 (setq mc-passwd-timeout 600)	;; ten minutes.
-;; TMDA stuff.  -- rgr, 18-May-04.
-(let ((base (expand-file-name "~/.tmda/")))
-  (setq tmda-default-whitelist (expand-file-name "accepted" base))
-  (setq tmda-default-blacklist (expand-file-name "rejected" base)))
+;; snoop-maildir stuff.  -- rgr, 25-Mar-17.
+(setq snoop-maildir-spam-folder
+      (expand-file-name "~/mail/incoming/spam/cur/"))
 
 (add-hook 'comint-mode-hook 'rgr-comint-mode-hook)
 (add-hook 'shell-mode-hook 'rgr-shell-mode-hook)
