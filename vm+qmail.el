@@ -119,9 +119,10 @@ inboxes/maildirs (so be careful of . and ..!).")
 	  ;; See if there's any mail in inbox.
 	  (let* ((inbox (car tail))
 		 (n-messages
-		   (if (file-directory-p inbox)
-		       (v+q-maildir-incoming-message-count inbox)
-		       (v+q-incoming-message-count inbox))))
+		   (cond ((string-match "/\\(spam\\|forged\\)$" inbox) 0)
+		   ((file-directory-p inbox)
+		     (v+q-maildir-incoming-message-count inbox))
+		   (t (v+q-incoming-message-count inbox)))))
 	    (if (> n-messages 0)
 		(let ((inbox-short-name
 			(if dir-printed-p
