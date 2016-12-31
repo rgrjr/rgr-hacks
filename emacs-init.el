@@ -4,7 +4,10 @@
 ;;;
 ;;; [created.  -- rgr, 8-Apr-94.]
 ;;;
-;;; $Id$
+
+(or (fboundp 'string-to-int)
+    ;; [kludge to keep vm working in 26.0.50.  -- rgr, 30-Dec-16.]
+    (fset 'string-to-int 'cl-parse-integer))
 
 (defvar rgr-emacs (if load-file-name
 		      (file-name-directory load-file-name)
