@@ -584,12 +584,8 @@ This is useful, for instance, when a definition has been deleted."
   (define-key log-edit-mode-map "\C-cj" 'rgr-vc-log-join-previous-file-heading)
   (define-key log-edit-mode-map "\C-c+" 'rgr-vc-log-plus)
   (if (rgr-emacs-version-p 24 4)
-      (setq log-edit-hook '(vc-log-insert-fileset-skeleton
-			    ;; vc-diff must come last because it changes the
-			    ;; current window.
-			    vc-diff)))
-  (if (rgr-emacs-version-p 23)
-      (new-vc-install-log-edit-mode-keys))
+      (setq log-edit-hook '(vc-log-insert-fileset-skeleton)))
+  (new-vc-install-log-edit-mode-keys)
   ;; vc-diff must come last because it changes the current window.
   (save-excursion
     (vc-diff)))
