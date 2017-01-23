@@ -164,6 +164,7 @@ The numeric arg (e.g. for C-u) is interpreted the same way as for
   (rgr-vc-recent-changes default-directory
 			 (rgr-vc-number-of-days number-of-days)))
 
+;;;###autoload
 (defun rgr-vc-find-recent-changes (directory)
   "Find summary of VCS log output for directory without updating it."
   (interactive
