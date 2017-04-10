@@ -48,23 +48,17 @@
   "Alist mapping backend names to log summary commands for handled
 version control back ends.")
 
-(defvar vc-recent-changes-number-of-days 7
+(defvar vc-recent-changes-default-number-of-days 14
   "Default number of history days to show.")
 
 (defun rgr-vc-number-of-days (number-of-days)
   ;; Interpret a raw numeric argument for rgr-vc-recent-changes.
-  (cond ((not number-of-days) vc-recent-changes-number-of-days)
+  (cond ((not number-of-days) vc-recent-changes-default-number-of-days)
 	((integerp number-of-days) number-of-days)
-	((equal number-of-days '(4))
-	  ;; C-u
-	  14)
-	((equal number-of-days '(16))
-	  ;; C-u C-u
-	  30)
-	((equal number-of-days '(64))
-	  ;; C-u C-u C-u
-	  90)
-	((consp number-of-days) (car number-of-days))
+	((consp number-of-days)
+	  (let ((c-u-multiple (round (log (car number-of-days) 4))))
+	    (* vc-recent-changes-default-number-of-days
+	       (expt 2 c-u-multiple))))
 	(t (error "got number-of-days %S" number-of-days))))
 
 (defun rgr-vc-recent-changes-buffer-name (&optional directory)
@@ -89,12 +83,13 @@ version control back ends.")
 The summary is in reverse chronological order, with changed files
 shown where possible, and is put in a buffer named '*dir-recent-changes*',
 where 'dir' is the working copy directory name.  By default, it covers
-the last week; the default number of days comes from the
-vc-recent-changes-number-of-days variable.
+the last two weeks; the default number of days comes from the
+vc-recent-changes-default-number-of-days variable.
 
 A numeric argument shows the log for that many days, and also prompts
-for a directory.  If you give a C-u, it shows the last two weeks' worth;
-if C-u C-u, then the last 30 days; if C-u C-u C-u, then 90 days."
+for a directory.  If you give one or more C-u args, it doubles the
+default for each C-u, so C-u C-u C-u gives 8 times the
+vc-recent-changes-default-number-of-days default."
   (interactive
    (list (if current-prefix-arg
 	     (file-truename
@@ -178,7 +173,8 @@ The numeric arg (e.g. for C-u) is interpreted the same way as for
 	 (output (get-buffer buf-name)))
     (if output
 	(pop-to-buffer output)
-      (rgr-vc-recent-changes directory vc-recent-changes-number-of-days))))
+      (rgr-vc-recent-changes directory
+			     vc-recent-changes-default-number-of-days))))
 
 ;;;###autoload
 (defun rgr-vc-project-diff ()
