@@ -292,6 +292,15 @@ but it is usually sufficient to take the default.")
 (setq sql-user "modest")
 (setq sql-database "test_modest")
 (setq sql-server "localhost")
+(add-hook 'sql-mode-hook
+	  #'(lambda ()
+	      ;; Maybe set sql-buffer if we don't already have one.
+	      (let ((new-buffer (get-buffer "*SQL*")))
+		(setq sql-product 'mysql)
+		(when (and (sql-buffer-live-p new-buffer)
+			   (not (sql-buffer-live-p sql-buffer)))
+		  (setq sql-buffer new-buffer)
+		  (run-hooks 'sql-set-sqli-hook)))))
 ;; Tweak the prompt regexp if we run MariaDB.  Otherwise, prompts are not
 ;; displayed until after a new command is entered.
 (add-hook 'sql-interactive-mode-hook
