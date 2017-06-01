@@ -16,7 +16,8 @@
   (require 'add-log)
   (require 'log-edit)
   (require 'ewoc)
-  (require 'vc))
+  (require 'vc)
+  (require 'vc-dir))
 
 ;; Quiet the compiler.
 (defvar vc-ewoc)
@@ -42,7 +43,9 @@
   (let ((script
 	 (if (executable-find "perl") "vc-chrono-log.pl" "vc-chrono-log.rb")))
     `((CVS ,(concat "cvs -q log -d '>%s' | " script))
-      (Git ,(concat "(git show-ref --head && git log --since '%s') | " script))
+      (Git ,(concat "(git show-ref --head "
+		    "&& git log --stat=300 --abbrev-commit --since '%s') | "
+		    script))
       (SVN ,(concat "svn log --xml --verbose --revision '{%s}:HEAD' | "
 		    script))))
   "Alist mapping backend names to log summary commands for handled
@@ -180,7 +183,7 @@ The numeric arg (e.g. for C-u) is interpreted the same way as for
 (defun rgr-vc-project-diff ()
   "Diff for the 'project' rooted at the current directory non-interactively.
 This would be just a shorthand for the vc-diff command (\\[vc-diff])
-when asked to compare a working directory to the original CVS version
+when asked to compare a working directory to the original version
 \(e.g. 'C-u \\[vc-diff] \".\" RET RET RET'), but it also renames the
 output buffer from '*vc-diff*' to '*vc-project-diff*'."
   (interactive)
