@@ -648,6 +648,23 @@ the page."
 	(Man-switches rgr-perldoc-args))
     (man name)))
 
+(defvar rgr-modest-base-url
+	"http://persepolis.modulargenetics.com/modest-doc/"
+  "Base URL for modest documentation, including trailing slash.")
+
+;;;###autoload
+(defun rgr-modest-doc (name)
+  "Find MODEST documentation, e.g. for a perl module."
+  (interactive
+    (list (rgr-perl-prompt-for-name "Find MODEST documentation for")))
+  (cond ((string-match "::" name)
+	  (let ((url (concat rgr-modest-base-url name ".html")))
+	    (while (string-match "::" url)
+	      (setq url (replace-match "/" t t url)))
+	    (browse-url url)))
+	(t
+	  (error "Oops; can't figure out %S." name))))
+
 ;;; Indentation.
 
 (defun rgr-perl-newline-and-maybe-indent (arg)
