@@ -376,6 +376,29 @@ protein sequence."
 	(rgr-annotation-display-diffs alist)
 	(message "Done.")))))
 
+;;;; Hacking meals.
+
+;;;###AUTOLOAD
+(defun rgr-dup-line ()
+  "Duplicate the current line before the marked line.
+If the first non-whitespace char is a '#', remove that and all whitespace
+that comes immediately afterward.  The mark is moved after the added line,
+point is moved to the next line."
+  (interactive)
+  (save-excursion
+    (let ((line (buffer-substring-no-properties
+		  (progn (beginning-of-line) (point))
+		  (progn (end-of-line) (point)))))
+      (goto-char (or (mark) (error "The mark is not set.")))
+      (insert-before-markers line)
+      (save-excursion
+	(beginning-of-line)
+	(skip-chars-forward " \t\n")
+	(if (looking-at "#[ \t\n]*")
+	    (replace-match "")))
+      (insert-before-markers "\n")))
+  (forward-line 1))
+
 ;;;; Done.
 
 (provide 'rgr-random-hacks)
