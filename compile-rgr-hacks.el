@@ -16,6 +16,18 @@ rgr-hacks-compile-module (see below).")
 (defvar rgr-hacks-compile-self-n-files-compiled 0
   "Count of files compiled this time; not valid globally.")
 
+;; Set up to load some optional packages if we can.
+(if (file-directory-p "/usr/share/emacs/site-lisp/vm")
+    ;; This is the emacs-vm RPM location.
+    (add-to-list 'load-path "/usr/share/emacs/site-lisp/vm"))
+(let ((rgr-imported-packages (expand-file-name "../imported")))
+  (if (and (file-directory-p rgr-imported-packages)
+	   (not (member rgr-imported-packages load-path)))
+      (let ((autoloads (expand-file-name "loaddefs.el" rgr-imported-packages)))
+	(setq load-path (cons rgr-imported-packages load-path))
+	(if (file-readable-p autoloads)
+	    (load autoloads))
+	t)))
 (dolist (dir '("/shared/emacs/site-lisp" "/usr/local/src/emacs/site-lisp"))
   (cond ((file-directory-p dir)
 	  ;; This makes it possible to find html-helper-mode at home vs. work.
