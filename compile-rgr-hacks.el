@@ -44,6 +44,7 @@ rgr-hacks-compile-module (see below).")
 	  "ilisp-mouse"
 	  ;; [provides the rgr-update-autoloads command.  -- rgr, 26-Apr-03.]
 	  ("rgr-random-hacks" require (autoload ffap chistory))
+	  "rgr-bio-hacks"
 	  "bagels"
 	  "rgr-backup-hacks"
 	  "rgr-date"
