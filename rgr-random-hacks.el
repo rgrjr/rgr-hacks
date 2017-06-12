@@ -116,6 +116,12 @@ A nonzero prefix argument also means ask about each subdirectory."
 ;;;; Hacking meals.
 
 ;;;###AUTOLOAD
+(defun rgr-region-meals (start end)
+  (interactive "r")
+  (shell-command-on-region start end
+			   "../meals.pl --recipe-file ../recipes.text --det"))
+
+;;;###AUTOLOAD
 (defun rgr-dup-line ()
   "Duplicate the current line before the marked line.
 If the first non-whitespace char is a '#', remove that and all whitespace
