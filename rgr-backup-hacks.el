@@ -7,6 +7,7 @@
 
 ;;;###AUTOLOAD
 (defun rgr-check-backup-md5sums ()
+  "With point at the end of md5sum output, make sure all are paired."
   (interactive)
   (let ((files-from-md5 nil)
 	(n-errors 0))
@@ -28,5 +29,35 @@
 	  (incf n-errors)))
       (when (= n-errors 0)
 	(message "No mismatches.")))))
+
+(defvar rgr-backup-star-line
+  (let ((digit "[0-9]"))
+    (concat "^ \\([ *]\\) *" digit "+ \\([^ .]+\\)-l\\(" digit "\\)"))
+  "Match the first part of a line of show-backups.pl output.")
+
+;;;###AUTOLOAD
+(defun rgr-update-backup-stars ()
+  ;; [this isn't used much any more.  -- rgr, 6-Sep-17.]
+  "Update the '*' prefixes in show-backups.pl output.
+Starts from point and ends when we run out of backup description lines."
+  (interactive)
+  (save-excursion
+    (beginning-of-line)
+    (let ((current-level 10)
+	  (current-backup ""))
+      (while (looking-at rgr-backup-star-line)
+	(let* ((star-p (equal (match-string 1) "*"))
+	       (backup-name (match-string 2))
+	       (level (string-to-number (match-string 3)))
+	       (current-p
+		 (or (equal current-backup backup-name)
+		     (< level current-level))))
+	  (if (not (eq current-p star-p))
+	      (replace-match (if current-p "*" " ") t t nil 1))
+	  (if current-p
+	      (setq current-level level
+		    current-backup backup-name))
+	  ;; (message "current-p %S" current-p) (sit-for 1)
+	  (forward-line))))))
 
 (provide 'rgr-backup-hacks)

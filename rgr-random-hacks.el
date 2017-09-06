@@ -114,37 +114,6 @@ A nonzero prefix argument also means ask about each subdirectory."
 	     file-count (if (= file-count 1) "" "s")
 	     (if (> dir-count 1) (format " in %d directories" dir-count) ""))))
 
-;;;; Backup hackery.
-
-(defvar rgr-backup-star-line
-  (let ((digit "[0-9]"))
-    (concat "^ \\([ *]\\) *" digit "+ \\([^ .]+\\)-l\\(" digit "\\)"))
-  "Match the first part of a line of show-backups.pl output.")
-
-;;;###AUTOLOAD
-(defun rgr-update-backup-stars ()
-  "Update the '*' prefixes in show-backups.pl output.
-Starts from point and ends when we run out of backup description lines."
-  (interactive)
-  (save-excursion
-    (beginning-of-line)
-    (let ((current-level 10)
-	  (current-backup ""))
-      (while (looking-at rgr-backup-star-line)
-	(let* ((star-p (equal (match-string 1) "*"))
-	       (backup-name (match-string 2))
-	       (level (string-to-number (match-string 3)))
-	       (current-p
-		 (or (equal current-backup backup-name)
-		     (< level current-level))))
-	  (if (not (eq current-p star-p))
-	      (replace-match (if current-p "*" " ") t t nil 1))
-	  (if current-p
-	      (setq current-level level
-		    current-backup backup-name))
-	  ;; (message "current-p %S" current-p) (sit-for 1)
-	  (forward-line))))))
-
 ;;;; FASTA-format sequence hackery.
 
 ;; By looking for offsets at the start of the line, this sometimes works for
