@@ -54,19 +54,6 @@
 				   (cons 'background-color background)
 				   (cons 'foreground-color "black")))))
 
-(defun rgr-x11-kill-ring-save (beg end)
-  "Force X11 cut buffer save, even if interprogram-cut-function is disabled."
-  (interactive "r")
-  (let ((interprogram-cut-function 'x-select-text))
-    (copy-region-as-kill beg end)
-    (message "%d bytes saved" (1+ (- end beg)))))
-
-(defun rgr-x11-kill-ring-yank (&optional arg)
-  "Force X11 cut buffer yank, even if interprogram-paste-function is disabled."
-  (interactive "*P")
-  (let ((interprogram-paste-function 'x-cut-buffer-or-selection-value))
-    (yank arg)))
-
 ;;;###autoload
 (defun rgr-install-x11-hacks ()
   (require 'rgr-mouse)
