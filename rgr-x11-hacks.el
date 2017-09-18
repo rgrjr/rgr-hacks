@@ -12,28 +12,30 @@
 			  (<= emacs-minor-version 2))
 		     (and (= emacs-major-version 26)))
 		  ;; don't show the standard version(s).
-		  "")
+		  nil)
 		;; In the versions "19.34.1" and "24.0.50.1", the last component
 		;; is not significant (it's the number of times I recompiled it
 		;; before I got it right).  -- rgr, 19-Oct-98.
 		((string-match "^\\([0-9.]+\\)\\.[0-9]+$" emacs-version)
-		  (concat " " (match-string 1 emacs-version)))
+		  (match-string 1 emacs-version))
 		;; Fallback.
-		(t (concat " " emacs-version))))
+		(t emacs-version)))
 	 (real-login-name (user-real-login-name))
 	 (su-p (not (equal real-login-name
 			   ;; SUDO_USER is also defined by kdesu (e.g.).
 			   (or (getenv "SUDO_USER") (user-login-name)))))
 	 (ssh-p (getenv "SSH_CONNECTION"))
-	 (label (concat "emacs" version
-			(if (or su-p ssh-p)
-			    (let ((name (system-name)))
-			      (format " %s@%s"
-				      real-login-name
-				      (if (string-match "\\." name)
-					  (substring name 0 (match-beginning 0))
-					  name)))
-			    "")))
+	 (user-at-host
+	   (and (or su-p ssh-p)
+		(let ((name (system-name)))
+		  (format "%s@%s"
+			  real-login-name
+			  (if (string-match "\\." name)
+			      (substring name 0 (match-beginning 0))
+			    name)))))
+	 (label (if (and version user-at-host)
+		    (concat version " " user-at-host)
+		    (or version user-at-host "emacs")))
 	 (background
 	   ;; fix lame color scheme under KDE on SuSE 9.0.  -- rgr, 13-Mar-04.
 	   ;; [actually, let's make this the default.  -- rgr, 20-Mar-04.]
