@@ -20,7 +20,6 @@
 ;;; rgr-date-lines-today: new fn.  -- rgr, 12-Dec-02.
 ;;; rgr-date-lines-today: add autoload.  -- rgr, 9-Jan-03.
 ;;;
-;;; $Id$
 
 (defun rgr-make-interval-field (value)
   ;; returns a 2-digit string.  value must be < 100!
@@ -187,7 +186,7 @@ long as hours < 60."
 			  (setq accumulate-p t)))))
 	  (if accumulate-p
 	      ;; Accumulate this interval.
-	      (let ((delta (subtract-time time pending-login-time)))
+	      (let ((delta (time-subtract time pending-login-time)))
 		(setq total (if total (time-add total delta) delta))
 		(setq pending-login-time nil)))
 	  ;; (message "%S => %S total" time total)
@@ -248,6 +247,85 @@ that fact."
       (if insert-p
 	  (insert total-string))
       (message "Total is %s" total-string))))
+
+;;;; Computing T fares.
+;; This relies on the fact that I annotate my login history with (bs,sb) forms.
+
+(defvar rgr-t-commuter-rail-zone-fares
+	(vector nil nil 675 nil nil nil nil nil nil nil nil)
+  "Units are pennies (historic artifact of emacs 18), using the zone as
+the key, or nil for unknown.  (Really, I should look these fares up on
+http://www.mbta.com/ and finish the list.)")
+
+(defvar rgr-t-bus-fare 170
+  "Bus fare per trip, with Charlie Card, in pennies.")
+
+(defvar rgr-t-subway-fare 225
+  "Subway fare per trip, with Charlie Card, in pennies.")
+
+(defun rgr-format-dollars (pennies)
+  (format "$%d.%s" (/ pennies 100) (rgr-make-interval-field (% pennies 100))))
+
+;;;###autoload
+(defun rgr-compute-region-t-fares (start end &optional insert-p)
+  "Compute the equivalent total (ignoring passes) spent on T fares in
+the region.  With a numeric argument, insert the message at point."
+  (interactive "r\nP")
+  (let ((total-bus 0) (total-subway 0) (total-commuter-rail 0))
+    ;; Count the number of trips.
+    (save-excursion
+      (goto-char start)
+      (while (re-search-forward "([0-9sbt,]+)" end t)
+	(goto-char (1+ (match-beginning 0)))
+	(let ((prefix nil) (char nil))
+	  (while (not (eq (setq char (char-after (point))) ?\)))
+	    (cond ((eq char ?b)
+		    (setq total-bus (+ total-bus (or prefix 1))))
+		  ((eq char ?s)
+		    ;; Subway pass or token fare.
+		    (setq total-subway (+ total-subway (or prefix 1))))
+		  ((eq char ?t)
+		    ;; Commuter rail fare; the prefix is the zone.
+		    (or (and (numberp prefix)
+			     (<= 1 prefix) (<= prefix 10))
+			(setq prefix 2))
+		    (setq total-commuter-rail
+			  (+ total-commuter-rail
+			     (or (aref rgr-t-commuter-rail-zone-fares prefix)
+				 (error "Fare %S is undefined." prefix))))))
+	    (setq prefix
+		  (if (and (<= ?0 char) (<= char ?9))
+		      ;; digits accumulate . . .
+		      (+ (* (or prefix 0) 10) (- char ?0))
+		      ;; non-digits clear.
+		      nil))
+	    (forward-char)))))
+    ;; Compute & print totals.
+    (let* ((bus-pennies (* rgr-t-bus-fare total-bus))
+	   (subway-pennies (* rgr-t-subway-fare total-subway))
+	   (message-string
+	    (message "%d bus trips (%s), %d subway trips (%s)%s, %s total fare."
+		     total-bus (rgr-format-dollars bus-pennies)
+		     total-subway (rgr-format-dollars subway-pennies)
+		     (if (> total-commuter-rail 0)
+			 (concat ", "
+				 (rgr-format-dollars total-commuter-rail)
+				 " commuter rail")
+			 "")
+		     (rgr-format-dollars (+ bus-pennies subway-pennies
+					    total-commuter-rail)))))
+      (if insert-p
+	  (insert message-string "\n"))
+      ;; for backward compatibility
+      message-string)))
+
+;;;###autoload
+(defun rgr-compute-t-fares (&optional insert-p)
+  "Compute the equivalent total (ignoring passes) spent on T fares from
+point to the end of the buffer.  With a numeric argument, insert the
+message at point."
+  (interactive "P")
+  (rgr-compute-region-t-fares (point) (point-max) insert-p))
 
 ;;;; Date tags (e.g. on ~rogers/projects/random/bills.text lines).
 
