@@ -1,15 +1,14 @@
-
 ;;;; Playing with frames under X11.
 ;;;
 ;;; [created.  -- rgr, 20-Aug-01.]
 ;;;
-;;; $Id$
 
 (defun rgr-install-frame-properties ()
   ;; Get a decent label and background color.
   (let* ((version
 	  (cond ((or (and (= emacs-major-version 25)
-			  (<= emacs-minor-version 2))
+			  (or (= emacs-minor-version 2)
+			      (= emacs-minor-version 3)))
 		     (and (= emacs-major-version 26)))
 		  ;; don't show the standard version(s).
 		  nil)
