@@ -171,7 +171,7 @@ The numeric arg (e.g. for C-u) is interpreted the same way as for
 	       (read-file-name "Find VC recent changes for directory: "
 			       default-directory default-directory t
 			       nil #'file-directory-p))
-	     default-directory)))
+	     (file-truename (vc-root-dir)))))
   (let* ((buf-name (rgr-vc-recent-changes-buffer-name directory))
 	 (output (get-buffer buf-name)))
     (if output
