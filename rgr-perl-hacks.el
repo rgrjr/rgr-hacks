@@ -424,6 +424,21 @@ which are incremented lexicographically."
 					      last ".")
 				   t t nil 1)))))))))
 
+;;;###autoload
+(defun rgr-perl-renumber-pod-items ()
+  "Renumber all \"=item\" tags of the innermost \"=over\" and \"=back\".
+Numbers must have a trailing dot, and may consist of two or more dot-separated
+components that are incremented lexicographically, beginning with the first."
+  (interactive)
+  (save-excursion
+    (or (re-search-backward "^=over" nil t)
+	(error "Not inside an enumeration."))
+    (rgr-perl-renumber-region-pod-items
+      (point)
+      (save-excursion
+	(re-search-forward "^=back")
+	(point)))))
+
 ;;; Building documentation templates for Perl classes.
 
 (defun rgr-perl-find-quoted-names ()
