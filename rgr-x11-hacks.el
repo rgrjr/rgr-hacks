@@ -9,7 +9,8 @@
 	  (cond ((or (and (= emacs-major-version 25)
 			  (or (= emacs-minor-version 2)
 			      (= emacs-minor-version 3)))
-		     (and (= emacs-major-version 26)))
+		     (and (= emacs-major-version 26))
+		     (and (= emacs-major-version 27)))
 		  ;; don't show the standard version(s).
 		  nil)
 		;; In the versions "19.34.1" and "24.0.50.1", the last component
