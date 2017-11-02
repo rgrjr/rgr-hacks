@@ -166,12 +166,13 @@ The numeric arg (e.g. for C-u) is interpreted the same way as for
 (defun rgr-vc-find-recent-changes (directory)
   "Find summary of VCS log output for directory without updating it."
   (interactive
-   (list (if current-prefix-arg
-	     (file-truename
-	       (read-file-name "Find VC recent changes for directory: "
-			       default-directory default-directory t
-			       nil #'file-directory-p))
-	     (file-truename (vc-root-dir)))))
+   (list (let ((root (vc-root-dir)))
+	   (if (or current-prefix-arg (not root))
+	       (file-truename
+		(read-file-name "Find VC recent changes for directory: "
+				default-directory default-directory t
+				nil #'file-directory-p))
+	       (file-truename root)))))
   (let* ((buf-name (rgr-vc-recent-changes-buffer-name directory))
 	 (output (get-buffer buf-name)))
     (if output
@@ -287,14 +288,13 @@ output buffer from '*vc-diff*' to '*vc-project-diff*'."
 ;; This used for navigating and operating on the output of the
 ;; rgr-vc-recent-changes command (q.v.).  Conceptually, it works like
 ;; log-view-mode, except that each entry describes a set of changes that were
-;; committed at the same time, where as log-view-mode only works on a file at a
-;; time.
+;; committed at the same time, whereas log-view-mode [in CVS] only works on a
+;; file at a time.
 
 (require 'log-view)
 
 (defvar vc-history-message-re "^\\([0-9]+-[0-9]+-[0-9]+ [0-9:]+\\):"
-  "Regular expression that matches a date.
-Really, this is only useful for CVS histories.")
+  "Regular expression that matches a date.")
 
 (defgroup vc-history nil
   "Major mode for browsing M-x rgr-vc-recent-changes summaries of VC history."
@@ -310,7 +310,9 @@ Really, this is only useful for CVS histories.")
     ("=" . vc-history-diff)
     ;; ("f" . log-view-find-version)
     ("n" . log-view-msg-next)
-    ("p" . log-view-msg-prev))
+    ("p" . log-view-msg-prev)
+    ("{" . vc-history-forward-tag)
+    ("}" . vc-history-backward-tag))
   "VC-History's keymap."
   :group 'vc-history)
 
@@ -322,6 +324,9 @@ Really, this is only useful for CVS histories.")
   :syntax-table nil
   :abbrev-table nil
   (set (make-local-variable 'log-view-message-re) vc-history-message-re)
+  ;; This helps unique buffer naming work better.
+  (setq list-buffers-directory
+	(expand-file-name (buffer-name) default-directory))
   ;; This makes "d" work in history buffers.
   (set (make-local-variable 'vc-log-fileset) (list default-directory)))
 
@@ -346,8 +351,8 @@ get the diff between the revision at point and its previous revision.
 Otherwise, get the diff between the revisions where the region starts
 and ends.
 
-\[This works better for Subversion than it does for CVS, simply because
-Subversion has well-defined revision numbers, and CVS has fuzzier dates.
+\[This works better for Subversion etc. than it does for CVS, simply because
+other VCSes have well-defined revision numbers, and CVS has fuzzier dates.
 -- rgr, 12-Mar-06.]"
   (interactive
     (list (if mark-active (region-beginning) (point))
@@ -367,6 +372,22 @@ Subversion has well-defined revision numbers, and CVS has fuzzier dates.
       ;; in rgr-new-vc-hacks.el for Emacs 23 can use it.  -- rgr, 2-Jul-09.]
       (vc-version-diff default-directory to fr))))
 
+(defun vc-history-forward-tag (&optional count)
+  "Move forward COUNT \"Tag:\" revisions."
+  (interactive "p")
+  (or count (setq count 1))
+  (log-view-msg-next)
+  (re-search-forward "^ *Tags: " nil t count)
+  (log-view-msg-prev))
+
+(defun vc-history-backward-tag (&optional count)
+  "Move backward COUNT \"Tag:\" revisions."
+  (interactive "p")
+  (or count (setq count 1))
+  (log-view-msg-next)
+  (re-search-backward "^ *Tags: " nil t count)
+  (log-view-msg-prev))
+
 ;;;; Finding definition names and adding definition comments.
 
 (defun rgr-makefile-definition-name ()
@@ -375,12 +396,6 @@ Subversion has well-defined revision numbers, and CVS has fuzzier dates.
 
 (put 'makefile-mode 'mode-definition-name 'rgr-makefile-definition-name)
 (put 'makefile-gmake-mode 'mode-definition-name 'rgr-makefile-definition-name)
-
-(defun rgr-pir-mode-definition-name ()
-  (and (re-search-backward "^\\.sub[ \t]+\\([^ \t\n]+\\)" nil t)
-       (match-string 1)))
-
-(put 'pir-mode 'mode-definition-name 'rgr-pir-mode-definition-name)
 
 (defun rgr-mode-definition-name ()
   "Find the name of the current definition."
