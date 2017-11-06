@@ -624,6 +624,14 @@ This is useful, for instance, when a definition has been deleted."
 (defun rgr-change-log-edit-hook ()
   (define-key change-log-mode-map "\C-c+" 'rgr-change-log-insert-plus))
 
+;;;###autoload
+(define-derived-mode rgr-git-rebase-mode fundamental-mode "Rebase"
+  "Major mode for editing 'git rebase' instructions."
+  :syntax-table nil
+  :abbrev-table nil
+  (setq truncate-lines t)
+  (setq rgr-abbrev-completion-save-file nil))
+
 ;; [historical . . . ]
 (provide 'rgr-cvs-hacks)
 ;; [ . . . and modern.  -- rgr, 15-Feb-06.]

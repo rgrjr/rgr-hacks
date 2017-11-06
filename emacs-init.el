@@ -276,6 +276,7 @@ but it is usually sufficient to take the default.")
 (setq vc-cvs-diff-switches '("-Nu"))
 ;; vc-dir-mode only appeared in Emacs 23.1
 (add-hook 'vc-dir-mode-hook 'rgr-new-vc-install-vc-dir-mode-keys)
+(add-to-list 'auto-mode-alist '("git-rebase-todo" . rgr-git-rebase-mode))
 
 ;; Prevent attempts by nroff to inflict novel Unicode characters on us.
 (setq manual-program "LANG=en_US man")
@@ -307,7 +308,6 @@ but it is usually sufficient to take the default.")
 			"^\^G?MariaDB \\[[()a-zA-Z_0-9]*\\]> *"))))
 
 ;; Ruby hacks.
-(add-to-list 'auto-mode-alist '("\\.rb$" . ruby-mode))
 (add-hook 'ruby-mode-hook 'rgr-ruby-mode-hook)
 
 ;; Erlang hacks.
@@ -334,16 +334,3 @@ but it is usually sufficient to take the default.")
 ;; Run this after all load-path directories are set up.
 (rgr-make-tags-table-list-hook)
 (setq tags-revert-without-query t)
-
-;; Git hacks.  -- rgr, 23-Dec-15.
-(cond ((not (cadr command-line-args)))
-      ((string-match "/rebase-merge/git-rebase-todo$"
-		     (cadr command-line-args))
-	(message "Rebasing ...")
-	(setq default-truncate-lines t)
-        (setq rgr-abbrev-completion-save-file nil)
-	(delete-other-windows))
-      ((string-match "/COMMIT_EDITMSG$" (cadr command-line-args))
-	(message "Committing ...")
-        (setq rgr-abbrev-completion-save-file nil)
-	(delete-other-windows)))
