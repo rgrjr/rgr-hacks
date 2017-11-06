@@ -21,6 +21,7 @@
 
 ;; Quiet the compiler.
 (defvar vc-ewoc)
+(defvar vc-recent-changes-number-of-days)
 
 (defun rgr-find-more-recent-buffer (&rest buffers)
   ;; buffers is a list of buffers, some of which may be nil.  if there is more
@@ -630,7 +631,9 @@ This is useful, for instance, when a definition has been deleted."
   :syntax-table nil
   :abbrev-table nil
   (setq truncate-lines t)
-  (setq rgr-abbrev-completion-save-file nil))
+  (setq rgr-abbrev-completion-save-file nil)
+  (when (equal (buffer-name) "COMMIT_EDITMSG")
+    (auto-fill-mode 1)))
 
 ;; [historical . . . ]
 (provide 'rgr-cvs-hacks)

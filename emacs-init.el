@@ -277,6 +277,7 @@ but it is usually sufficient to take the default.")
 ;; vc-dir-mode only appeared in Emacs 23.1
 (add-hook 'vc-dir-mode-hook 'rgr-new-vc-install-vc-dir-mode-keys)
 (add-to-list 'auto-mode-alist '("git-rebase-todo" . rgr-git-rebase-mode))
+(add-to-list 'auto-mode-alist '("COMMIT_EDITMSG" . rgr-git-rebase-mode))
 
 ;; Prevent attempts by nroff to inflict novel Unicode characters on us.
 (setq manual-program "LANG=en_US man")
