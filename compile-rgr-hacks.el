@@ -74,7 +74,6 @@ rgr-hacks-compile-module (see below).")
 	  "rgr-perl-hacks"
 	  ("rgr-ruby-hacks" require (ruby-mode))
 	  ("rgr-python-hacks" require (python))
-	  "rgr-parrot-hacks"
 	  "rgr-rect-hacks"
 	  "rgr-log-view"
 	  "rgr-shell-hacks"
