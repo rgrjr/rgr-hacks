@@ -263,14 +263,11 @@ but it is usually sufficient to take the default.")
     (setq ssh-per-host-option-alist
 	  '(("woburn\\.modulargenetics\\.com$"
 	     "-L" "8081:alexandria:80"
+	     "-L" "8082:oxford:80"
 	     "-L" "8083:persepolis:80"
 	     "-L" "8084:yuggoth:80"
 	     "-L" "8085:granada:80"
-	     "-L" "8086:xanadu:80")
-	    ;; This must be in the "home" list because lap on the road currently
-	    ;; thinks it's at home.
-	    ("rgrjr\\.dyndns\\.org$"
-	     "-L" "9143:localhost:143"))))
+	     "-L" "8086:xanadu:80"))))
 
 ;; VC hacks.  -- rgr, 6-Aug-04.
 (define-key text-mode-map "\C-c+" 'rgr-vc-log-plus)
