@@ -42,7 +42,6 @@
 ;;; rgr-perl-mode-install-extra-hacks, but be aware that the latter includes
 ;;; commands that depend on other rgr-hacks functions not defined in this file.
 ;;;
-;;; $Id$
 
 (eval-when-compile
   (require 'cl)
@@ -507,16 +506,20 @@ and too impatient to wait.  -- rgr, 1-Jul-13.]")
   ;; Note that ModGen::DB::Sample uses all four kinds of slot constructors.
   (let ((defined-names nil))
     (while (re-search-forward
-	       "->build_\\(inheriting_\\)?\\(field\\|fetch\\|set\\)_\\|->define_class_\\(slots\\)"
+	       "->build_\\(inheriting_\\)?\\(field\\|fetch\\|set\\)_\\|->define_class_\\(slots\\)\\|^\s*for my \\($method\\)\s*"
 	       code-end t)
-	(let ((what (or (match-string-no-properties 3)
-			(match-string-no-properties 2)))
-	      (inheriting-p (match-string-no-properties 1)))
-	  (if (not (string= what "slots"))
+      (let* ((what (or (match-string-no-properties 3)
+			 (match-string-no-properties 4)
+			 (match-string-no-properties 2)))
+	       (inheriting-p (match-string-no-properties 1))
+	       (slots-p (or (string= what "slots")
+			    ;; These are slots "the hard way."
+			    (string= what "$method"))))
+	  (if (not slots-p)
 	      ;; Skip the rest of the slot constructor name.
 	      (forward-sexp))
 	  ;; (message "found %S at %d" what (point))
-	  (cond ((or (string= what "field") (string= what "slots"))
+	  (cond ((or slots-p (string= what "field"))
 		  ;; build_field_accessors (which takes an arrayref) and
 		  ;; define_class_slots (which takes a list).
 		  (skip-chars-forward " \t\n([")
@@ -554,14 +557,15 @@ and too impatient to wait.  -- rgr, 1-Jul-13.]")
 			   (re-search-forward "^__END__$" nil t))))
 	   (doc-start (or code-end (point-min)))
 	   (defined-names (rgr-perl-find-slot-names code-end)))
-      ;; Now get non-internal sub names.
-      (goto-char (point-min))
-      (while (re-search-forward "^sub +\\([a-zA-Z][a-zA-Z0-9_]*\\)"
-				code-end t)
-	(let* ((name (match-string-no-properties 1))
-	       (symbol (intern name)))
-	  (if (not (member symbol rgr-perl-sub-names-to-ignore))
-	      (setq defined-names (rgr-adjoin name defined-names)))))
+      ;; Now get non-internal and imported sub names.
+      (dolist (name-regexp '("^sub +\\([a-zA-Z][a-zA-Z0-9_]*\\)"
+			     "^*\\([a-zA-Z][a-zA-Z0-9_]*\\) = [\\]&"))
+	(goto-char (point-min))
+	(while (re-search-forward name-regexp code-end t)
+	  (let* ((name (match-string-no-properties 1))
+		 (symbol (intern name)))
+	    (if (not (member symbol rgr-perl-sub-names-to-ignore))
+		(setq defined-names (rgr-adjoin name defined-names))))))
       ;; And autoloaded sub names.
       (goto-char (point-min))
       (while (re-search-forward "^ *sub +\\([a-zA-Z][a-zA-Z0-9_]*\\);"
