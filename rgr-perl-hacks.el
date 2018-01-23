@@ -471,7 +471,8 @@ components that are incremented lexicographically, beginning with the first."
     (forward-paragraph)))
 
 (defvar rgr-perl-sub-names-to-ignore
-  '(creation_time_field contained_item_key contained_item_parent_key
+  '(add_design_targets creation_time_field
+    contained_item_key contained_item_parent_key
     home_page_url local_display_fields post_web_update
     pretty_name primary_key search_page_name table_audited_p
     table_name web_search web_update)
@@ -589,7 +590,6 @@ and too impatient to wait.  -- rgr, 1-Jul-13.]")
 	  (let* ((name (car tail))
 		 (name-regexp (format "\n=head[0-9] %s\n" name)))
 	    (while (and (looking-at "\n=head[0-9] \\(.+\\)\n")
-			;; (setq debug-on-error t)
 			(string-lessp (match-string 1) name))
 	      (let ((new-name (match-string-no-properties 1)))
 		(unless (or (= (aref new-name 0) ?_)
