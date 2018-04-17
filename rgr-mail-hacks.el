@@ -168,7 +168,9 @@ top window.  A numeric argument prompts for an RMAIL or vm file to read."
 	(error "No 'Bcc:' line."))
     (kill-line nil)
     (insert "rogers@rgrjr.dyndns.org")
-    (forward-char)))
+    (forward-char)
+    (when (looking-at "Organization: Modular")
+      (kill-line 1))))
 
 ;;;###autoload
 (defun rgr-setup-mail-commands (map)
