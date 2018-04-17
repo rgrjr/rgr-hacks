@@ -4,7 +4,6 @@
 ;;;
 ;;; [created at the dawn of time.  -- rgr, 23-Sep-07.]
 ;;;
-;;; $Id$
 
 (eval-when-compile
   ;; [This still warns on vm-user-composition-folder-buffer and
@@ -160,12 +159,24 @@ top window.  A numeric argument prompts for an RMAIL or vm file to read."
   (define-key mail-mode-map "\C-n" 'mail-abbrev-next-line)
   (define-key mail-mode-map "\M->" 'mail-abbrev-end-of-buffer))
 
+(defun rgr-mail-tweak-bcc ()
+  "Turn any 'BCC:' line into a BCC to home."
+  (interactive)
+  (save-excursion
+    (goto-char (point-min))
+    (or (re-search-forward "^Bcc: " nil t)
+	(error "No 'Bcc:' line."))
+    (kill-line nil)
+    (insert "rogers@rgrjr.dyndns.org")
+    (forward-char)))
+
 ;;;###autoload
 (defun rgr-setup-mail-commands (map)
   ;; [emacs 19.31, and possibly earlier versions, seems to handle headers
   ;; correctly.  -- rgr, 4-Oct-96.]  [wrong.  -- rgr, 9-Oct-96.]
   (define-key map "\M-q" 'rgr-mail-fill-paragraph)
   (define-key map "\C-cs" 'rgr-sign-email)
+  (define-key map "\C-ct" 'rgr-mail-tweak-bcc)
   ;; This is normally bound to mail-send (or vm-mail-send), but I keep mistyping
   ;; it for the rgr-sign-email command.  [should be able to bind this to nil,
   ;; but for some reason that doesn't work.  -- rgr, 19-Jan-00.]
