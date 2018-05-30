@@ -465,6 +465,8 @@ message lists and the message contents are removed from real folders."
   ;; vm-6.89 binds vm-expunge-folder to "###", which is annoying.  -- rgr,
   ;; 3-Jan-01.
   (define-key vm-mode-map "#" 'vm-expunge-folder)
+  ;; Convenient shortcut.  -- rgr, 19-Apr-18.
+  (define-key vm-mode-map "\C-c#" 'vm-region-expunge-folder)
 
   ;; This effectively swaps the notion of "this window" and "other window",
   ;; which seems to be what I need, since I keep scrolling the summary window
