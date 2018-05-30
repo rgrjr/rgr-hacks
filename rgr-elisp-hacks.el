@@ -162,6 +162,8 @@ should be called from .emacs files."
 	    (append (list "~/projects/mgi/modest"
 			  "~/projects/mgi/literature"
 			  "~/projects/mgi/tokenizer"
+			  "~/projects/mgi/ethanolamine"
+			  "~/projects/2metdb"
 			  "/usr/local/src/rogers/system/jekyll"
 			  "/usr/local/src/rogers/system/scripts")
 		    (and (getenv "PROFILE_HOME")
@@ -268,9 +270,10 @@ The source is found by using the \\[find-tag] command."
     (cond ((null command)
 	    (message "%s is undefined" (key-description key)))
 	  ((eq command 'execute-extended-command)
-	    (find-tag (symbol-name (read-command "Find tag for command: "))))
+	    (xref-find-definitions
+	      (symbol-name (read-command "Find tag for command: "))))
 	  (t
-	    (find-tag (symbol-name command))))))
+	    (xref-find-definitions (symbol-name command))))))
 
 ;;; Other stuff.
 
