@@ -172,6 +172,13 @@ protein sequence."
   (while (re-search-forward "[^ \t\nacdefghiklmnpqrstvwy]+" nil t)
     (replace-match "" t t)))
 
+;;;###autoload
+(defun rgr-delete-sequence-characters ()
+  "Hack to find illegal chars in a protein sequence."
+  (interactive)
+  (while (re-search-forward "[acdefghiklmnpqrstvwy]+" nil t)
+    (replace-match "" t t)))
+
 ;;;; Hacking sequence annotation.
 
 (defun rgr-add-entry (alist dir key value)
