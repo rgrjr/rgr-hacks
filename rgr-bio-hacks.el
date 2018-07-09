@@ -274,6 +274,15 @@ protein sequence."
 	(rgr-annotation-display-diffs alist)
 	(message "Done.")))))
 
+(defun rgr-bmi (weight-lb height-in)
+  ;; Not really bioinformatics, but . . .
+  "Given weight in pounds and height in inches, show metric and BMI."
+  (interactive "nWeight in lb: \nnHeight in inches: ")
+  (let ((weight-kg (/ weight-lb 2.205))
+	(height-m (* height-in 0.0254)))
+    (message "Height = %.2fm, weight = %.2fkg, BMI is %.2f."
+	     height-m weight-kg (/ weight-kg (* height-m height-m)))))
+
 ;;;; Done.
 
 (provide 'rgr-bio-hacks)
