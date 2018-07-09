@@ -46,7 +46,7 @@
 			 (error "%S (len %d) is not a valid tai64 date."
 				date-string raw-len)))
 	   (date (seconds-to-time (string-to-number date-hex 16))))
-      (if nanoseconds
+      (if (and nanoseconds (nthcdr 2 date))
 	  (rplaca (nthcdr 2 date)
 		  (floor (string-to-number nanoseconds 16) 1000)))
       date)))
