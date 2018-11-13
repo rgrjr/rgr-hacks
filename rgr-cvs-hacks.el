@@ -309,7 +309,8 @@ output buffer from '*vc-diff*' to '*vc-project-diff*'."
     ("d" . vc-history-diff)
     ("G" . vc-history-set-days)
     ("=" . vc-history-diff)
-    ;; ("f" . log-view-find-version)
+    ("f" . vc-history-find-file-at-point)
+    ("\C-x\C-f" . vc-history-find-file-at-point)
     ("n" . log-view-msg-next)
     ("p" . log-view-msg-prev)
     ("{" . vc-history-forward-tag)
@@ -388,6 +389,24 @@ other VCSes have well-defined revision numbers, and CVS has fuzzier dates.
   (log-view-msg-next)
   (re-search-backward "^ *Tags: " nil t count)
   (log-view-msg-prev))
+
+(defun vc-history-find-file-at-point ()
+  "Attempt to find this revision of the file named near point."
+  (interactive)
+  (let ((file (ffap-file-at-point)))
+    (if (and (stringp file) (plusp (length file)))
+	(let* ((rev-string
+		 (save-excursion
+		   (if (re-search-backward "^ *revision: *\\([0-9a-f]+\\)"
+					   nil t)
+		       (match-string-no-properties 1)
+		     (error "Can't find the current revision."))))
+	       (file-rev (or (vc-find-revision file rev-string)
+			     (error "Can't find revision %S for file %S."
+				    rev-string file))))
+	  (switch-to-buffer file-rev))
+      ;; Fall back to ffap.
+      (find-file-at-point))))
 
 ;;;; Finding definition names and adding definition comments.
 
@@ -627,7 +646,7 @@ This is useful, for instance, when a definition has been deleted."
 
 ;;;###autoload
 (define-derived-mode rgr-git-rebase-mode fundamental-mode "Rebase"
-  "Major mode for editing 'git rebase' instructions."
+  "Major mode for editing 'git rebase -i' instructions."
   :syntax-table nil
   :abbrev-table nil
   (setq truncate-lines t)
