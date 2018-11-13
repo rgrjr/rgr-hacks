@@ -324,6 +324,9 @@ but it is usually sufficient to take the default.")
   (setq fill-column 80))
 (add-hook 'erlang-mode-hook 'rgr-erlang-mode-hook)
 
+;; Python hacks.
+(setq python-shell-completion-native-enable nil)
+
 ;; Javascript support.  -- rgr, 11-Mar-10.
 (autoload 'moz-minor-mode "moz" "Mozilla Minor and Inferior Mozilla Modes" t)
 (autoload 'espresso-mode "espresso" "Espresso mode for editing Javascript" t)
