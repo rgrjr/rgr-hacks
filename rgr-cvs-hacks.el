@@ -391,17 +391,25 @@ other VCSes have well-defined revision numbers, and CVS has fuzzier dates.
   (log-view-msg-prev))
 
 (defun vc-history-find-file-at-point ()
-  "Attempt to find this revision of the file named near point."
+  "Attempt to find the file named near point.
+If on one of the files in the ' => ' lines that enumerates what was changed
+in this revision, then find this revision of the file.  Otherwise, fall back
+to the \\[find-file-at-point] command, which finds the working copy version."
   (interactive)
-  (let ((file (ffap-file-at-point)))
-    (if (and (stringp file) (plusp (length file)))
+  (let ((file (and (save-excursion
+		     (beginning-of-line)
+		     (looking-at "^ *=> "))
+		   (ffap-file-at-point))))
+    (if (and (stringp file) (> (length file) 0))
 	(let* ((rev-string
 		 (save-excursion
 		   (if (re-search-backward "^ *revision: *\\([0-9a-f]+\\)"
 					   nil t)
 		       (match-string-no-properties 1)
 		     (error "Can't find the current revision."))))
-	       (file-rev (or (vc-find-revision file rev-string)
+	       (backend (or (vc-backend file)
+			    (error "no backend for %S?" file)))
+	       (file-rev (or (vc-find-revision file rev-string backend)
 			     (error "Can't find revision %S for file %S."
 				    rev-string file))))
 	  (switch-to-buffer file-rev))
