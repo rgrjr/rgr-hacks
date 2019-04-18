@@ -4,7 +4,6 @@
 ;;;
 ;;; [started history.  -- rgr, 2-Mar-94.]
 ;;;
-;;; $Id$
 
 (require 'etags)
 
@@ -231,7 +230,7 @@ backup file has already been made)."
 
 (defun rgr-change-log-indent-relative-maybe ()
   "Keep indenting past a '+' bullet on the previous line."
-  (indent-relative-maybe)
+  (indent-relative-first-indent-point)
   (let ((start-column (current-column)))
     (if (save-excursion
 	  (forward-line -1)
@@ -446,7 +445,7 @@ The default argument is equivalent to 2 (just exchange point and mark)."
     (goto-char (point-min))
     (let ((counts (vector 0 0 0 0)))
       ;; Collect them.
-      (while (re-search-forward "^   \\([*]*\\)" nil t)
+      (while (re-search-forward "^\n   \\(\\**\\)" nil t)
 	(let ((n-stars (- (match-end 1) (match-beginning 1))))
 	  (when (>= n-stars (length counts))
 	    (let* ((old-len (length counts))
@@ -482,10 +481,6 @@ M-x buffer-menu)."
   ;; [new in emacs 22.1.  the default is 26, but 30 is slightly less
   ;; claustrophobic.  -- rgr, 27-May-06.]
   (setq Buffer-menu-name-width 30)
-  (if (rgr-emacs-version-p 24 3)
-      (setq Buffer-menu-name-width 40)
-      ;; [this seems to be the thing in 24.2.  -- rgr, 21-May-13.]
-      (setq Buffer-menu-buffer+size-width 30))
   ;; was next-line.  -- rgr, 21-Mar-94.
   (define-key Buffer-menu-mode-map " " 'rgr-buffer-menu-exit)
   ;; view in other window, staying in buffer menu.
