@@ -89,7 +89,9 @@ layer.  That actually works best for rgr-subordinate-emacs-p purposes.
 -- rgr, 18-Apr-01.]")
 
 (defvar rgr-subordinate-emacs-p
-	(and (> (length (getenv "EMACS")) 0)
+	(and (> (length (or (getenv "EMACS")
+			    (getenv "INSIDE_EMACS")))
+		0)
 	     ;; Require that the connection be local, i.e. rule out ssh
 	     ;; connections across domain boundaries (we don't know how to
 	     ;; recognize telnet connections, but we shouldn't be doing these
