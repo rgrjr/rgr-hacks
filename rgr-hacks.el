@@ -301,6 +301,28 @@ The leading spaces are skipped if at BOL."
 		  (or signature-login-name (user-login-name))
 		  (rgr-date-string))))
 
+;;;###autoload
+(defun rgr-how-long-ago ()
+  "Report how long ago the next 'dd-mmm-yy' date was in days."
+  (interactive)
+  (save-excursion
+    (let* ((date (or (and (re-search-forward
+			    "\\([0-9]*\\)-\\([A-Z][a-z][a-z]\\)-\\([0-9][0-9]\\)"
+			    nil t)
+			  (match-string-no-properties 0))
+		     (error "Can't find a 'dd-mmm-yy' date.")))
+	   (time (apply 'encode-time
+			(parse-time-string
+		          (format "%s %s %s 00:00:00"
+				  (match-string 1) (match-string 2)
+				  (let ((year (string-to-int (match-string 3))))
+				    (+ year (if (> year 50) 1900 2000)))))))
+	   (days (floor (/ (- (time-to-seconds (current-time))
+			      (time-to-seconds time))
+			   (* 24 3600)))))
+      (message "%s is %s days ago." date days)
+      (sit-for 2))))
+
 ;;; A backward-up-list that does strings.
 
 (defun rgr-in-string-p ()
