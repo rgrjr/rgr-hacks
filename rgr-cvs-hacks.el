@@ -125,14 +125,16 @@ vc-recent-changes-default-number-of-days default."
 			 (eq major-mode 'vc-history-mode)
 			 ;; We're in the output buffer already, so we must be
 			 ;; reverting; attempt to preserve point.
-			 (let ((point (point)))
-			   (save-excursion
-			     (or (looking-at "^[0-9-]+ [0-9:]+:$")
-				 (log-view-msg-prev))
-			     (list (buffer-substring-no-properties
-				     (point)
-				     (save-excursion (end-of-line) (point)))
-				   (- point (point))))))))
+			 (condition-case ()
+			     (let ((point (point)))
+			       (save-excursion
+				 (or (looking-at "^[0-9-]+ [0-9:]+:$")
+				     (log-view-msg-prev))
+				 (list (buffer-substring-no-properties
+					(point)
+					(save-excursion (end-of-line) (point)))
+				       (- point (point)))))
+			   (error nil)))))
     ;; (error "Date '%s'." n-days-ago-string)
     (let ((output (get-buffer-create buf-name)))
       (shell-command (format command-format n-days-ago-string) output)
