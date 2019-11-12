@@ -207,12 +207,11 @@ but it is usually sufficient to take the default.")
 (add-hook 'text-mode-hook 'rgr-text-mode-hook)
 (add-hook 'c-mode-hook 'rgr-c-mode-hook)
 (setq rgr-c-use-electric-dash-p t)
-;; [this rules out (among other things) files in CVS/SVN directories, TAGS
-;; files, emacs backup and autosave files, and CVS ".#file.version" files.  --
-;; rgr, 28-Feb-05.]
+;; [this rules out (among other things) files in VC directories, TAGS files,
+;; test coverage output, and emacs backup/autosave files.  -- rgr, 28-Feb-05.]
 (setq grep-find-command
       (concat "find . -type f "
-	      "| grep -Ev '/\\.?#|~$|/(TAGS$|\\.svn|\\.git|old|cover_)|\\.(patch|tmp)$' "
+	      "| grep -Ev '/\\.?#|~$|/(TAGS$|\\.svn|\\.git|old|blib|cover_)|\\.(patch|tmp)$' "
 	      "| xargs -e grep -n -e "))
 (add-hook 'compilation-mode-hook 'rgr-compilation-mode-hook)
 (add-hook 'makefile-mode-hook 'rgr-makefile-mode-hook)
