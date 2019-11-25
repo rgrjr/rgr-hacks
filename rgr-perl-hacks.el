@@ -547,74 +547,109 @@ and too impatient to wait.  -- rgr, 1-Jul-13.]")
 					    defined-names))))))))
     defined-names))
 
+(defun rgr-perl--find-package-methods ()
+  ;; Scan the code from (point) to the next package declaration __END__ tag or
+  ;; the end of the buffer (considered in that order) for slot declarations,
+  ;; forward declarations (which we assume are autoloaded), and named sub
+  ;; definitions.  Return a list of two lists, the first containing all name
+  ;; strings, the second with just the autoloaded name strings.
+  (let* ((autoloaded-names nil)
+	 (code-start (point))
+	 (code-end (save-excursion
+		     (if (or (re-search-forward "^package " nil t)
+			     (re-search-forward "^__END__$" nil t))
+			  (match-beginning 0)
+		       (point-max))))
+	 (defined-names (rgr-perl-find-slot-names code-end)))
+    ;; Now get non-internal and imported sub names.
+    (dolist (name-regexp '("^sub +\\([a-zA-Z][a-zA-Z0-9_]*\\)"
+			   "^*\\([a-zA-Z][a-zA-Z0-9_]*\\) = [\\]&"))
+      (goto-char code-start)
+      (while (re-search-forward name-regexp code-end t)
+	(let* ((name (match-string-no-properties 1))
+	       (symbol (intern name)))
+	  (if (not (member symbol rgr-perl-sub-names-to-ignore))
+	      (setq defined-names (rgr-adjoin name defined-names))))))
+    ;; And autoloaded sub names.
+    (goto-char code-start)
+    (while (re-search-forward "^ *sub +\\([a-zA-Z][a-zA-Z0-9_]*\\);"
+			      code-end t)
+      (let ((name (match-string-no-properties 1)))
+	(setq autoloaded-names (rgr-adjoin name autoloaded-names))
+	(setq defined-names (rgr-adjoin name defined-names))))
+    ;; (message "got defined %S auto %S" defined-names autoloaded-names)
+    (goto-char code-end)
+    (list (sort defined-names #'string-lessp) autoloaded-names)))
+
 (defun rgr-perl-update-method-documentation ()
   "In a Perl class, add '=head3' items for undocumented methods."
   (interactive)
   (save-excursion
     (goto-char (point-min))
-    (let* ((autoloaded-names nil)
-	   (code-end (save-excursion
-		       (or (re-search-forward "^1;$" nil t)
-			   (re-search-forward "^__END__$" nil t))))
-	   (doc-start (or code-end (point-min)))
-	   (defined-names (rgr-perl-find-slot-names code-end)))
-      ;; Now get non-internal and imported sub names.
-      (dolist (name-regexp '("^sub +\\([a-zA-Z][a-zA-Z0-9_]*\\)"
-			     "^*\\([a-zA-Z][a-zA-Z0-9_]*\\) = [\\]&"))
-	(goto-char (point-min))
-	(while (re-search-forward name-regexp code-end t)
-	  (let* ((name (match-string-no-properties 1))
-		 (symbol (intern name)))
-	    (if (not (member symbol rgr-perl-sub-names-to-ignore))
-		(setq defined-names (rgr-adjoin name defined-names))))))
-      ;; And autoloaded sub names.
-      (goto-char (point-min))
-      (while (re-search-forward "^ *sub +\\([a-zA-Z][a-zA-Z0-9_]*\\);"
-				code-end t)
-	(let ((name (match-string-no-properties 1)))
-	  (setq autoloaded-names (rgr-adjoin name autoloaded-names))
-	  (setq defined-names (rgr-adjoin name defined-names))))
-      ;; (message "got %S" defined-names)
-      (setq defined-names (sort defined-names #'string-lessp))
-      ;; Look for undefined ones.
-      (goto-char doc-start)
-      (or (re-search-forward "^=head2 Accessors and Methods" nil t)
-	  (re-search-forward "^=head2 \\(Method\\|Accessor\\)" nil t)
-	  (error "No 'Accessors and methods' section below %S." doc-start))
-      (forward-line)
-      (rgr-perl-forward-doc-paragraphs)
-      (let ((tail defined-names)
+    (let ((method-alist nil))
+      (while (re-search-forward "^package \\([a-zA-Z0-9:]+\\)" nil t)
+	(forward-line)
+	(push (cons (match-string-no-properties 1)
+		    (rgr-perl--find-package-methods))
+	      method-alist))
+      ;; Now perform updates for method-alist entries.
+      (let ((code-end (point))
 	    (n-updated 0))
-	(while (and tail
-		    (not (eobp)))
-	  (let* ((name (car tail))
-		 (name-regexp (format "\n=head[0-9] %s\n" name)))
-	    (while (and (looking-at "\n=head[0-9] \\(.+\\)\n")
-			(string-lessp (match-string 1) name))
-	      (let ((new-name (match-string-no-properties 1)))
-		(unless (or (= (aref new-name 0) ?_)
-			    (member (intern new-name)
-				    rgr-perl-sub-names-to-ignore))
-		  (message "%s is no longer implemented, %s"
-			   new-name "or out of sequence")
-		  (sit-for 2)))
-	      (forward-paragraph)
-	      (rgr-perl-forward-doc-paragraphs))
-	    (cond ((looking-at name-regexp)
-		    (forward-paragraph 1)	;; skip the =head3 line.
+	(while method-alist
+	  (goto-char code-end)
+	  (let* ((entry (pop method-alist))
+		 (package-name (car entry))
+		 (defined-names (cadr entry))
+		 (autoloaded-names (caddr entry))
+		 (doc-start
+		   (or (re-search-forward (format "^=head1 %s" package-name)
+					  nil t)
+		       (error "Can't find the documentation section for %S"
+			      package-name)))
+		 (doc-end (copy-marker
+			    (or (re-search-forward "^=head1" nil t)
+				(point-max)))))
+	    (goto-char doc-start)
+	    ;; Go to the start of the method doc section.
+	    (or (re-search-forward "^=head2 Accessors and methods" doc-end t)
+		(re-search-forward "^=head2 \\(Method\\|Accessor\\)" doc-end t)
+		(error "No 'Accessors and methods' section for %S."
+		       package-name))
+	    (forward-line)
+	    (rgr-perl-forward-doc-paragraphs)
+	    (let ((tail defined-names))
+	      (while (and tail
+			  ;; [this "eobp" is why this is not a "dolist" on
+			  ;; defined-names.  -- rgr, 12-Nov-19.]
+			  (not (eobp)))
+		(let* ((name (car tail))
+		       (name-regexp (format "\n=head[0-9] %s\n" name)))
+		  (while (and (looking-at "\n=head[0-9] \\(.+\\)\n")
+			      (string-lessp (match-string 1) name))
+		    (let ((new-name (match-string-no-properties 1)))
+		      (unless (or (= (aref new-name 0) ?_)
+				  (member (intern new-name)
+					  rgr-perl-sub-names-to-ignore))
+			(message "%s is no longer implemented, %s"
+				 new-name "or out of sequence")
+			(sit-for 2)))
+		    (forward-paragraph)
 		    (rgr-perl-forward-doc-paragraphs))
-		  (t 
-		    (when (save-excursion
-			    (re-search-forward name-regexp nil t))
-		      (message "Documentation for %s is out of sequence."
-			       name)
-		      (sit-for 2))
-		    (insert "\n=head3 " name "\n")
-		    (if (member name autoloaded-names)
-			(insert "\nAutoloaded.\n"))
-		    (setq n-updated (1+ n-updated)))))
-	  (rgr-perl-forward-doc-paragraphs)
-	  (setq tail (cdr tail)))
+		  (cond ((looking-at name-regexp)
+			  (forward-paragraph 1) ;; skip the =head3 line.
+			  (rgr-perl-forward-doc-paragraphs))
+			(t 
+			  (when (save-excursion
+				  (re-search-forward name-regexp doc-end t))
+			    (message "Documentation for %s is out of sequence."
+				     name)
+			    (sit-for 2))
+			  (insert "\n=head3 " name "\n")
+			  (if (member name autoloaded-names)
+			      (insert "\nAutoloaded.\n"))
+			  (setq n-updated (1+ n-updated)))))
+		(rgr-perl-forward-doc-paragraphs)
+		(setq tail (cdr tail))))))
 	(message "%d updated." n-updated)))))
 
 (defun rgr-perl-update-documentation ()
