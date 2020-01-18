@@ -266,7 +266,8 @@ but it is usually sufficient to take the default.")
 	     "-L" "8083:persepolis:80"
 	     "-L" "8084:yuggoth:80"
 	     "-L" "8085:granada:80"
-	     "-L" "8086:xanadu:80"))))
+	     "-L" "8086:xanadu:80"
+	     "-L" "8087:darwin:80"))))
 
 ;; VC hacks.  -- rgr, 6-Aug-04.
 (define-key text-mode-map "\C-c+" 'rgr-vc-log-plus)
