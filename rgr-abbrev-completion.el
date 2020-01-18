@@ -967,7 +967,7 @@ name with the day of the week in it."
 This is meant for calling from a .emacs file, but is also a command so
 it can be re-initialized if any of the hooks get stepped on."
   (interactive)
-  (add-hook 'find-file-hooks 'rgr-abbrev-find-file-hook)
+  (add-hook 'find-file-hook 'rgr-abbrev-find-file-hook)
   (add-hook 'kill-emacs-query-functions 'rgr-save-completion-hack)
   (add-hook 'post-command-hook 'rgr-maybe-learn-new-symbol))
 

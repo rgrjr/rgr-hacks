@@ -166,15 +166,6 @@ the name of its immediately containing directory."
   (rename-buffer new-name unique-p))
 
 ;;;###autoload
-(defun rgr-maybe-rename-buffer ()
-  ;; This is useful as a hook function, e.g.
-  ;;	(add-hook 'find-file-hooks 'rgr-maybe-rename-buffer)
-  (if (string-match "<[0-9]+>$" (buffer-name))
-      (let ((name (rgr-rename-buffer-default-name)))
-	(if name
-	    (rename-buffer (rgr-parent-dir-and-file-name name) t)))))
-
-;;;###autoload
 (defun rgr-set-buffer-backed-up (&optional query-p)
   "Unconditionally sets the buffer-backed-up flag in the current buffer.
 If this flag is already set, then a message to that effect is printed.
@@ -577,11 +568,9 @@ M-x buffer-menu)."
 (defun rgr-install-miscellaneous-global-hacks ()
   (global-set-key "\C-cs" 'rgr-insert-signature)
   (global-set-key "\C-x\C-x" 'rgr-exchange-point-and-mark)
-  ;; The standard version doesn't deal with quoted strings . . .
+  ;; The standard version doesn't deal with quoted strings.
   (global-set-key "\C-\M-u" 'rgr-backward-up-list)
-  ;; Try to give *helpful* unique buffer names.  -- rgr, 17-Dec-97.
-  (add-hook 'find-file-hooks 'rgr-maybe-rename-buffer)
-  ;; And make buffers go away on command.  -- rgr, 6-Feb-98.
+  ;; Make buffers go away on command.  -- rgr, 6-Feb-98.
   (global-set-key "\C-cb" 'bury-buffer))
 
 (defun rgr-no-root-email ()
