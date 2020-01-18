@@ -122,25 +122,27 @@ A nonzero prefix argument also means ask about each subdirectory."
 			   "../meals.pl --recipe-file ../recipes.text --det"))
 
 ;;;###AUTOLOAD
-(defun rgr-dup-line ()
+(defun rgr-dup-line (&optional count)
   "Duplicate the current line before the marked line.
 If the first non-whitespace char is a '#', remove that and all whitespace
-that comes immediately afterward.  The mark is moved after the added line,
-point is moved to the next line."
-  (interactive)
-  (save-excursion
-    (let ((line (buffer-substring-no-properties
-		  (progn (beginning-of-line) (point))
-		  (progn (end-of-line) (point)))))
-      (goto-char (or (mark) (error "The mark is not set.")))
-      (insert-before-markers line)
-      (save-excursion
-	(beginning-of-line)
-	(skip-chars-forward " \t\n")
-	(if (looking-at "#[ \t\n]*")
-	    (replace-match "")))
-      (insert-before-markers "\n")))
-  (forward-line 1))
+that comes immediately afterward.  With a numeric arg (default 1), do that
+many lines.  The mark is moved after the added line(s), point is moved to
+the next line."
+  (interactive "p")
+  (dotimes (i count)
+    (save-excursion
+      (let ((line (buffer-substring-no-properties
+		   (progn (beginning-of-line) (point))
+		   (progn (end-of-line) (point)))))
+	(goto-char (or (mark) (error "The mark is not set.")))
+	(insert-before-markers line)
+	(save-excursion
+	  (beginning-of-line)
+	  (skip-chars-forward " \t\n")
+	  (if (looking-at "#[ \t\n]*")
+	      (replace-match "")))
+	(insert-before-markers "\n")))
+    (forward-line 1)))
 
 ;;;; Done.
 
