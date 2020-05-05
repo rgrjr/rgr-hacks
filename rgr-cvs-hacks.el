@@ -137,11 +137,14 @@ vc-recent-changes-default-number-of-days default."
 			   (error nil)))))
     ;; (error "Date '%s'." n-days-ago-string)
     (let ((output (get-buffer-create buf-name)))
-      (shell-command (format command-format n-days-ago-string) output)
       (with-current-buffer output
-	;; must preserve the default directory so that vc-history-diff knows
-	;; where to operate.
+	(erase-buffer)
+	;; Preserve the dir so that vc-history-diff knows where to operate.
 	(setq default-directory directory)
+	(shell-command-on-region
+	  (point) (point) 
+	  (format command-format n-days-ago-string)
+	  output)
 	(vc-history-mode)
 	;; Make this revert-able.
 	(set (make-local-variable 'vc-recent-changes-number-of-days)
