@@ -6,6 +6,7 @@
 ;;;
 
 (require 'etags)
+(require 'cl-lib)
 
 ;;;; Variables.
 
@@ -306,7 +307,8 @@ The leading spaces are skipped if at BOL."
 			(parse-time-string
 		          (format "%s %s %s 00:00:00"
 				  (match-string 1) (match-string 2)
-				  (let ((year (string-to-int (match-string 3))))
+				  (let ((year (cl-parse-integer
+					        (match-string 3))))
 				    (+ year (if (> year 50) 1900 2000)))))))
 	   (days (floor (/ (- (time-to-seconds (current-time))
 			      (time-to-seconds time))
