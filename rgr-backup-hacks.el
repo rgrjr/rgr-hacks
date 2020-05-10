@@ -5,6 +5,8 @@
 ;;; [created.  -- rgr, 6-Sep-17.]
 ;;;
 
+(require 'cl-lib)
+
 ;;;###AUTOLOAD
 (defun rgr-check-backup-md5sums ()
   "With point at the end of md5sum output, make sure all are paired."
@@ -12,8 +14,14 @@
   (let ((files-from-md5 nil)
 	(n-errors 0))
     (save-excursion
-      (while (looking-at "^$")
+      ;; Skip backward past blank and checksum lines.
+      (while (and (not (bobp))
+		  (looking-at "^ *\\($\\|[0-9a-f]\\)"))
 	(forward-line -1))
+      ;; Move forward past blank lines.
+      (while (looking-at "^$")
+	(forward-line 1))
+      ;; Scarf checksum-and-file lines.
       (while (looking-at "^ *\\([0-9a-f]+\\)  \\(.*\\)$")
 	(let* ((md5sum (match-string-no-properties 1))
 	       (file (match-string-no-properties 2))
@@ -22,13 +30,15 @@
 	    (setq entry (list md5sum))
 	    (push entry files-from-md5))
 	  (push file (cdr entry)))
-	(forward-line -1))
+	(forward-line 1))
       (dolist (set files-from-md5)
 	(when (null (cddr set))
-	  (message "Found singleton %S" (second set))
-	  (incf n-errors)))
-      (when (= n-errors 0)
-	(message "No mismatches.")))))
+	  (message "Found singleton %S" (car (cdr set)))
+	  (cl-incf n-errors)))
+      (if (= n-errors 0)
+	  (message "No mismatches.")
+	  (message "Found %d mismatches, check *Messages* for singletons."
+		   n-errors)))))
 
 (defvar rgr-backup-star-line
   (let ((digit "[0-9]"))
