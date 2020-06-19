@@ -421,6 +421,48 @@ to the \\[find-file-at-point] command, which finds the working copy version."
       ;; Fall back to ffap.
       (find-file-at-point))))
 
+(defun vc-history-current-commit-tags ()
+  ;; Assuming we are at the start of a commit, extract its tags as a single
+  ;; string.
+  (save-excursion
+    (let ((commit-end (save-excursion
+			;; If we don't check for eobp, log-view-msg-next will
+			;; signal an error.
+			(or (eobp)
+			    (log-view-msg-next))
+			(point))))
+      (and (re-search-forward "^ *Tags: *\\(.*\\)$" commit-end t)
+	   (match-string-no-properties 1)))))
+
+(defun vc-history-count-commits ()
+  "Count the commits by branch tags from point to the end of the buffer."
+  (interactive)
+  (save-excursion
+    ;; Move to the beginning of the current commit.
+    (while (not (or (bobp)
+	            (looking-at "^[0-9-]+ [0-9:]+:$")))
+      (forward-line -1))
+    (let ((current-tag (or (vc-history-current-commit-tags) "untagged"))
+	  (n-commits 0)
+	  (message-strings nil))
+      (while (not (eobp))
+	(log-view-msg-next)
+	(setq n-commits (1+ n-commits))
+	(let ((next-tag (vc-history-current-commit-tags)))
+	  (when next-tag
+	    ;; This commit belongs to the previous branch, so switch branches.
+	    (push (format "%d commits in %s" n-commits current-tag)
+		  message-strings)
+	    (setq n-commits 0)
+	    (setq current-tag next-tag))))
+      ;; Generate the last count message, then reverse them, and emit them all
+      ;; as a single message, one count per line.
+      (push (format "%d commits in %s" n-commits current-tag)
+	    message-strings)
+      (message "%s" (mapconcat #'(lambda (s) s)
+			       (reverse message-strings)
+			       "\n")))))
+
 ;;;; Finding definition names and adding definition comments.
 
 (defun rgr-makefile-definition-name ()
