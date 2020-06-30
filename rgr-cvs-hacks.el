@@ -138,6 +138,7 @@ vc-recent-changes-default-number-of-days default."
     ;; (error "Date '%s'." n-days-ago-string)
     (let ((output (get-buffer-create buf-name)))
       (with-current-buffer output
+	(setq buffer-read-only nil)
 	(erase-buffer)
 	;; Preserve the dir so that vc-history-diff knows where to operate.
 	(setq default-directory directory)
@@ -158,7 +159,8 @@ vc-recent-changes-default-number-of-days default."
 	  ;; Restore our place in the buffer.
 	  (beginning-of-line)
 	  (forward-char (cadr old-point)))
-	(set-buffer-modified-p nil)))))
+	(set-buffer-modified-p nil)
+	(setq buffer-read-only t)))))
 
 (defun vc-history-set-days (number-of-days)
   "In a vc-history buffer, set the days shown with a numeric arg, and revert.
