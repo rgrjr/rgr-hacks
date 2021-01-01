@@ -667,8 +667,6 @@ and too impatient to wait.  -- rgr, 1-Jul-13.]")
 				    (match-string-no-properties 1)))))
 	    (insert "=head1 " (or module-name "Module") "\n\n"))
 	  (insert "=head2 Accessors and methods\n\n")
-	  (if (save-excursion (re-search-backward "^ +sub [^{}]+;" nil t))
-	      (insert "=head2 Autoloaded methods\n\n"))
 	  (insert "=cut\n")))
   (rgr-perl-update-method-documentation))
 
