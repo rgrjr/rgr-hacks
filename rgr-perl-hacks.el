@@ -44,7 +44,7 @@
 ;;;
 
 (eval-when-compile
-  (require 'cl)
+  (require 'cl-lib)
   (require 'man)
   (require 'perl-mode)
   (require 'cperl-mode))

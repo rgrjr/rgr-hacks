@@ -7,7 +7,7 @@
 (require 'vc)
 
 (eval-when-compile
-  (require 'cl)
+  (require 'cl-lib)
   (require 'vc)
   (require 'vc-dir)
   (require 'log-edit))

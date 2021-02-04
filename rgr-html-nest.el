@@ -21,7 +21,7 @@
 (require 'rgr-html-hacks)
 (require 'thingatpt)
 (eval-when-compile
-  (require 'cl)
+  (require 'cl-lib)
   (require 'thingatpt))
 
 (defvar rgr-html-n-tag-nest-errors 0
@@ -110,7 +110,7 @@ come between it and a required container.
 ")
 
 ;; Data structure describing tag nesting status within this buffer.
-(defstruct (rgr-html-tag-data (:conc-name rgr-htd-) (:predicate nil))
+(cl-defstruct (rgr-html-tag-data (:conc-name rgr-htd-) (:predicate nil))
   (tag-name nil)	;; symbolic name
   (open nil)		;; point of open tag
   )
