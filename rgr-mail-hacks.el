@@ -175,18 +175,38 @@ top window.  A numeric argument prompts for an RMAIL or vm file to read."
   (define-key mail-mode-map "\C-n" 'mail-abbrev-next-line)
   (define-key mail-mode-map "\M->" 'mail-abbrev-end-of-buffer))
 
-(defun rgr-mail-tweak-bcc ()
+(defvar rgr-mail-tweaked-bcc "rogers@rgrjr.com"
+  "Replacement BCC address for rgr-mail-tweak-bcc.")
+(defvar rgr-mail-address-change-note "
+P.S.  Please use rogers@rgrjr.com in correspondence -- and add it to
+your contacts, if not already there, lest I get relegated to spam.\n"
+  "String to insert after the sig if rgr-mail-tweak-bcc get a prefix arg.")
+
+(defun rgr-mail-tweak-bcc (&optional insert-address-change-note-p)
   "Turn any 'BCC:' line into a BCC to home."
-  (interactive)
+  (interactive "P")
   (save-excursion
     (goto-char (point-min))
-    (or (re-search-forward "^Bcc: " nil t)
-	(error "No 'Bcc:' line."))
-    (kill-line nil)
-    (insert "rogers@rgrjr.dyndns.org")
-    (forward-char)
-    (when (looking-at "Organization: Modular")
-      (kill-line 1))))
+    ;; Fix the BCC if there is one.
+    (when (and rgr-mail-tweaked-bcc
+	       (re-search-forward "^Bcc: " nil t))
+      (let ((start (point)))
+	(end-of-line)
+	(delete-region start (point)))
+      (insert rgr-mail-tweaked-bcc))
+    ;; Fix the organization.
+    (when (re-search-forward "^Organization: " nil t)
+      (beginning-of-line)
+      (when (looking-at "Organization: Modular")
+	(let ((start (point)))
+	  (forward-line 1)
+	  (delete-region start (point)))))
+    ;; Also insert an address change note if requested.
+    (when insert-address-change-note-p
+      (or (search-forward (car rgr-email-signature-strings) nil t)
+	  (goto-char (point-max)))
+      (forward-paragraph 1)
+      (insert rgr-mail-address-change-note))))
 
 ;;;###autoload
 (defun rgr-setup-mail-commands (map)
