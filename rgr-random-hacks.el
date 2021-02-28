@@ -16,6 +16,7 @@
 ;;;
 
 (eval-when-compile
+  (require 'cl-lib)
   (require 'ffap))
 
 (defvar rgr-emacs)
@@ -143,6 +144,125 @@ the next line."
 	      (replace-match "")))
 	(insert-before-markers "\n")))
     (forward-line 1)))
+
+;;;; Sudoku statistics.
+
+(defconst rgr-sudoku-statistics-line
+  "^.*[ \t]\\([0-9]+\\.[0-9]\\)[ \t]+\\([0-9]+:[0-9][0-9]\\) *\\(.*\\)$"
+  "Regexp that recognizes the difficulty, time, and optional game type comment
+string in sudoku game statistics files.")
+(defconst rgr-suduku-date-regexp "\\([0-9][0-9]?\\)-\\(...\\)-\\([0-9][0-9]\\)"
+  "Regexp that recognizes dates that come after sudoku results.")
+
+(defun rgr-sudoku--time-secs ()
+  ;; Get time time in seconds from (match-string 2).
+  (let ((time (match-string 2)))
+    (+ (* 60 (cl-parse-integer (substring time 0 -3)))
+       (cl-parse-integer (substring time -2)))))
+
+(defun rgr-sudoku--next-date ()
+  ;; Parse DD-Mon-YY time in the 21st century and return a (day mon year) date
+  ;; triple with values compatible with decode-time, i.e. day is between 1 and
+  ;; 31 and month is between 1 and 12.  Dies if month is not the usual 3-letter
+  ;; English abbreviation.
+  (and (re-search-forward rgr-suduku-date-regexp nil t)
+       (let ((day (cl-parse-integer (match-string 1)))
+	     (numeric-month
+	       (or (cl-position (match-string 2)
+				'("Jan" "Feb" "Mar" "Apr" "May" "Jun"
+				  "Jul" "Aug" "Sep" "Oct" "Nov" "Dec")
+				:test #'string-equal)
+		   (error "Bad month in %S" (match-string 0))))
+	     (year (+ 2000 (cl-parse-integer (match-string 3)))))
+	 (list day (1+ numeric-month) year))))
+
+(defun rgr-sudoku--date-less? (date1 date2)
+  ;; Given two dates as returned by rgr-sudoku--next-date, return true if the
+  ;; first is strictly less than the second.
+  (cond ((< (caddr date1) (caddr date2)) t)
+	((> (caddr date1) (caddr date2)) nil)
+	((< (cadr date1) (cadr date2)) t)
+	((> (cadr date1) (cadr date2)) nil)
+	(t (< (car date1) (car date2)))))
+
+(defun rgr-sudoku--find-next-date-after (target-date)
+  ;; Use binary search between here and the beginning of the file to find the
+  ;; first date after the indicated date.
+  (let ((min (point-min))
+	(max (point))
+	(last-date t) (mid-date nil))
+    (while (not (or (equal mid-date target-date)
+		    (equal mid-date last-date)))
+      (goto-char (/ (+ min max) 2))
+      (beginning-of-line)	;; in case we land in the middle of a date.
+      (setq last-date mid-date)
+      (setq mid-date (rgr-sudoku--next-date))
+      (if (rgr-sudoku--date-less? mid-date target-date)
+	  (setq min (point))
+	(setq max (point))))
+    (point)))
+
+;;;###autoload
+(defun rgr-sudoku-statistics ()
+  "Find similar sudoku results from the previous year and report a percentile.
+If on a line that matches rgr-sudoku-statistics-line, e.g. the first of
+
+    1  179  18.3  70:21 (Sohei)
+    -- rgr, 14-Mar-21.
+
+though not necessarily with leading indentation, this command searches backward
+for all similar difficultly levels and presents a percentile score.  The first
+two numbers are ignored, the third is the difficulty level, and the third is
+the time in minutes and seconds.  'Similar difficulty levels' are those within
+plus or minus one of the given level.  The next date that matches
+rgr-suduku-date-regexp is taken as the ending date, and all scores that match
+the tag (in this example it is '(Sohei)') that are on lines before the date on
+or after the same date in the year before are counted.  Times above and below
+the time on the current line are tallied separately, and the percentile is
+given as the times above divided by the total, in a report such as this:
+
+    4221 seconds is 23.4 percentile over the last year (n=184)."
+  (interactive)
+  (require 'parse-time)
+  (save-excursion
+    (beginning-of-line)
+    (or (looking-at rgr-sudoku-statistics-line)
+	(error "Not on a sudoku statistics line."))
+    (let ((target-difficulty (car (read-from-string (match-string 1))))
+	  (target-time (rgr-sudoku--time-secs))
+	  (target-comment (match-string 3)))
+      ;; (message "Got %S" (list target-difficulty target-time target-comment))
+      (forward-line)	;; Count the current line in the statistics.
+      (let* ((search-end (point))
+	     (end-date (save-excursion
+			 (or (rgr-sudoku--next-date)
+			     (error "This line is undated."))))
+	     (start-date (list (car end-date) (cadr end-date)
+			       (1- (caddr end-date))))
+	     (count-above 0)
+	     (count-below 0))
+	;; Search backward a year.
+	(rgr-sudoku--find-next-date-after start-date)
+	;; Go to the previous date.
+	(re-search-backward rgr-suduku-date-regexp nil t)
+	(forward-line)
+	;; Count similar puzzles on statistics lines as we walk forward.
+	(while (< (point) search-end)
+	  (when (looking-at rgr-sudoku-statistics-line)
+	    (let ((difficulty (car (read-from-string (match-string 1))))
+		  (time-secs (rgr-sudoku--time-secs))
+		  (comment (match-string 3)))
+	      (when (and (< (abs (- target-difficulty difficulty)) 1)
+			 (string-equal target-comment comment))
+		;; Count this guy.
+		(if (>= time-secs target-time)
+		    (cl-incf count-above)
+		  (cl-incf count-below)))))
+	  (forward-line))
+	;; Report the result.
+	(let ((n (+ count-above count-below)))
+	  (message "%S seconds is %.1f percentile over the last year (n=%d)."
+		   target-time (/ (* 100.0 count-above) n) n))))))
 
 ;;;; Done.
 
