@@ -151,6 +151,22 @@ top window.  A numeric argument prompts for an RMAIL or vm file to read."
 
 ;;;; Hook functions.
 
+;;;###autoload
+(defun rgr-vm-mail-citation-hook (&optional message)
+  "Invoked after a message has been yanked into a reply buffer."
+  ;; Based on vm-mail-yank-default.
+  (save-excursion
+    (vm-reorder-message-headers nil vm-included-text-headers
+				vm-included-text-discard-header-regexp)
+    ;; if all the headers are gone, delete the trailing blank line, too.
+    (if (eq (following-char) ?\n)
+	(delete-char 1))
+    (if (and message vm-included-text-attribution-format)
+	(let ((vm-summary-uninteresting-senders nil))
+	  (insert (vm-summary-sprintf vm-included-text-attribution-format
+				      message))))
+    (indent-rigidly (point) (point-max) 3)))
+
 (defun rgr-mail-abbrevs-setup ()
   ;; don't need to autoload this, because it's only used from
   ;; rgr-mail-mode-hook, below.  [the define-key's below have to be done after

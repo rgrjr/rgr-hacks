@@ -149,10 +149,12 @@ but it is usually sufficient to take the default.")
   (if (file-readable-p parrot)
       (load-file parrot)))
 
+;; Set up mail stuff.
 (add-hook 'mail-mode-hook 'rgr-mail-mode-hook)
+(add-hook 'vm-mail-mode-hook 'rgr-vm-mail-mode-hook)
 (add-hook 'mail-setup-hook 'rgr-mail-setup-hook)
 (add-hook 'mail-setup-hook 'rgr-mail-abbrevs-setup)
-(add-hook 'vm-mail-mode-hook 'rgr-vm-mail-mode-hook)
+(add-hook 'mail-citation-hook 'rgr-vm-mail-citation-hook)
 (if (and (eq rgr-site 'home)
 	 (not (equal (user-real-login-name) "root"))
 	 (let ((conn (getenv "SSH_CONNECTION")))
