@@ -320,6 +320,7 @@ output buffer from '*vc-diff*' to '*vc-project-diff*'."
     ("\C-x\C-f" . vc-history-find-file-at-point)
     ("n" . log-view-msg-next)
     ("p" . log-view-msg-prev)
+    ("!" . vc-history-count-commits)
     ("{" . vc-history-forward-tag)
     ("}" . vc-history-backward-tag))
   "VC-History's keymap."
