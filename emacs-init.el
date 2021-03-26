@@ -158,9 +158,18 @@ but it is usually sufficient to take the default.")
 (if (and (eq rgr-site 'home)
 	 (not (equal (user-real-login-name) "root"))
 	 (let ((conn (getenv "SSH_CONNECTION")))
-	   ;; Insist on an SSH connection, but not internal to the home net.
+	   ;; Insist on an SSH connection, but not within the same subnet.
 	   (and conn
-		(not (string-match "^10\\." conn))))
+		(let* ((digits "[0-9]+")
+		       (class-c (concat digits "\\." digits "\\." digits))
+		       (ipv4 (concat "\\(" class-c "\\)\\." digits)))
+		  ;; [the full string has another " [digits]"; the non-IPv4
+		  ;; digits are the port numbers, which are uninteresting for
+		  ;; our purposes.  -- rgr, 23-Mar-21.]
+		  (not (and (string-match (concat "^" ipv4 " " digits " " ipv4)
+					  conn)
+			    (equal (match-string 1 conn)
+				   (match-string 2 conn)))))))
 	 (fboundp 'v+q-mbox-status))
     (add-hook 'focus-in-hook 'v+q-mbox-status))
 (setq compose-mail-user-agent-warnings nil)	;; suppress warnings for root.
@@ -230,21 +239,17 @@ but it is usually sufficient to take the default.")
 
 ;; Add html-helper-mode plus my HTML code hacks.
 (autoload 'html-helper-mode "html-helper-mode" "Yay HTML" t)
-(let ((cell (and (boundp 'magic-mode-alist)
-		 ;; [in emacs 22, magic-mode-alist trumps auto-mode-alist.  --
-		 ;; rgr, 28-Dec-06.]
-		 (rassoc 'html-mode magic-mode-alist))))
-  (if cell
-      (setcdr cell 'html-helper-mode)
-      ;; [not needed in 22?  -- rgr, 28-Dec-06.]
-      (add-to-list 'auto-mode-alist '("\\.html?$" . html-helper-mode))))
+(add-to-list 'auto-mode-alist '("\\.html?$" . html-helper-mode))
 (add-hook 'html-helper-load-hook 'rgr-html-define-commands)
 (add-hook 'html-helper-load-hook 'rgr-html-fix-regexps)
 ;; This has some per-buffer stuff.  -- rgr, 19-Mar-96.
 (add-hook 'html-helper-mode-hook 'rgr-html-helper-mode-hook)
 
 ;; Prefer Firefox.
-(setq browse-url-browser-function 'browse-url-firefox)
+;; [but let's try chromium on orion for a while.  -- rgr, 17-Mar-21.]
+(setq browse-url-browser-function
+      (if (equal (system-name) "orion")
+	  'browse-url-chromium 'browse-url-firefox))
 
 ;; Emacs/W3
 (add-hook 'w3-load-hook 'rgr-w3-load-hook)
@@ -255,7 +260,7 @@ but it is usually sufficient to take the default.")
 (setq ssh-host-history
       (append (if (eq rgr-site 'mgi)
 		  '("yuggoth" "granada")
-		  '("rogers@woburn.modulargenetics.com"))
+		  '("rogers@lincoln.modulargenetics.com"))
 	      '("rogers@rgrjr.dyndns.org")))
 (if (eq rgr-site 'home)
     ;; Enable tunnelling to make the ModGen database and intranet Web servers
