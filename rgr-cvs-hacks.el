@@ -680,7 +680,9 @@ This is useful, for instance, when a definition has been deleted."
   (new-vc-install-log-edit-mode-keys)
   ;; vc-diff must come last because it changes the current window.
   (save-excursion
-    (vc-diff)))
+    ;; pass the not-urgent parameter as t, because it'll abort if we refuse the
+    ;; offer to save files that are being deleted.
+    (vc-diff nil t)))
 
 ;;;###autoload
 (defun rgr-change-log-insert-plus ()
