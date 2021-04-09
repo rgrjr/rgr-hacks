@@ -178,9 +178,9 @@ top window.  A numeric argument prompts for an RMAIL or vm file to read."
 (defvar rgr-mail-tweaked-bcc "rogers@rgrjr.com"
   "Replacement BCC address for rgr-mail-tweak-bcc.")
 (defvar rgr-mail-address-change-note "
-P.S.  Please use rogers@rgrjr.com in correspondence -- and add it to
-your contacts, if not already there, lest I get relegated to spam.\n"
-  "String to insert after the sig if rgr-mail-tweak-bcc get a prefix arg.")
+P.S.  I'm now using rogers@rgrjr.com as my preferred email address;
+please add it to your contacts, lest I get relegated to spam.\n"
+  "String to insert after the sig if rgr-mail-tweak-bcc gets a prefix arg.")
 
 (defun rgr-mail-tweak-bcc (&optional insert-address-change-note-p)
   "Turn any 'BCC:' line into a BCC to home."
