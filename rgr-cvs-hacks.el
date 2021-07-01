@@ -321,8 +321,8 @@ output buffer from '*vc-diff*' to '*vc-project-diff*'."
     ("n" . log-view-msg-next)
     ("p" . log-view-msg-prev)
     ("!" . vc-history-count-commits)
-    ("{" . vc-history-forward-tag)
-    ("}" . vc-history-backward-tag))
+    ("{" . vc-history-backward-tag)
+    ("}" . vc-history-forward-tag))
   "VC-History's keymap."
   :group 'vc-history)
 
@@ -354,6 +354,14 @@ otherwise, it is the date."
 	     (re-search-backward vc-history-message-re nil t))
 	    (match-string 1)))))
 
+(defun vc-history--goto-current ()
+  ;; Move point to the start of the current commit message, returning true if we
+  ;; think we found it.
+  (when (or (looking-at vc-history-message-re)
+	    (re-search-backward vc-history-message-re nil t))
+    (goto-char (match-beginning 0))
+    t))
+
 (defun vc-history-diff (beg end)
   "Get the diff between two revision summaries.
 If the mark is not active or the mark is on the revision at point,
@@ -383,20 +391,37 @@ other VCSes have well-defined revision numbers, and CVS has fuzzier dates.
       (vc-version-diff default-directory to fr))))
 
 (defun vc-history-forward-tag (&optional count)
-  "Move forward COUNT \"Tag:\" revisions."
+  "Move forward COUNT \"Tags:\" revisions."
   (interactive "p")
   (or count (setq count 1))
-  (log-view-msg-next)
-  (re-search-forward "^ *Tags: " nil t count)
-  (log-view-msg-prev))
+  ;; Move backward, if needed.
+  (vc-history--goto-current)
+  (while (and (< count 0)
+	      (re-search-backward "^ *Tags: " nil t))
+    (setq count (1+ count))
+    (vc-history--goto-current))
+  ;; Move forward, if needed.
+  (when (> count 0)
+    (let ((start (point)))
+      ;; We need to start searching after the current revision so we don't stop
+      ;; prematurely if it has a tag, but that means we must remember where we
+      ;; were if the search fails.
+      (log-view-msg-next)
+      (while (and (> count 0)
+		  (re-search-forward "^ *Tags: " nil t))
+	(setq count (1- count))
+	(setq start (point)))
+      (when (> count 0)
+	(goto-char start))
+      (vc-history--goto-current)))
+  ;; Return the count of what we couldn't do.
+  count)
 
 (defun vc-history-backward-tag (&optional count)
-  "Move backward COUNT \"Tag:\" revisions."
+  "Move backward COUNT \"Tags:\" revisions."
   (interactive "p")
   (or count (setq count 1))
-  (log-view-msg-next)
-  (re-search-backward "^ *Tags: " nil t count)
-  (log-view-msg-prev))
+  (vc-history-forward-tag (- count)))
 
 (defun vc-history-find-file-at-point ()
   "Attempt to find the file named near point.
