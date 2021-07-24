@@ -20,8 +20,9 @@ but it is usually sufficient to take the default.")
 (load (expand-file-name "rgr-hacks-autoloads.el" rgr-emacs))
 ;; For other packages.
 (if (file-directory-p "/usr/share/emacs/site-lisp/vm")
-    ;; This is the emacs-vm RPM location.
-    (add-to-list 'load-path "/usr/share/emacs/site-lisp/vm"))
+    ;; This is the emacs-vm RPM location.  Loading suse-start-vm.el adds it to
+    ;; the load path and sets up autoloads.  -- rgr, 24-Jul-21.
+    (load-file "/usr/share/emacs/site-lisp/vm/suse-start-vm.el"))
 (defvar rgr-imported-packages (expand-file-name "../imported" rgr-emacs)
   "Directory for other private emacs packages.")
 (if (and (file-directory-p rgr-imported-packages)
@@ -158,12 +159,12 @@ but it is usually sufficient to take the default.")
 (if (and (eq rgr-site 'home)
 	 (not (equal (user-real-login-name) "root"))
 	 (let ((conn (getenv "SSH_CONNECTION")))
-	   ;; Insist on an SSH connection, but not within the same subnet.
+	   ;; Insist on an SSH connection not within the same class C subnet.
 	   (and conn
 		(let* ((digits "[0-9]+")
 		       (class-c (concat digits "\\." digits "\\." digits))
 		       (ipv4 (concat "\\(" class-c "\\)\\." digits)))
-		  ;; [the full string has another " [digits]"; the non-IPv4
+		  ;; [the full string has another " <digits>"; the non-IPv4
 		  ;; digits are the port numbers, which are uninteresting for
 		  ;; our purposes.  -- rgr, 23-Mar-21.]
 		  (not (and (string-match (concat "^" ipv4 " " digits " " ipv4)
