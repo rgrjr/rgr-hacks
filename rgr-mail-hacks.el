@@ -132,6 +132,7 @@ top window.  A numeric argument prompts for an RMAIL or vm file to read."
 		  (vm))))
 	  ((and (fboundp 'vm) (not (string-match "\\.rmail$" file-name-arg)))
 	    ;; Use vm on an explicit folder.
+	    (require 'vm)
 	    (vm-visit-folder file-name-arg))
 	  ;; Rmail possibilities.
 	  ((eq selected next)
