@@ -325,7 +325,8 @@ Interactively prompts for a new return address."
     ;; Customize send-mail-function for sendmail, since sendmail-send-it copies
     ;; the buffer contents into a scratch buffer.
     (cond ((not (member send-mail-function
-			'(v+q-sendmail-send-it sendmail-send-it)))
+			'(v+q-sendmail-send-it
+			  sendmail-send-it smtpmail-send-it)))
 	    ;; The send-mail-function will already be v+q-sendmail-send-it if
 	    ;; the user does it again (i.e. change of mind).
 	    (error "Oops; can't set return address for the '%S' sender."
