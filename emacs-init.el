@@ -300,22 +300,32 @@ but it is usually sufficient to take the default.")
 (setq sql-user "modest")
 (setq sql-database "test_modest")
 (setq sql-server "localhost")
-(add-hook 'sql-mode-hook
-	  #'(lambda ()
-	      ;; Maybe set sql-buffer if we don't already have one.
-	      (let ((new-buffer (get-buffer "*SQL*")))
-		(setq sql-product 'mysql)
-		(when (and (sql-buffer-live-p new-buffer)
-			   (not (sql-buffer-live-p sql-buffer)))
-		  (setq sql-buffer new-buffer)
-		  (run-hooks 'sql-set-sqli-hook)))))
-;; Tweak the prompt regexp if we run MariaDB.  Otherwise, prompts are not
-;; displayed until after a new command is entered.
-(add-hook 'sql-interactive-mode-hook
-	  #'(lambda ()
-	      (if (= 0 (call-process "rpm" nil nil nil "-q" "mariadb-client"))
-		  (setq sql-prompt-regexp
-			"^\^G?MariaDB \\[[()a-zA-Z_0-9]*\\]> *"))))
+
+(defun rgr-sql-mode-hook ()
+  ;; Maybe set sql-buffer if we don't already have one.
+  (unless (sql-buffer-live-p sql-buffer)
+    (let* ((product (if (eq sql-product 'ansi)
+			;; Don't take the default.
+			'mariadb
+		      sql-product))
+	   (base-name (or (sql-get-product-feature product :name)
+                          (symbol-name product)))
+	   (prefix (concat "^*SQL: " (regexp-quote base-name)))
+	   (new-buffer nil))
+      ;; Look for an *SQL* buffer for the product.  See the
+      ;; sql-generate-unique-sqli-buffer-name function.  We ignore the fact that
+      ;; multiple buffers can be generated for a given product.
+      (dolist (buffer (reverse (buffer-list)))
+	(when (string-match prefix (buffer-name buffer))
+	  (setq new-buffer buffer)))
+      ;; If we found a live one, install it.
+      (when (and new-buffer
+		 (sql-buffer-live-p new-buffer))
+	(setq sql-product product)
+	(setq sql-buffer new-buffer)
+	(run-hooks 'sql-set-sqli-hook)))))
+
+(add-hook 'sql-mode-hook 'rgr-sql-mode-hook)
 
 ;; Ruby hacks.
 (add-hook 'ruby-mode-hook 'rgr-ruby-mode-hook)
