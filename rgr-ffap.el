@@ -4,7 +4,6 @@
 ;;;
 ;;; [created.  -- rgr, 15-Nov-03.]
 ;;;
-;;; $Id$
 
 (eval-when-compile
   (require 'ffap))
@@ -32,31 +31,31 @@
   ;; it interactively if told to suppress its magic.
   (interactive "FFind file: \np")
   ;(message "[got %S]" file-name)
-  (let ((chosen-app nil) (tail rgr-ffap-file-to-application-map))
-    (if (not wildcards)
-	(while tail
-	  (let* ((app-data (car tail))
-		 (app-name (car (cdr app-data))))
-	    (if (and (string-match (car app-data) file-name)
-		     (y-or-n-p (format "Launch %S on %S? " app-name file-name)))
-		(setq chosen-app app-data
-		      tail nil)
-		(setq tail (cdr tail))))))
-    (let ((app-name (car (cdr chosen-app)))
-	  (app-opts (cdr (cdr chosen-app))))
-      (cond ((not chosen-app)
-	      (find-file file-name wildcards))
-	    ((and (symbolp app-name) (fboundp app-name))
-	      (apply app-name file-name app-opts))
-	    (t
-	      (apply (function start-process) app-name
-		     (get-buffer-create (concat "*" app-name "*"))
-		     app-name (append app-opts (list file-name))))))))
+  (unless wildcards
+    (let ((chosen-app nil) (tail rgr-ffap-file-to-application-map))
+      (while tail
+	(let* ((app-data (car tail))
+	       (app-name (car (cdr app-data))))
+	  (if (and (string-match (car app-data) file-name)
+		   (y-or-n-p (format "Launch %S on %S? " app-name file-name)))
+	      (setq chosen-app app-data
+		    tail nil)
+	    (setq tail (cdr tail)))))
+      (let ((app-name (car (cdr chosen-app)))
+	    (app-opts (cdr (cdr chosen-app))))
+	(cond ((not chosen-app)
+		(find-file file-name wildcards))
+	      ((and (symbolp app-name) (fboundp app-name))
+		(apply app-name file-name app-opts))
+	      (t
+		(apply (function start-process) app-name
+		       (get-buffer-create (concat "*" app-name "*"))
+		       app-name (append app-opts (list file-name)))))))))
 
 ;;;###autoload
 (defun rgr-install-ffap ()
   (require 'ffap)
-  (require 'ffap-local-url-patch)
+  ;; (require 'ffap-local-url-patch)
   ;; this enables launching other applications based on file name syntax.
   (setq ffap-file-finder 'rgr-ffap-file-finder)
   ;; this disables attempts to use "foo.pl" as a file server in poland.  -- rgr,
