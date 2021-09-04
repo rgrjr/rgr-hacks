@@ -159,28 +159,23 @@ should be called from .emacs files."
   (setq tags-table-set-list
 	(list
 	  (rgr-make-tags-table-list
-	    (append (list "~/projects/mgi/modest"
+	    (append (list "/scratch/rogers/emacs/lisp"
+			  "~/projects/mgi/modest"
 			  "~/projects/mgi/literature"
 			  "~/projects/mgi/tokenizer"
 			  "~/projects/mgi/ethanolamine"
 			  "~/projects/2metdb"
 			  "/usr/local/src/rogers/system/jekyll"
+			  "~/projects/system/scripts"
 			  "/usr/local/src/rogers/system/scripts")
-		    (and (getenv "PROFILE_HOME")
-			 (list (getenv "PROFILE_HOME")))
-		    (and (getenv "PIMA_HOME")
-			 (list (getenv "PIMA_HOME")))
 		    (let* ((site-perl "/usr/lib/perl5/site_perl/")
-			   (subdir-tail
-			     (and (file-directory-p site-perl)
-				  (directory-files site-perl t)))
 			   (bio-dirs nil))
 		      ;; Look for all installed Bioperl directories.
-		      (while subdir-tail
-			(let ((dir (expand-file-name "Bio" (car subdir-tail))))
+		      (dolist (perl-dir (and (file-directory-p site-perl)
+					     (directory-files site-perl t)))
+			(let ((dir (expand-file-name "Bio" perl-dir)))
 			  (if (file-directory-p dir)
-			      (setq bio-dirs (cons dir bio-dirs))))
-			(setq subdir-tail (cdr subdir-tail)))
+			      (push dir bio-dirs))))
 		      bio-dirs)
 		    ;; Take elisp directories on load-path with TAGS files.
 		    load-path))))
