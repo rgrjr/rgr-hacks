@@ -70,14 +70,13 @@ arbitrary buffers."
   `(let ((old-syntax-table (syntax-table)))
      (unwind-protect
 	  (progn
-	    (if (not (and (boundp tex-mode-syntax-table))
-		     (eq old-syntax-table
-			 (symbol-value tex-mode-syntax-table)))
-		;; (not (memq major-mode '(TeX-mode LaTeX-mode)))
-		(set-syntax-table
-		 (or lisp-mode-syntax-table
-		     ;; lmst not defined until lisp-mode executed
-		     emacs-lisp-mode-syntax-table)))
+	    (unless (and (boundp 'tex-mode-syntax-table)
+			 (eq old-syntax-table
+			     (symbol-value 'tex-mode-syntax-table)))
+	      (set-syntax-table
+	        (or lisp-mode-syntax-table
+		    ;; lmst not defined until lisp-mode executed
+		    emacs-lisp-mode-syntax-table)))
 	    ,@body)
        (set-syntax-table old-syntax-table))))
 
