@@ -59,7 +59,7 @@ defaults."
     (indent-rigidly (point) (point-max) 3)))
 
 (defun rgr-vm-quit-no-save ()
-  "Buries the mail buffer and kills the summary, doesn't save."
+  "Buries the mail and summary buffers, doesn't save."
   (interactive)
   (vm-select-folder-buffer)
   ;; probably not desirable.  -- rgr, 12-Jan-00.
@@ -67,39 +67,28 @@ defaults."
   (let ((summary-buffer vm-summary-buffer)
 	(pres-buffer vm-presentation-buffer-handle)
 	(mail-buffer (current-buffer)))
-    ;; Do this first so that killing the summary/presentation buffers doesn't
-    ;; replace them with the mail buffer, which would defeat quit-window below.
-    (delete-other-windows)
-    ;; Just like vm-quit, get rid of the summary and presentation buffers, but
-    ;; simply bury the mail buffer.
-    (if (and summary-buffer
-	     (buffer-name summary-buffer))
-	(progn
-	  (vm-display summary-buffer nil nil nil)
-	  ;; [killing seems to leave a dangling pointer, though re-invoking vm
-	  ;; seems to fix it.  but we may have to settle for just burying the
-	  ;; thing.  -- rgr, 12-Jan-00.]
-	  (quit-window)))
-    (if pres-buffer
-	(progn
-	  (vm-display pres-buffer nil nil nil)
-	  (kill-buffer pres-buffer)))
+    ;; Get rid of the presentation buffer, but simply bury the summary.
+    (when (and summary-buffer
+	       (buffer-name summary-buffer))
+      (bury-buffer summary-buffer))
+    (when pres-buffer
+      (vm-display pres-buffer nil nil nil)
+      (kill-buffer pres-buffer))
     ;; [oops; we need these to clean up the dangling pointers.  -- rgr,
     ;; 13-Jan-00.]
     (vm-check-for-killed-summary)
     (vm-check-for-killed-presentation)
     (set-buffer mail-buffer)
+    (quit-window)
     (vm-display mail-buffer nil nil nil)
-    (quit-window))
+    (bury-buffer mail-buffer))
   ;; [not a noop if there are other vm buffers around?  -- rgr, 12-Jan-00.]
   (vm-update-summary-and-mode-line))
 
 (defun rgr-vm-quit ()
-  "Saves the mail buffer, like vm-quit (\\[vm-quit]), but buries instead
-of killing it.  Kills the summaries, though."
+  "Saves the buffer, like vm-quit (\\[vm-quit]), but buries instead of killing."
   (interactive)
   (vm-select-folder-buffer)
-  ;; [should expunge here?  -- rgr, 12-Jan-00.]
   (if (and (buffer-modified-p)
 	   (or buffer-file-name buffer-offer-save))
       (vm-save-folder))
