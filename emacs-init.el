@@ -39,6 +39,9 @@ but it is usually sufficient to take the default.")
 ;; Turn the menu bar off.
 (menu-bar-mode 0)
 
+;; Look for search strings across newlines.  -- rgr, 5-Nov-21.
+(setq search-whitespace-regexp "[ \t\n]+")
+
 ;; Keep on blinking when in focus (24.3.50).  -- rgr, 1-Jan-14.
 (setq blink-cursor-blinks 0)
 
@@ -76,9 +79,7 @@ but it is usually sufficient to take the default.")
 (defun use-fancy-splash-screens-p () nil)
 ;; Get X11 selections on the kill ring.  This restores 23.x behavior in emacs 24
 ;; and later.  -- rgr, 15-Oct-10.
-(setq x-select-enable-primary t)
-;; Give this a try, too.  -- rgr, 15-Oct-10.
-(setq mouse-drag-copy-region t)
+(setq select-enable-primary t)
 
 ;; Turn off paging in subordinate shells.  -- rgr, 17-Feb-00.
 (setenv "PAGER" "cat")
