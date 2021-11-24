@@ -84,16 +84,9 @@ but it is usually sufficient to take the default.")
 ;; Turn off paging in subordinate shells.  -- rgr, 17-Feb-00.
 (setenv "PAGER" "cat")
 
-;; Set up /shared/emacs/site-lisp/ at home.
-(cond ((and (eq rgr-site 'home)
-	    ;; [lap always thinks it's home, but /shared/emacs/site-lisp is not
-	    ;; always mounted.  -- rgr, 29-Jun-07.]
-	    (file-directory-p "/shared/emacs/site-lisp")
-	    (not (member "/shared/emacs/site-lisp" load-path)))
-        (setq load-path (cons "/shared/emacs/site-lisp" load-path))
-        (load "/shared/emacs/site-lisp/site-start.el")))
-
-(add-hook 'dired-load-hook 'rgr-dired-load-hook)
+;; Make C-x = show the names of characters (annoying for ASCII, but essential
+;; for the wilder reaches of Unicode).  -- rgr, 24-Nov-21.
+(setq what-cursor-show-names t)
 
 ;; Newer feature (ported from Lispm implementation).  -- rgr, 29-Nov-96.
 ;; [only save completions in rgr-emacs if we can write it!  -- rgr, 1-Apr-00.]
@@ -141,15 +134,8 @@ but it is usually sufficient to take the default.")
 		;; CLISP
 		".fas" ".lib"
 		;; LispWorks?
-		".afasl"
-		;; Parrot.
-		".pbc")
+		".afasl")
 	      completion-ignored-extensions))
-;; Speaking of which, let's add a hook for Parrot.
-(add-hook 'pir-mode-hook 'rgr-pir-mode-hook)
-(let ((parrot "/usr/src/parrot/editor/parrot.new.el"))
-  (if (file-readable-p parrot)
-      (load-file parrot)))
 
 ;; Set up mail stuff.
 (add-hook 'mail-mode-hook 'rgr-mail-mode-hook)
@@ -190,21 +176,17 @@ but it is usually sufficient to take the default.")
 (setq mail-self-blind t)
 ;; Double the default so we don't get queries about large mail files.
 (setq large-file-warning-threshold 20000000)
-;; Mailcrypt stuff.
-(setq mc-default-scheme 'mc-scheme-gpg)
-(setq mc-pgp-path "gpg")
-(and (eq rgr-site 'home)
-     (setq mc-gpg-user-id "Bob Rogers (main 2003) <rogers@rgrjr.dyndns.org>"))
-(setq mc-pgp-keydir (expand-file-name "~/.gnupg"))
-(setq mc-passwd-timeout 600)	;; ten minutes.
+
 ;; snoop-maildir stuff.  -- rgr, 25-Mar-17.
 (setq snoop-maildir-spam-folder
       (expand-file-name "~/mail/incoming/spam/cur/"))
 
+;; Hookify some standard modes.
 (add-hook 'comint-mode-hook 'rgr-comint-mode-hook)
 (add-hook 'shell-mode-hook 'rgr-shell-mode-hook)
 (add-hook 'telnet-mode-hook 'rgr-telnet-mode-hook)
 (add-hook 'sh-mode-hook 'rgr-sh-mode-hook)
+(add-hook 'dired-load-hook 'rgr-dired-load-hook)
 
 (rgr-define-lisp-mode-commands emacs-lisp-mode-map)
 (rgr-define-lisp-mode-commands lisp-interaction-mode-map)
