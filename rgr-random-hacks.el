@@ -30,7 +30,7 @@
   (let* ((dir (expand-file-name directory))
 	 (generated-autoload-file
 	   (expand-file-name (or file "loaddefs.el") dir)))
-    (update-directory-autoloads dir)))
+    (make-directory-autoloads dir "rgr-hacks-autoloads.el")))
 
 ;;;###autoload
 (defun rgr-update-autoloads ()
