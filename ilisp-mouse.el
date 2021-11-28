@@ -34,9 +34,6 @@
 ;;; ilisp will automagically restore this functionality.
 ;;;
 
-(eval-when-compile
-  (require 'ange-ftp))
-
 ;; tags package fns are used by ilisp-edit-thing and ilisp-thing-around-point.
 ;; [I'd like to condition (require 'tags) on whether we actually need it, but
 ;; the funcall in ilisp-edit-thing is problematic.  -- rgr, 12-Apr-94.]
@@ -49,10 +46,6 @@
       (t (require 'etags)))
 
 ;;;; Variables and macros.
-
-(defvar ilisp-mouse-use-ange-ftp-p t
-  "*Whether to use ange-ftp to open 'FILE:' and 'FTP:' URLs in emacs
-when you mouse on them; the default is 'yes'.")
 
 (defvar ilisp-url-regexp
 	"^<url:\\|^https?:\\|^gopher:\\|^telnet:\\|^wais:\\|^s?news:\\|^mailto:"
@@ -93,13 +86,10 @@ arbitrary buffers."
 					(point)))))
 
 (defun ilisp-thing-around-point ()
-  "Finds an interesting editable thing around point.  This includes file
-names, URLs, emacs lisp and Common Lisp definition names, and
-identifiers in other languages that may be findable via\\[find-tag].
-Recognizes ange-ftp and Lispm pathname syntax and expands pathnames so
-that relativity works, but leaves URLs alone.  Uses find-tag-default
-and/or ffap-file-at-point but hacks the syntax table, since the default
-text table doesn't like \".\", \"~\", and other constituent chars."
+  "Finds an editable thing around point (e.g. files, URLs, symbols).
+Uses find-tag-default and/or ffap-file-at-point but hacks the syntax
+table, since the default text table doesn't like \".\", \"~\", and other
+Lisp constituent chars."
   (let* ((ffap-guess nil)
 	 (thing (with-lisp-syntax
 		  ;; Special cases for clicking on an S-expression, which could
@@ -131,7 +121,7 @@ text table doesn't like \".\", \"~\", and other constituent chars."
 	    ;; more expensive, but much more versatile.  It's equivalent to the
 	    ;; much cleverer find-file-at-point algorithm.  We still check the
 	    ;; first char anyway, because file-exists-p can be too expensive for
-	    ;; ange-ftp pathnames.  And we must expand the file name here, in
+	    ;; remote pathnames.  And we must expand the file name here, in
 	    ;; order to handle relative pathnames correctly.  -- rgr, 12-Sep-96.
 	    (expand-file-name thing))
 	  ((and ilisp-url-regexp
@@ -142,36 +132,12 @@ text table doesn't like \".\", \"~\", and other constituent chars."
 	    ;; allowed to contain whitespace, which is supposed to be
 	    ;; eliminated.  -- rgr, 3-Jan-00.]
 	    (require 'browse-url)
+	    (declare-function browse-url-url-at-point "browse-url")
 	    (let ((better-thing (browse-url-url-at-point)))
 	      (if (or (> (length better-thing) (length thing))
 		      (string-match "^<url" thing))
 		  better-thing
 		  thing)))
-	  ((and ilisp-mouse-use-ange-ftp-p
-		(string-match "\\`\\(ftp\\|file\\)://\\([^:/]+\\):?\\(/.*\\)"
-			      thing))
-	    ;; Convert URL-style ftp: or file: references to ange-ftp syntax.
-	    ;; Taken from ffap-fixup-url and ffap-host-to-path fns.  -- rgr,
-	    ;; 22-Mar-95.
-	    (require 'ange-ftp)
-	    (let ((host (match-string 2 thing))
-		  (rest (match-string 3 thing)))
-	      (cond ((equal host "localhost") rest)
-		    ((string-match "@" host)
-		      (concat "/" host ":" rest))
-		    (t
-		      (concat "/" (or ange-ftp-default-user "anonymous")
-			      "@" host ":" rest)))))
-	  ((string-match "^\\([-a-zA-Z0-9._]+:\\)[~/.]" thing)
-	    ;; Looks like Lispm host:pathname syntax; the "~", "/", or "." means
-	    ;; it's probably not a package symbol.  We rely on the fact that
-	    ;; Lispm syntax is a prefix of ange-ftp /user@host:pathname syntax.
-	    ;; [but downcase the host name because they are case-sensitive to
-	    ;; ange-ftp.  -- rgr, 1-Feb-95.]
-	    (expand-file-name
-	      (concat "/" (user-login-name) "@"
-		      (downcase (substring thing 0 (match-end 1)))
-		      (substring thing (match-end 1)))))
 	  (t
 	    thing))))
 
@@ -230,7 +196,7 @@ tester function returns non-nil.")
   (cond ((null thing) nil)
 	((symbolp thing)
 	  ;; emacs function/variable
-	  (find-tag (symbol-name thing)))
+	  (xref-find-definitions (symbol-name thing)))
 	((or (not (stringp thing)) (equal thing ""))
 	  (error "Don't know how to edit %S." thing))
 	((or (file-name-absolute-p thing)
@@ -260,8 +226,7 @@ If it looks like a definition name, then do M-.
 Whatever it is, it is found in the current window, regardless of where
 you click.  'Looks like a pathname' means it starts with '.', '/', or
 '~', or (as in a Lispm pathname) has a host: prefix followed by one of
-these three characters.  Lispm pathnames are converted to ange-ftp
-pathnames, which generally works, though only for Unix syntax."
+these three characters."
   (interactive "e")
   (ilisp-edit-thing (save-excursion
 		      (save-window-excursion
