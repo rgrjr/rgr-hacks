@@ -255,7 +255,7 @@ given as the times above divided by the total, in a report such as this:
 	      (when (and (< (abs (- target-difficulty difficulty)) 1)
 			 (string-equal target-comment comment))
 		;; Count this guy.
-		(if (>= time-secs target-time)
+		(if (> time-secs target-time)
 		    (cl-incf count-above)
 		  (cl-incf count-below)))))
 	  (forward-line))
