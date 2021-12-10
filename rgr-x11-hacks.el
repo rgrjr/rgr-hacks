@@ -6,9 +6,7 @@
 (defun rgr-install-frame-properties ()
   ;; Get a decent label and background color.
   (let* ((version
-	  (cond ((or (and (= emacs-major-version 26))
-		     (and (= emacs-major-version 27))
-		     (and (= emacs-major-version 28)))
+	  (cond ((member emacs-major-version '(27 28 29))
 		  ;; don't show the standard version(s).
 		  nil)
 		;; In the versions "19.34.1" and "24.0.50.1", the last component
