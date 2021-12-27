@@ -76,6 +76,9 @@
 
 ;;;###autoload
 (defun rgr-dired-load-hook ()
+  ;; Show free space "separately" because this is the only way to preserve the
+  ;; disk usage.
+  (setq dired-free-space 'separate)
   ;; new hack  -- rgr, 2-Feb-99.
   (define-key dired-mode-map "\C-cr" 'rgr-dired-rename-file-and-versions)
   ;; some still newer hacks.  -- rgr, 13-Sep-04.
