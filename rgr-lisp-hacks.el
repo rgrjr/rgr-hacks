@@ -1,10 +1,23 @@
+;;; -*- lexical-binding: t -*-
 ;;;****************************************************************************
 ;;;
 ;;;    GNU Emacs hackery.
 ;;;
 ;;; [created (split out of the rgr-hacks.el file).  -- rgr, 20-Nov-98.]
 ;;;
-;;; $Id$
+
+(eval-when-compile
+  ;; Don't fail if not found.
+  (load "slime" t t))
+
+(defun rgr-lisp-definition-symbol-name? (string)
+  (or (and (> (length string) 3)
+	   (equal (downcase (substring string 0 3)) "def"))
+      ;; If the defining form has a doc string or indents like a defun, then
+      ;; it's a good bet that it's defining something.
+      (let ((symbol (intern string)))
+	(or (eq (get symbol 'lisp-indent-function) 'defun)
+	    (get symbol 'doc-string-elt)))))
 
 ;; [this was originally lisp-def-name out of the ilisp package, but i got tired
 ;; of requiring ilisp just to grab an elisp definition name.  could be
@@ -15,11 +28,12 @@ the sexp.  If the form starts with DEF, the form start and the next
 symbol will be returned.  Optional NAMEP will return only the name
 without the defining symbol."
   (let ((case-fold-search t))
-    (if (looking-at
-	 ;; (( \( (def*) (( \( (setf)) | \(?)) | \(?) (symbol)
-	 ;; 12    3    3 45    6    65      42      1 7      7
-	 ;;0011\(22 def*        22         32 43\(54 setf54         43   \(?32 11      00 60           60
-	 "\\(\\((\\(def[^ \t\n]*\\)[ \t\n]+\\(\\((\\(setf\\)[ \t\n]+\\)\\|(?\\)\\)\\|(?\\)\\([^ \t\n)]*\\)")
+    (if (and (looking-at
+	      ;; (( \( (def*) (( \( (setf)) | \(?)) | \(?) (symbol)
+	      ;; 12    3    3 45    6    65      42      1 7      7
+	      ;;0011\(22 *        22         32 43\(54 setf54         43   \(?32 11      00 60           60
+	      "\\(\\((\\([^ \t\n]*\\)[ \t\n]+\\(\\((\\(setf\\)[ \t\n]+\\)\\|(?\\)\\)\\|(?\\)\\([^ \t\n)]*\\)")
+	     (rgr-lisp-definition-symbol-name? (match-string-no-properties 3)))
 	(let ((symbol (buffer-substring (match-beginning 7) (match-end 7))))
 	  (if (match-end 6)
 	      (concat (if (not namep) 
@@ -240,14 +254,14 @@ commands work globally (regardless of major mode, dialect, etc.)."
 	 (common-lisp-indent
 	  (intern (concat "common-" (symbol-name lisp-indent)))))
     (set lisp-indent common-lisp-indent)
-    (mapcar '(lambda (entry)
-	      ;; Stolen from the bottom of cl-indent.el.
-	      (let ((name (car entry)) (spec (cdr entry)))
-		(put name common-lisp-indent
-		     (if (symbolp spec)
-			 (get spec common-lisp-indent)
+    (mapcar #'(lambda (entry)
+		;; Stolen from the bottom of cl-indent.el.
+		(let ((name (car entry)) (spec (cdr entry)))
+		  (put name common-lisp-indent
+		       (if (symbolp spec)
+			   (get spec common-lisp-indent)
 			 (car spec)))
-		name))
+		  name))
 	    '((cond	(&rest (&whole 1 &body)))
 	      (defun	(4 (&whole 7 &rest 1) &body))
 	      (defmacro	(4 (&whole 10 &rest 1) &body))
